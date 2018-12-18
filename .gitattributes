@@ -1,0 +1,15 @@
+* text=auto !eol
+.idea/brix_celum_fal.iml -text
+.idea/encodings.xml -text
+.idea/misc.xml -text
+.idea/modules.xml -text
+.idea/php.xml -text
+.idea/vcs.xml -text
+Classes/Client/CelumClient.php -text
+Classes/Driver/CelumDriver.php -text
+Classes/Index/Extractor.php -text
+Configuration/FlexForm/CelumDriverFlexForm.xml -text
+/ext_emconf.php -text
+/ext_icon.png -text
+/ext_localconf.php -text
+/ext_tables.sql -text

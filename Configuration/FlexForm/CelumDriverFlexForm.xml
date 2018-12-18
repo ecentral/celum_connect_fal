@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<T3DataStructure>
+    <ROOT>
+        <type>array</type>
+        <el>
+            <licenseKey>
+                <TCEforms>
+                    <label>License Key</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </licenseKey>
+            <celumApiKey>
+                <TCEforms>
+                    <label>Celum API key</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </celumApiKey>
+            <locale>
+                <TCEforms>
+                    <label>Locale</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>2</size>
+                    </config>
+                </TCEforms>
+            </locale>
+            <defaultLocale>
+                <TCEforms>
+                    <label>Default locale</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>2</size>
+                    </config>
+                </TCEforms>
+            </defaultLocale>
+            <roots>
+                <TCEforms>
+                    <label>Root nodes (comma separated list of ids)</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </roots>
+            <publicURLsProviderImage>
+                <TCEforms>
+                    <label>PublicUrls Provider for Images</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </publicURLsProviderImage>
+            <publicURLsDescriptionImage>
+                <TCEforms>
+                    <label>PublicUrls Description for Images</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </publicURLsDescriptionImage>
+            <publicURLsProviderVideo>
+                <TCEforms>
+                    <label>PublicUrls Provider for Videos</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </publicURLsProviderVideo>
+            <publicURLsDescriptionVideo>
+                <TCEforms>
+                    <label>PublicUrls Description for Videos</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </publicURLsDescriptionVideo>
+        </el>
+    </ROOT>
+</T3DataStructure>

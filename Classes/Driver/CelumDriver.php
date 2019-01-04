@@ -454,7 +454,7 @@ class CelumDriver implements DriverInterface
     {
         $this->log->debug("$this->instance: dumpFileContents($identifier)");
         $handle = fopen('php://output', 'w');
-        fputs($handle, file_get_contents($this->client->getUrl($identifier, 'thumbnail')));
+        fputs($handle, file_get_contents($this->client->getUrl($identifier, 'publicUrl'))); // ex thumbnail
         fclose($handle);
     }
 

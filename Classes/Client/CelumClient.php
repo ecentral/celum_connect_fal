@@ -101,13 +101,13 @@ class CelumClient {
                     elseif ($prop['name'] === 'height')
                         $height = $prop['value'];
                 }
-                if ($width and $height) {
+                if ($width and $height and (($width > 1024) or ($height > 1024))) {
                     if ($width > $height) {
-                        $height = $height * 250 / $width;
-                        $width = 250;
+                        $height = intval($height * 1024 / $width);
+                        $width = 1024;
                     } else {
-                        $width = $width * 250 / $height;
-                        $height = 250;
+                        $width = intval($width * 1024 / $height);
+                        $height = 1024;
                     }
                 }
                 $publicUrl = $this->directDownload . $this->extractId($identifier);

@@ -53,6 +53,13 @@
                     </config>
                 </TCEforms>
             </roots>
+            <directDownloadSecret>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
+            </directDownloadSecret>
             <publicURLsProviderImage>
                 <TCEforms>
                     <label>PublicUrls Provider for Images</label>

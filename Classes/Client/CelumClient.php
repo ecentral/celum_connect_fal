@@ -30,6 +30,7 @@ class CelumClient {
     protected $directDownload;
     private $provider;
     private $description;
+    private $secret;
 
     public function __construct(array $config, $storage)
     {
@@ -43,6 +44,7 @@ class CelumClient {
         $this->context = stream_context_create(['http' => ['method' => 'GET', 'header' => 'Authorization: celumApiKey ' . $config['celumApiKey']]]);
         $this->locale = $config['locale'];
         $this->defaultLocale = $config['defaultLocale'];
+        $this->secret = $config['directDownloadSecret'];
         $this->storage = $storage;
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache(CelumDriver::EXTENSION_KEY);
     }
@@ -110,7 +112,7 @@ class CelumClient {
                         $height = 1024;
                     }
                 }
-                $publicUrl = $this->directDownload . $this->extractId($identifier);
+                $publicUrl = false;
                 $type = $response['fileCategory'];
                 if (($type == 'image') or ($type == 'video')) {
                     // echo $this->description . " " . $this->provider . " " . json_encode($response['publicUrls']) . "; ";
@@ -118,6 +120,12 @@ class CelumClient {
                         if (($purl['provider'][$type] == $this->provider) and ($purl['description'][$type] == $this->description))
                             $publicUrl = $purl['url'];
                     }
+                }
+                if (!$publicUrl) {
+                    $id = $this->extractId($identifier);
+                    $publicUrl = $this->directDownload . $id;
+                    if ($this->secret)
+                        $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
                 }
                 $this->cache->set($key, ['info' => [
                     'identifier' => $identifier,
@@ -130,8 +138,8 @@ class CelumClient {
                     'ctime' => strtotime($response['modificationInformation']['creationDateTime']),
                     'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime']),
                 ],
-                    'preview' => $response['previewInformation']['previewUrl'],
-                    'thumbnail' => $response['previewInformation']['thumbUrl'],
+//                    'preview' => $response['previewInformation']['previewUrl'],
+//                    'thumbnail' => $response['previewInformation']['thumbUrl'],
                     'publicUrl' => $publicUrl,
                     'extension' => $response['fileInformation']['fileExtension']
                 ], [], self::LIFE_TIME);

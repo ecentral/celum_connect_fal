@@ -19,6 +19,8 @@ class Extractor implements ExtractorInterface
 
     /** @var Logger */
     protected $log;
+    /** @var $client CelumClient */
+    protected $client;
 
     public function __construct()
     {
@@ -100,8 +102,7 @@ class Extractor implements ExtractorInterface
      */
     public function extractMetaData(File $file, array $previousExtractedData = [])
     {
-        // TODO extract width and height
         $this->log->debug("extractMetaData(" . $file->getIdentifier() . ", " . json_encode($previousExtractedData) . ")");
-        return $previousExtractedData;
+        return $_SESSION['celum_client']->getFileInfo($file->getIdentifier())['info'];
     }
 }

@@ -60,6 +60,7 @@ class CelumDriver implements DriverInterface
     {
         $this->log->debug("$this->instance: initialize()");
         $this->client = new CelumClient($this->configuration, $this->storageUid);
+        $_SESSION['celum_client'] = $this->client;
     }
 
     /**

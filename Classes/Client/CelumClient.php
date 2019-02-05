@@ -131,9 +131,17 @@ class CelumClient {
                     if ($this->secret)
                         $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
                 }
+                $name = $response['name'];
+                $ext = '.' . $response['fileInformation']['fileExtension'];
+                if (!substr($name, -strlen($ext)) === $ext) {
+                    if (substr($name, -1) === '.')
+                        $name .= $response['fileInformation']['fileExtension'];
+                    else
+                        $name .= $ext;
+                }
                 $this->cache->set($key, ['info' => [
                     'identifier' => $identifier,
-                    'name' => $response['name'],
+                    'name' => $name,
                     'storage' => $this->storage,
                     'size' => $response['fileInformation']['originalFileSize'],
                     'width' => $width,

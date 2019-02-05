@@ -93,7 +93,6 @@ class CelumClient {
     }
 
     public function getFileInfo($identifier) {
-        $identifier = rtrim($identifier, '/\\');
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
             $response = file_get_contents($this->cora . 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', false, $this->context);
@@ -131,7 +130,7 @@ class CelumClient {
                 }
                 $name = $response['name'];
                 $ext = '.' . $response['fileInformation']['fileExtension'];
-                if (!substr($name, -strlen($ext)) === $ext) {
+                if (substr($name, -strlen($ext)) !== $ext) {
                     if (substr($name, -1) === '.')
                         $name .= $response['fileInformation']['fileExtension'];
                     else

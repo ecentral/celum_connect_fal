@@ -66,8 +66,7 @@ class CelumClient {
     }
 
     public function getFolderInfo($identifier) {
-        if (($identifier == '') or ($identifier == '//'))
-            $identifier = '/';
+        $identifier = rtrim($identifier, '/\\') . '/';
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
             $response = file_get_contents($this->cora . 'Nodes(' . $this->extractId($identifier) . ')?$expand=children,assets&$select=id,name,children,assets', false, $this->context);
@@ -94,7 +93,7 @@ class CelumClient {
     }
 
     public function getFileInfo($identifier) {
-        $identifier = rtrim($identifier, '/\\') . '/';
+        $identifier = rtrim($identifier, '/\\');
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
             $response = file_get_contents($this->cora . 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', false, $this->context);

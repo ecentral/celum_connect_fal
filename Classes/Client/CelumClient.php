@@ -66,13 +66,13 @@ class CelumClient {
     }
 
     public function getFolderInfo($identifier) {
-        $identifier = rtrim($identifier, '/\\') . '/';
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
-            $response = file_get_contents($this->cora . 'Nodes(' . $this->extractId($identifier) . ')?$expand=children,assets&$select=id,name,children,assets', false, $this->context);
+            $id = $this->extractId($identifier);
+            $response = file_get_contents($this->cora . 'Nodes(' . $id . ')?$expand=children,assets&$select=id,name,children,assets', false, $this->context);
             if ($response) {
                 $response = json_decode($response, true);
-                $data = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [],  'assets' => []];
+                $data = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
                 if (isset($response['children']) and count($response['children']) > 0) {
                     foreach ($response['children'] as $child) {
                         $data['children'][] = $identifier . $child['id'] . '/';
@@ -130,9 +130,10 @@ class CelumClient {
                 }
                 $name = $response['name'];
                 $ext = '.' . $response['fileInformation']['fileExtension'];
+                //$ext = '.jpg';
                 if (substr($name, -strlen($ext)) !== $ext) {
                     if (substr($name, -1) === '.')
-                        $name .= $response['fileInformation']['fileExtension'];
+                        $name .= substr($ext, 1);
                     else
                         $name .= $ext;
                 }

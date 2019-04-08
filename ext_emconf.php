@@ -1,7 +1,7 @@
 <?php
 
 $EM_CONF['celum_connect_fal'] = [
-    'title' => 'CELUM FAL driver',
+    'title' => 'celum:connect (FAL)',
     'description' => 'Provides a FAL driver for the CELUM DAM.',
     'category' => 'be',
     'version' => '1.0.8',

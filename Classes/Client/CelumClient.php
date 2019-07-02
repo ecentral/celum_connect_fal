@@ -6,7 +6,7 @@
  * Time: 13:37
  */
 
-namespace Brix\CelumFal;
+namespace Brix\CelumFal\Client;
 
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;

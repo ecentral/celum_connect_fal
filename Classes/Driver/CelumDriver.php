@@ -6,7 +6,7 @@
  * Time: 11:18
  */
 
-namespace Brix\CelumFal;
+namespace Brix\CelumFal\Driver;
 
 use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
 use TYPO3\CMS\Core\Resource\Exception;

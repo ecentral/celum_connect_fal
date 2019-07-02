@@ -1,0 +1,35 @@
+{
+  "repositories": [
+    { "type": "composer", "url": "https://composer.typo3.org/" }
+  ],
+  "name": "brix/celum-connect-fal",
+  "type": "typo3-cms-extension",
+  "version": "1.0.9",
+  "description": "Provides a FAL driver for the CELUM DAM.",
+  "keywords": [
+    "celum", "dam", "brix", "fal"
+  ],
+  "authors": [
+    {
+      "name": "brix cross media",
+      "role": "Project Owner"
+    }
+  ],
+  "require": {
+    "typo3/cms-core": "^8.7.0"
+  },
+  "replace": {
+    "celum_connect_fal": "self.version",
+    "typo3-ter/celum-connect-fal": "self.version"
+  },
+  "autoload": {
+    "psr-4": {
+      "Brix\\CelumFal\\": "Classes/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "celum_connect_fal"
+    }
+  }
+}

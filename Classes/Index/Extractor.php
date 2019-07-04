@@ -8,7 +8,7 @@
 
 namespace Brix\CelumFal\Index;
 
-use Brix\CelumFal\CelumDriver;
+use Brix\CelumFal\Driver\CelumDriver;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\Index\ExtractorInterface;
 use TYPO3\CMS\Core\Resource\File;

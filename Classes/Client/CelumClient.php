@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Resource\Exception;
 
 class CelumClient {
 
@@ -39,7 +40,11 @@ class CelumClient {
     {
         $this->log = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("__construct(" . json_encode($config) . ")");
-        $this->celumUrl = rtrim($this->decrypt($config['licenseKey']));
+        $res = $this->decrypt($config['licenseKey']);
+        if (!preg_match('/^(.*)_([^_]+)$/', $res, $matches) or $matches[2] < time()) {
+            throw new Exception('Invalid license');
+        }
+        $this->celumUrl = rtrim($matches[1]);
         $this->cora = $this->celumUrl . '/cora/';
         $this->directDownload = $this->celumUrl . '/direct/download?format=' . $config['downloadFormat'] . '&id=';
         $this->provider = ['video' => $config['publicURLsProviderVideo'], 'image' => $config['publicURLsProviderImage']];

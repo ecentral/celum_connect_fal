@@ -35,6 +35,7 @@ class CelumClient {
     private $secret;
     private $client;
     private $options;
+    private $format;
 
     public function __construct(array $config, $storage)
     {
@@ -46,6 +47,7 @@ class CelumClient {
         }
         $this->celumUrl = rtrim($matches[1]);
         $this->cora = $this->celumUrl . '/cora/';
+        $this->format = $config['downloadFormat'];
         $this->directDownload = $this->celumUrl . '/direct/download?format=' . $config['downloadFormat'] . '&id=';
         $this->provider = ['video' => $config['publicURLsProviderVideo'], 'image' => $config['publicURLsProviderImage']];
         $this->description = ['video' => $config['publicURLsDescriptionVideo'], 'image' => $config['publicURLsDescriptionImage']];
@@ -114,7 +116,7 @@ class CelumClient {
                         $height = $prop['value'];
                 }
                 if ($width and $height) {
-                    if (($width > 1024) or ($height > 1024)) {
+                    if ($this->format === 'prvw' and (($width > 1024) or ($height > 1024))) {
                         if ($width > $height) {
                             $height = intval($height * 1024 / $width);
                             $width = 1024;
@@ -143,8 +145,13 @@ class CelumClient {
                         $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
                 }
                 $name = $response['name'];
-                $ext = '.' . $response['fileInformation']['fileExtension'];
-                //$ext = '.jpg';
+                if ($this->isPrvw) {
+
+                }
+                if ($this->format === 'prvw' or $this->format === 'largeprvw' or $this->format === 'thumb')
+                    $ext = '.jpg';
+                else
+                    $ext = '.' . $response['fileInformation']['fileExtension'];
                 if (substr($name, -strlen($ext)) !== $ext) {
                     if (substr($name, -1) === '.')
                         $name .= substr($ext, 1);

@@ -38,7 +38,7 @@ class CelumDriver implements DriverInterface
         $this->configuration = $configuration;
         $this->instance = rand();
         $this->log = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-        $this->log->debug("$this->instance: __construct(" . json_encode($configuration) . ")");
+        //$this->log->debug("$this->instance: __construct(" . json_encode($configuration) . ")");
         $this->capabilities = ResourceStorage::CAPABILITY_BROWSABLE | ResourceStorage::CAPABILITY_PUBLIC;
     }
 
@@ -47,7 +47,7 @@ class CelumDriver implements DriverInterface
      */
     public function processConfiguration()
     {
-        $this->log->debug("$this->instance: processConfiguration()");
+        //$this->log->debug("$this->instance: processConfiguration()");
         $this->roots = preg_split('/\\s*,\\s*/', trim($this->configuration['roots']));
         foreach ($this->roots as $key => $val)
             $this->roots[$key] = "/$val/";
@@ -59,7 +59,7 @@ class CelumDriver implements DriverInterface
      */
     public function initialize()
     {
-        $this->log->debug("$this->instance: initialize()");
+        //$this->log->debug("$this->instance: initialize()");
         $this->client = new CelumClient($this->configuration, $this->storageUid);
         $_SESSION['celum_client'] = $this->client;
     }
@@ -75,7 +75,7 @@ class CelumDriver implements DriverInterface
     public function mergeConfigurationCapabilities($capabilities)
     {
         $this->capabilities &= $capabilities;
-        $this->log->debug("$this->instance: mergeConfigurationCapabilities($capabilities): $this->capabilities");
+        //$this->log->debug("$this->instance: mergeConfigurationCapabilities($capabilities): $this->capabilities");
         return $this->capabilities;
     }
 
@@ -86,7 +86,7 @@ class CelumDriver implements DriverInterface
      */
     public function getRootLevelFolder()
     {
-        $this->log->debug("$this->instance: getRootLevelFolder(): " . self::ROOT_FOLDER_IDENTIFIER);
+        //$this->log->debug("$this->instance: getRootLevelFolder(): " . self::ROOT_FOLDER_IDENTIFIER);
         return self::ROOT_FOLDER_IDENTIFIER;
     }
 
@@ -98,7 +98,7 @@ class CelumDriver implements DriverInterface
     public function getDefaultFolder()
     {
         $ret = $this->getRootLevelFolder();
-        $this->log->debug("$this->instance: getDefaultFolder(): $ret");
+        //$this->log->debug("$this->instance: getDefaultFolder(): $ret");
         return $ret;
     }
 
@@ -112,7 +112,7 @@ class CelumDriver implements DriverInterface
     public function getPublicUrl($identifier)
     {
         $ret = $this->client->getUrl($identifier, 'publicUrl');
-        $this->log->debug("$this->instance: getPublicURL($identifier): $ret");
+        //$this->log->debug("$this->instance: getPublicURL($identifier): $ret");
         return $ret;
     }
 
@@ -128,7 +128,7 @@ class CelumDriver implements DriverInterface
      */
     public function createFolder($newFolderName, $parentFolderIdentifier = '', $recursive = false)
     {
-        $this->log->debug("$this->instance: createFolder($newFolderName, $parentFolderIdentifier, $recursive");
+        //$this->log->debug("$this->instance: createFolder($newFolderName, $parentFolderIdentifier, $recursive");
         throw new Exception('Storage is read-only.');
     }
 
@@ -142,7 +142,7 @@ class CelumDriver implements DriverInterface
      */
     public function renameFolder($folderIdentifier, $newName)
     {
-        $this->log->debug("$this->instance: renameFolder($folderIdentifier, $newName)");
+        //$this->log->debug("$this->instance: renameFolder($folderIdentifier, $newName)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -156,7 +156,7 @@ class CelumDriver implements DriverInterface
      */
     public function deleteFolder($folderIdentifier, $deleteRecursively = false)
     {
-        $this->log->debug("$this->instance: deleteFolder($folderIdentifier, $deleteRecursively)");
+        //$this->log->debug("$this->instance: deleteFolder($folderIdentifier, $deleteRecursively)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -169,7 +169,7 @@ class CelumDriver implements DriverInterface
     public function fileExists($fileIdentifier)
     {
         $ret = ((substr($fileIdentifier, -1, 1) != '/') and ($this->getFileInfoByIdentifier($fileIdentifier) !== null));
-        $this->log->debug("$this->instance: fileExists($fileIdentifier): " . ($ret ? 'true' : 'false'));
+        //$this->log->debug("$this->instance: fileExists($fileIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }
 
@@ -183,7 +183,7 @@ class CelumDriver implements DriverInterface
     {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $ret = (($folderIdentifier === self::ROOT_FOLDER_IDENTIFIER) or ($this->getFolderInfoByIdentifier($folderIdentifier) !== null));
-        $this->log->debug("$this->instance: folderExists($folderIdentifier): " . ($ret ? 'true' : 'false'));
+        //$this->log->debug("$this->instance: folderExists($folderIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }
 
@@ -196,7 +196,7 @@ class CelumDriver implements DriverInterface
     public function isFolderEmpty($folderIdentifier)
     {
         $ret = $this->countFoldersInFolder($folderIdentifier) + $this->countFilesInFolder($folderIdentifier) == 0;
-        $this->log->debug("$this->instance: isFolderEmpty($folderIdentifier): " . ($ret ? 'true' : 'false'));
+        //$this->log->debug("$this->instance: isFolderEmpty($folderIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }
 
@@ -216,7 +216,7 @@ class CelumDriver implements DriverInterface
      */
     public function addFile($localFilePath, $targetFolderIdentifier, $newFileName = '', $removeOriginal = true)
     {
-        $this->log->debug("$this->instance: addFile($localFilePath, $targetFolderIdentifier, $newFileName, $removeOriginal)");
+        //$this->log->debug("$this->instance: addFile($localFilePath, $targetFolderIdentifier, $newFileName, $removeOriginal)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -230,7 +230,7 @@ class CelumDriver implements DriverInterface
      */
     public function createFile($fileName, $parentFolderIdentifier)
     {
-        $this->log->debug("$this->instance: createFile($fileName, $parentFolderIdentifier)");
+        //$this->log->debug("$this->instance: createFile($fileName, $parentFolderIdentifier)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -247,7 +247,7 @@ class CelumDriver implements DriverInterface
      */
     public function copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName)
     {
-        $this->log->debug("$this->instance: copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName)");
+        //$this->log->debug("$this->instance: copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -261,7 +261,7 @@ class CelumDriver implements DriverInterface
      */
     public function renameFile($fileIdentifier, $newName)
     {
-        $this->log->debug("$this->instance: renameFile($fileIdentifier, $newName)");
+        //$this->log->debug("$this->instance: renameFile($fileIdentifier, $newName)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -275,7 +275,7 @@ class CelumDriver implements DriverInterface
      */
     public function replaceFile($fileIdentifier, $localFilePath)
     {
-        $this->log->debug("$this->instance: replaceFile($fileIdentifier, $localFilePath)");
+        //$this->log->debug("$this->instance: replaceFile($fileIdentifier, $localFilePath)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -290,7 +290,7 @@ class CelumDriver implements DriverInterface
      */
     public function deleteFile($fileIdentifier)
     {
-        $this->log->debug("$this->instance: deleteFile($fileIdentifier)");
+        //$this->log->debug("$this->instance: deleteFile($fileIdentifier)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -304,7 +304,7 @@ class CelumDriver implements DriverInterface
     public function hash($fileIdentifier, $hashAlgorithm)
     {
         $ret = $this->hashIdentifier($fileIdentifier);
-        $this->log->debug("$this->instance: hash($fileIdentifier, $hashAlgorithm): $ret");
+        //$this->log->debug("$this->instance: hash($fileIdentifier, $hashAlgorithm): $ret");
         return $ret;
     }
 
@@ -321,7 +321,7 @@ class CelumDriver implements DriverInterface
      */
     public function moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName)
     {
-        $this->log->debug("$this->instance: moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName)");
+        //$this->log->debug("$this->instance: moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -336,7 +336,7 @@ class CelumDriver implements DriverInterface
      */
     public function moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)
     {
-        $this->log->debug("$this->instance: moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)");
+        //$this->log->debug("$this->instance: moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -351,7 +351,7 @@ class CelumDriver implements DriverInterface
      */
     public function copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)
     {
-        $this->log->debug("$this->instance: copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)");
+        //$this->log->debug("$this->instance: copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -366,7 +366,7 @@ class CelumDriver implements DriverInterface
      */
     public function getFileContents($fileIdentifier)
     {
-        $this->log->debug("$this->instance: getFileContents($fileIdentifier)");
+        //$this->log->debug("$this->instance: getFileContents($fileIdentifier)");
         return file_get_contents($this->client->getUrl($fileIdentifier, 'publicUrl'));
     }
 
@@ -380,7 +380,7 @@ class CelumDriver implements DriverInterface
      */
     public function setFileContents($fileIdentifier, $contents)
     {
-        $this->log->debug("$this->instance: setFileContents($fileIdentifier, $contents)");
+        //$this->log->debug("$this->instance: setFileContents($fileIdentifier, $contents)");
         throw new Exception('Storage is read-only.');
     }
 
@@ -394,7 +394,7 @@ class CelumDriver implements DriverInterface
      */
     public function fileExistsInFolder($fileName, $folderIdentifier)
     {
-        $this->log->debug("$this->instance: fileExistsInFolder($fileName, $folderIdentifier)");
+        //$this->log->debug("$this->instance: fileExistsInFolder($fileName, $folderIdentifier)");
         throw new Exception('Only requests by identifier are supported.');
         //return in_array($fileName, $this->client->getFolderInfo($folderIdentifier)['assetNames']);
     }
@@ -409,7 +409,7 @@ class CelumDriver implements DriverInterface
      */
     public function folderExistsInFolder($folderName, $folderIdentifier)
     {
-        $this->log->debug("$this->instance: folderExistsInFolder($folderName, $folderIdentifier)");
+        //$this->log->debug("$this->instance: folderExistsInFolder($folderName, $folderIdentifier)");
         throw new Exception('Only requests by identifier are supported.');
         //return in_array($folderName, $this->client->getFolderInfo($folderIdentifier)['childrenNames']);
     }
@@ -427,7 +427,7 @@ class CelumDriver implements DriverInterface
      */
     public function getFileForLocalProcessing($fileIdentifier, $writable = true)
     {
-        $this->log->debug("$this->instance: getFileForLocalProcessing($fileIdentifier, $writable)");
+        //$this->log->debug("$this->instance: getFileForLocalProcessing($fileIdentifier, $writable)");
         $tmp = \TYPO3\CMS\Core\Utility\GeneralUtility::tempnam('fal-tempfile-', '.' . $this->client->getFileInfo($fileIdentifier)['extension']);
         file_put_contents($tmp, fopen($this->client->getUrl($fileIdentifier, 'publicUrl'), 'r'));
         return $tmp;
@@ -442,7 +442,7 @@ class CelumDriver implements DriverInterface
      */
     public function getPermissions($identifier)
     {
-        $this->log->debug("$this->instance: getPermissions($identifier)");
+        //$this->log->debug("$this->instance: getPermissions($identifier)");
         return ['r' => true, 'w' => false];
     }
 
@@ -455,7 +455,7 @@ class CelumDriver implements DriverInterface
      */
     public function dumpFileContents($identifier)
     {
-        $this->log->debug("$this->instance: dumpFileContents($identifier)");
+        //$this->log->debug("$this->instance: dumpFileContents($identifier)");
         $handle = fopen('php://output', 'w');
         fputs($handle, file_get_contents($this->client->getUrl($identifier, 'publicUrl'))); // ex thumbnail
         fclose($handle);
@@ -479,7 +479,7 @@ class CelumDriver implements DriverInterface
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $id = rtrim($identifier, '/\\') . '/';
         $ret = ($identifier and strpos($id, $folderIdentifier) === 0);
-        $this->log->debug("$this->instance: isWithin($folderIdentifier, $identifier): " . $ret ? 'true' : 'false');
+        //$this->log->debug("$this->instance: isWithin($folderIdentifier, $identifier): " . $ret ? 'true' : 'false');
         return $ret;
     }
 
@@ -494,7 +494,7 @@ class CelumDriver implements DriverInterface
     public function getFileInfoByIdentifier($fileIdentifier, array $propertiesToExtract = [])
     {
         $ret = $this->client->getFileInfo($fileIdentifier)['info'];
-        $this->log->debug("$this->instance: getFileInfoByIdentifier($fileIdentifier, " . json_encode($propertiesToExtract). "): " . json_encode($ret));
+        //$this->log->debug("$this->instance: getFileInfoByIdentifier($fileIdentifier, " . json_encode($propertiesToExtract). "): " . json_encode($ret));
         return $ret;
     }
 
@@ -511,7 +511,7 @@ class CelumDriver implements DriverInterface
             $ret = ['identifier' => self::ROOT_FOLDER_IDENTIFIER, 'name' => self::ROOT_FOLDER_NAME, 'storage' => $this->storageUid];
         else
             $ret = $this->client->getFolderInfo($folderIdentifier)['info'];
-        $this->log->debug("$this->instance: getFolderInfoByIdentifier($folderIdentifier): " . json_encode($ret));
+        //$this->log->debug("$this->instance: getFolderInfoByIdentifier($folderIdentifier): " . json_encode($ret));
         return $ret;
     }
 
@@ -525,7 +525,7 @@ class CelumDriver implements DriverInterface
      */
     public function getFileInFolder($fileName, $folderIdentifier)
     {
-        $this->log->debug("$this->instance: getFileInFolder($fileName, $folderIdentifier)");
+        //$this->log->debug("$this->instance: getFileInFolder($fileName, $folderIdentifier)");
         throw new Exception('Only requests by identifier are supported.');
     }
 
@@ -554,7 +554,7 @@ class CelumDriver implements DriverInterface
             $ret = array_slice($this->client->getFolderInfo($folderIdentifier)['assets'], $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
         else
             $ret = $this->client->getFolderInfo($folderIdentifier)['assets'];
-        $this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
+        //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
         return $ret;
     }
 
@@ -568,7 +568,7 @@ class CelumDriver implements DriverInterface
      */
     public function getFolderInFolder($folderName, $folderIdentifier)
     {
-        $this->log->debug("$this->instance: getFolderInFolder($folderName, $folderIdentifier)");
+        //$this->log->debug("$this->instance: getFolderInFolder($folderName, $folderIdentifier)");
         throw new Exception('Only requests by identifier are supported.');
     }
 
@@ -597,7 +597,7 @@ class CelumDriver implements DriverInterface
             $ret = array_slice($this->client->getFolderInfo($folderIdentifier)['children'], $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
         else
             $ret = $this->client->getFolderInfo($folderIdentifier)['children'];
-        $this->log->debug("$this->instance: getFoldersInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($folderNameFilterCallbacks) . "$sort, $sortRev): " . json_encode($ret));
+        //$this->log->debug("$this->instance: getFoldersInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($folderNameFilterCallbacks) . "$sort, $sortRev): " . json_encode($ret));
         return $ret;
     }
 
@@ -612,7 +612,7 @@ class CelumDriver implements DriverInterface
     public function countFilesInFolder($folderIdentifier, $recursive = false, array $filenameFilterCallbacks = [])
     {
         $ret = count($this->getFilesInFolder($folderIdentifier, 0, 0, $recursive, $filenameFilterCallbacks));
-        $this->log->debug("$this->instance: countFilesInFolder($folderIdentifier, $recursive, " . json_encode($filenameFilterCallbacks) . "): $ret");
+        //$this->log->debug("$this->instance: countFilesInFolder($folderIdentifier, $recursive, " . json_encode($filenameFilterCallbacks) . "): $ret");
         return $ret;
     }
 
@@ -627,7 +627,7 @@ class CelumDriver implements DriverInterface
     public function countFoldersInFolder($folderIdentifier, $recursive = false, array $folderNameFilterCallbacks = [])
     {
         $ret = count($this->getFoldersInFolder($folderIdentifier, 0, 0, $recursive, $folderNameFilterCallbacks));
-        $this->log->debug("$this->instance: countFoldersInFolder($folderIdentifier, $recursive, " . json_encode($folderNameFilterCallbacks) . "): $ret");
+        //$this->log->debug("$this->instance: countFoldersInFolder($folderIdentifier, $recursive, " . json_encode($folderNameFilterCallbacks) . "): $ret");
         return $ret;
     }
 
@@ -638,7 +638,7 @@ class CelumDriver implements DriverInterface
      */
     public function setStorageUid($storageUid)
     {
-        $this->log->debug("$this->instance: setStorageUid($storageUid)");
+        //$this->log->debug("$this->instance: setStorageUid($storageUid)");
         $this->storageUid = $storageUid;
     }
 
@@ -650,7 +650,7 @@ class CelumDriver implements DriverInterface
      */
     public function getCapabilities()
     {
-        $this->log->debug("$this->instance: getCapabilities(): $this->capabilities");
+        //$this->log->debug("$this->instance: getCapabilities(): $this->capabilities");
         return $this->capabilities;
     }
 
@@ -663,7 +663,7 @@ class CelumDriver implements DriverInterface
     public function hasCapability($capability)
     {
         $ret = ($this->capabilities & $capability) === $capability;
-        $this->log->debug("$this->instance: hasCapability($capability): $ret");
+        //$this->log->debug("$this->instance: hasCapability($capability): $ret");
         return $ret;
     }
 
@@ -678,7 +678,7 @@ class CelumDriver implements DriverInterface
      */
     public function isCaseSensitiveFileSystem()
     {
-        $this->log->debug("$this->instance: isCaseSensitiveFileSystem(): true");
+        //$this->log->debug("$this->instance: isCaseSensitiveFileSystem(): true");
         return true;
     }
 
@@ -692,7 +692,7 @@ class CelumDriver implements DriverInterface
      */
     public function sanitizeFileName($fileName, $charset = '')
     {
-        $this->log->debug("$this->instance: sanitizeFileName($fileName, $charset): $fileName");
+        //$this->log->debug("$this->instance: sanitizeFileName($fileName, $charset): $fileName");
         return $fileName;
     }
 
@@ -707,7 +707,7 @@ class CelumDriver implements DriverInterface
     public function hashIdentifier($identifier)
     {
         $ret = sha1($identifier);
-        $this->log->debug("$this->instance: hashIdentifier($identifier): $ret");
+        //$this->log->debug("$this->instance: hashIdentifier($identifier): $ret");
         return $ret;
     }
 
@@ -720,7 +720,7 @@ class CelumDriver implements DriverInterface
     public function getParentFolderIdentifierOfIdentifier($fileIdentifier)
     {
         $ret = rtrim(dirname($fileIdentifier), '/\\') . '/';
-        $this->log->debug("$this->instance: getParentFolderIdentifierOfIdentifier($fileIdentifier): $ret");
+        //$this->log->debug("$this->instance: getParentFolderIdentifierOfIdentifier($fileIdentifier): $ret");
         return $ret;
     }
 

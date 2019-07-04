@@ -23,8 +23,10 @@ if( !isset($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations']
     $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY]['options'] = array('defaultLifetime' => \Brix\CelumFal\Client\CelumClient::LIFE_TIME);
 }
 
+/*
 $GLOBALS['TYPO3_CONF_VARS']['LOG']['Brix']['CelumFal']['writerConfiguration'] = array(
     \TYPO3\CMS\Core\Log\LogLevel::DEBUG => array(
         \TYPO3\CMS\Core\Log\Writer\FileWriter::class => array()
     )
 );
+*/

@@ -55,7 +55,7 @@
             </roots>
             <downloadFormat>
                 <TCEforms>
-                    <label>Download format (download format ID, prvw, thumb, largeprvw or thumb)</label>
+                    <label>Download format (download format ID, prvw (recommended, optimized), thumb, largeprvw, thumb or orig)</label>
                     <config>
                         <type>input</type>
                         <eval>trim</eval>

@@ -1,7 +1,7 @@
 {
   "name": "brix/celum-connect-fal",
   "type": "typo3-cms-extension",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Provides a FAL driver for the CELUM DAM.",
   "keywords": [
     "celum", "dam", "brix", "fal"

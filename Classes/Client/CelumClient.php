@@ -8,6 +8,8 @@
 
 namespace Brix\CelumFal\Client;
 
+use Brix\CelumFal\Driver\CelumDriver;
+use GuzzleHttp\Client;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Log\LogManager;
@@ -19,7 +21,6 @@ class CelumClient {
     const LIFE_TIME = 30 * 60 - 10;
 	protected $celumUrl;
     protected $cora;
-    protected $context;
     protected $locale;
     protected $defaultLocale;
     /** @var FrontendInterface */
@@ -31,6 +32,8 @@ class CelumClient {
     private $provider;
     private $description;
     private $secret;
+    private $client;
+    private $options;
 
     public function __construct(array $config, $storage)
     {
@@ -38,15 +41,16 @@ class CelumClient {
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $this->celumUrl = rtrim($this->decrypt($config['licenseKey']));
         $this->cora = $this->celumUrl . '/cora/';
-        $this->directDownload = $this->celumUrl . '/direct/download?format=prvw&id=';
+        $this->directDownload = $this->celumUrl . '/direct/download?format=' . $config['downloadFormat'] . '&id=';
         $this->provider = ['video' => $config['publicURLsProviderVideo'], 'image' => $config['publicURLsProviderImage']];
         $this->description = ['video' => $config['publicURLsDescriptionVideo'], 'image' => $config['publicURLsDescriptionImage']];
-        $this->context = stream_context_create(['http' => ['method' => 'GET', 'header' => 'Authorization: celumApiKey ' . $config['celumApiKey']]]);
         $this->locale = $config['locale'];
         $this->defaultLocale = $config['defaultLocale'];
         $this->secret = $config['directDownloadSecret'];
         $this->storage = $storage;
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache(CelumDriver::EXTENSION_KEY);
+        $this->client = new Client(['base_uri' => $this->cora]);
+        $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']]];
     }
 
     protected function extractId($identifier) {
@@ -69,7 +73,7 @@ class CelumClient {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
             $id = $this->extractId($identifier);
-            $response = file_get_contents($this->cora . 'Nodes(' . $id . ')?$expand=children,assets&$select=id,name,children,assets', false, $this->context);
+            $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children,assets&$select=id,name,children,assets', $this->options)->getBody();
             if ($response) {
                 $response = json_decode($response, true);
                 $data = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
@@ -95,7 +99,7 @@ class CelumClient {
     public function getFileInfo($identifier) {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
-            $response = file_get_contents($this->cora . 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', false, $this->context);
+            $response = $this->client->request('GET', 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', $this->options)->getBody();
             if ($response) {
                 $response = json_decode($response, true);
                 foreach ($response['fileProperties'] as $prop) {
@@ -104,14 +108,19 @@ class CelumClient {
                     elseif ($prop['name'] === 'height')
                         $height = $prop['value'];
                 }
-                if ($width and $height and (($width > 1024) or ($height > 1024))) {
-                    if ($width > $height) {
-                        $height = intval($height * 1024 / $width);
-                        $width = 1024;
-                    } else {
-                        $width = intval($width * 1024 / $height);
-                        $height = 1024;
+                if ($width and $height) {
+                    if (($width > 1024) or ($height > 1024)) {
+                        if ($width > $height) {
+                            $height = intval($height * 1024 / $width);
+                            $width = 1024;
+                        } else {
+                            $width = intval($width * 1024 / $height);
+                            $height = 1024;
+                        }
                     }
+                } else {
+                    $width = 0;
+                    $height = 0;
                 }
                 $publicUrl = false;
                 $type = $response['fileCategory'];

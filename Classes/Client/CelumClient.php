@@ -138,7 +138,7 @@ class CelumClient {
                 if (($type == 'image') or ($type == 'video')) {
                     // echo $this->description . " " . $this->provider . " " . json_encode($response['publicUrls']) . "; ";
                     foreach ($response['publicUrls'] as $purl) {
-                        if (($purl['provider'][$type] == $this->provider) and ($purl['description'][$type] == $this->description))
+                        if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type]))
                             $publicUrl = $purl['url'];
                     }
                 }

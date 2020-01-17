@@ -43,12 +43,10 @@ class CelumClient {
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);
         // Impossible to throw exceptions on invalid license, somehow there are instances created before the configuration is entered.
-        if (preg_match('/^(.*)_([^_]+)$/', $res, $matches)) {
-            if  ($matches[2] < time())
-                return;
+        if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and $matches[2] < time()) {
             $this->celumUrl = rtrim($matches[1]);
         } else {
-            $this->celumUrl = rtrim($res);
+            return;
         }
         $this->cora = $this->celumUrl . '/cora/';
         $this->format = $config['downloadFormat'];
@@ -149,9 +147,6 @@ class CelumClient {
                         $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
                 }
                 $name = $response['name'];
-                if ($this->isPrvw) {
-
-                }
                 if ($this->format === 'prvw' or $this->format === 'largeprvw' or $this->format === 'thumb')
                     $ext = '.jpg';
                 else

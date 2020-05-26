@@ -14,7 +14,7 @@ $EM_CONF['celum_connect_fal'] = [
     'author_company' => 'brix cross media',
     'constraints' => [
         'depends' => [
-            'typo3' => '8.7.0-0.0.0',
+            'typo3' => '8.7.0-10.4.99',
         ],
         'conflicts' => [],
         'suggests' => [],

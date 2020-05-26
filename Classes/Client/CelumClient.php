@@ -39,7 +39,7 @@ class CelumClient {
 
     public function __construct(array $config, $storage)
     {
-        $this->log = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);
         // Impossible to throw exceptions on invalid license, somehow there are instances created before the configuration is entered.

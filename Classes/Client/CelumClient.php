@@ -82,24 +82,41 @@ class CelumClient {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
             $id = $this->extractId($identifier);
-            $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children,assets&$select=id,name,children,assets', $this->options)->getBody();
-            if ($response) {
-                $response = json_decode($response, true);
-                $data = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
-                if (isset($response['children']) and count($response['children']) > 0) {
-                    foreach ($response['children'] as $child) {
-                        $data['children'][] = $identifier . $child['id'] . '/';
+            $continue = true;
+            $top = 200;
+            for ($skip = 0; $continue; $skip += $top) {
+                $continue = false;
+                $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children($select=id%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets', $this->options)->getBody();
+                if ($response) {
+                    $response = json_decode($response, true);
+                    if ($skip == 0)
+                        $data = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
+                    if (isset($response['children'])) {
+                        $c = count($response['children']);
+                        if ($c > 0) {
+                            foreach ($response['children'] as $child) {
+                                $data['children'][] = $identifier . $child['id'] . '/';
+                            }
+                            if ($c == $top)
+                                $continue = true;
+                        }
                     }
-                }
-                if (isset($response['assets']) and count($response['assets']) > 0) {
-                    foreach ($response['assets'] as $asset) {
-                        $data['assets'][] = $identifier . $asset['id'];
+                    if (isset($response['assets'])) {
+                        $c = count($response['assets']);
+                        if ($c > 0) {
+                            foreach ($response['assets'] as $asset) {
+                                $data['assets'][] = $identifier . $asset['id'];
+                            }
+                            if ($c == $top)
+                                $continue = true;
+                        }
                     }
+                } elseif ($skip == 0) {
+                    $this->cache->set($key, ['info' => null, 'children' => [], 'assets' => []], [], self::LIFE_TIME);
+                    return $this->cache->get($key);
                 }
-                $this->cache->set($key, $data, [], self::LIFE_TIME);
-            } else {
-                $this->cache->set($key, ['info' => null, 'children' => [], 'assets' => []], [], self::LIFE_TIME);
             }
+            $this->cache->set($key, $data, [], self::LIFE_TIME);
         }
         $this->log->debug("getFolderInfo($identifier): " . json_encode($this->cache->get($key)));
         return $this->cache->get($key);

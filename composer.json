@@ -5,10 +5,15 @@
   "keywords": [
     "celum", "dam", "brix", "fal"
   ],
+  "license": [
+    "GPL-2.0+"
+  ],
   "authors": [
     {
-      "name": "brix cross media",
-      "role": "Project Owner"
+      "name": "brix IT solutions",
+      "role": "Project Owner",
+      "email": "support@brix.ch",
+      "homepage": "https://www.brix.ch"
     }
   ],
   "require": {

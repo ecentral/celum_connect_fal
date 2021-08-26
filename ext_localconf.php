@@ -1,6 +1,7 @@
 <?php
 defined('TYPO3_MODE') or die('Access denied.');
 
+// Driver
 /** @var \TYPO3\CMS\Core\Resource\Driver\DriverRegistry $driverRegistry */
 $driverRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Driver\DriverRegistry::class);
 $driverRegistry->registerDriverClass(
@@ -10,23 +11,24 @@ $driverRegistry->registerDriverClass(
     'FILE:EXT:' . \Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY . '/Configuration/FlexForm/CelumDriverFlexForm.xml'
 );
 
+// Extractor
 \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::getInstance()->registerExtractionService(\Brix\CelumFal\Index\Extractor::class);
 
-// Caching framework
-if( !is_array($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] ) ) {
-    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] = array();
-}
-if( !isset($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY]['frontend'] ) ) {
-    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY]['frontend'] = \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class;
-}
-if( !isset($GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY]['options'] ) ) {
-    $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY]['options'] = array('defaultLifetime' => \Brix\CelumFal\Client\CelumClient::LIFE_TIME);
+// Caching
+$GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] = [
+        'frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class,
+        'options' => [
+            'defaultLifetime' => \Brix\CelumFal\Client\CelumClient::LIFE_TIME
+        ]
+    ];
+
+// Processor
+if (!isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['processors']['CelumImageProcessor'])) {
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['processors']['CelumImageProcessor'] = [
+        'className' => \Brix\CelumFal\Processor\CelumImageProcessor::class,
+        'before' => ['LocalImageProcessor'],
+    ];
 }
 
-/*
-$GLOBALS['TYPO3_CONF_VARS']['LOG']['Brix']['CelumFal']['writerConfiguration'] = array(
-    \TYPO3\CMS\Core\Log\LogLevel::DEBUG => array(
-        \TYPO3\CMS\Core\Log\Writer\FileWriter::class => array()
-    )
-);
-*/
+// Logging
+$GLOBALS['TYPO3_CONF_VARS']['LOG']['Brix']['CelumFal']['writerConfiguration'] = [\TYPO3\CMS\Core\Log\LogLevel::DEBUG => [\TYPO3\CMS\Core\Log\Writer\FileWriter::class => []]];

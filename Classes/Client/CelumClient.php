@@ -15,7 +15,6 @@ use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Resource\Exception;
 
 class CelumClient {
 
@@ -37,8 +36,7 @@ class CelumClient {
     private $options;
     private $format;
 
-    public function __construct(array $config, $storage)
-    {
+    public function __construct(array $config, $storage) {
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);
@@ -135,13 +133,21 @@ class CelumClient {
                         $height = $prop['value'];
                 }
                 if ($width and $height) {
-                    if ($this->format === 'prvw' and (($width > 1024) or ($height > 1024))) {
+                    $max = 0;
+                    if ($this->format === 'thmb') {
+                        $max = 250;
+                    } elseif ($this->format === 'prvw') {
+                        $max = 1024;
+                    } elseif ($this->format === 'largeprvw') {
+                        $max = 3000;
+                    }
+                    if (($max > 0) and (($width > $max) or ($height > $max))) {
                         if ($width > $height) {
-                            $height = intval($height * 1024 / $width);
-                            $width = 1024;
+                            $height = intval($height * $max / $width);
+                            $width = $max;
                         } else {
-                            $width = intval($width * 1024 / $height);
-                            $height = 1024;
+                            $width = intval($width * $max / $height);
+                            $height = $max;
                         }
                     }
                 } else {
@@ -174,19 +180,21 @@ class CelumClient {
                     else
                         $name .= $ext;
                 }
-                $this->cache->set($key, ['info' => [
-                    'identifier' => $identifier,
-                    'name' => $name,
-                    'storage' => $this->storage,
-                    'size' => $response['fileInformation']['originalFileSize'],
-                    'width' => $width,
-                    'height' => $height,
-                    'mimetype' =>  $type . '/' . $response['fileInformation']['fileExtension'],
-                    'ctime' => strtotime($response['modificationInformation']['creationDateTime']),
-                    'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime']),
-                ],
-//                    'preview' => $response['previewInformation']['previewUrl'],
-//                    'thumbnail' => $response['previewInformation']['thumbUrl'],
+                $this->cache->set($key, [
+                    'info' => [
+                        'identifier' => $identifier,
+                        'name' => $name,
+                        'title' => $name,
+                        'storage' => $this->storage,
+                        'size' => $response['fileInformation']['originalFileSize'],
+                        'width' => $width,
+                        'height' => $height,
+                        'mimetype' =>  $type . '/' . $response['fileInformation']['fileExtension'],
+                        'ctime' => strtotime($response['modificationInformation']['creationDateTime']),
+                        'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime']),
+                    ],
+                    'preview' => $response['previewInformation']['previewUrl'],
+                    'thumbnail' => $response['previewInformation']['thumbUrl'],
                     'publicUrl' => $publicUrl,
                     'extension' => $response['fileInformation']['fileExtension']
                 ], [], self::LIFE_TIME);
@@ -199,6 +207,10 @@ class CelumClient {
     }
 
     public function getUrl($identifier, $type='publicUrl') {
+        if (substr($identifier, 0, 5) === 'thumb') {
+            $type = 'thumbnail';
+            $identifier = substr($identifier, 5);
+        }
         $ret = $this->getFileInfo($identifier)[$type];
         $this->log->debug("getUrl($identifier, $type): $ret");
         return $ret;

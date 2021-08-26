@@ -4,7 +4,7 @@ $EM_CONF['celum_connect_fal'] = [
     'title' => 'celum:connect (FAL)',
     'description' => 'Provides a FAL driver for the CELUM DAM.',
     'category' => 'be',
-    'version' => '1.1.7',
+    'version' => '1.1.8',
     'state' => 'stable',
     'uploadfolder' => false,
     'createDirs' => '',
@@ -14,7 +14,7 @@ $EM_CONF['celum_connect_fal'] = [
     'author_company' => 'brix IT solutions',
     'constraints' => [
         'depends' => [
-            'typo3' => '8.7.0-10.4.99',
+            'typo3' => '>=8.7.0',
         ],
         'conflicts' => [],
         'suggests' => [],

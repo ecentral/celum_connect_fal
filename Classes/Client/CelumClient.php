@@ -18,7 +18,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CelumClient {
 
-    const LIFE_TIME = 30 * 60 - 10;
 	protected $celumUrl;
     protected $cora;
     protected $locale;
@@ -35,6 +34,7 @@ class CelumClient {
     private $client;
     private $options;
     private $format;
+    private $lifetime;
 
     public function __construct(array $config, $storage) {
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
@@ -58,6 +58,10 @@ class CelumClient {
         $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache(CelumDriver::EXTENSION_KEY);
         $this->client = new Client(['base_uri' => $this->cora]);
         $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']]];
+        $this->lifetime = intval($config['cacheLifetimeInMinutes']);
+        if (($this->lifetime <= 0) or ($this->lifetime >= 30))
+            $this->lifetime = 29;
+        $this->lifetime *= 60;
     }
 
     protected function extractId($identifier) {
@@ -110,11 +114,11 @@ class CelumClient {
                         }
                     }
                 } elseif ($skip == 0) {
-                    $this->cache->set($key, ['info' => null, 'children' => [], 'assets' => []], [], self::LIFE_TIME);
+                    $this->cache->set($key, ['info' => null, 'children' => [], 'assets' => []], [], $this->lifetime);
                     return $this->cache->get($key);
                 }
             }
-            $this->cache->set($key, $data, [], self::LIFE_TIME);
+            $this->cache->set($key, $data, [], $this->lifetime);
         }
         $this->log->debug("getFolderInfo($identifier): " . json_encode($this->cache->get($key)));
         return $this->cache->get($key);
@@ -197,9 +201,9 @@ class CelumClient {
                     'thumbnail' => $response['previewInformation']['thumbUrl'],
                     'publicUrl' => $publicUrl,
                     'extension' => $response['fileInformation']['fileExtension']
-                ], [], self::LIFE_TIME);
+                ], [], $this->lifetime);
             } else {
-                $this->cache->set($key, ['info' => null], [], self::LIFE_TIME);
+                $this->cache->set($key, ['info' => null], [], $this->lifetime);
             }
         }
         $this->log->debug("getFileInfo($identifier)" . json_encode($this->cache->get($key)));

@@ -114,6 +114,17 @@
                     </config>
                 </TCEforms>
             </publicURLsDescriptionVideo>
+            <cacheLifetimeInMinutes>
+                <TCEforms>
+                    <label>Cache lifetime in minutes (0 &lt; lifetime &lt; 30)</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>4</size>
+                        <default>29</default>
+                    </config>
+                </TCEforms>
+            </cacheLifetimeInMinutes>
         </el>
     </ROOT>
 </T3DataStructure>

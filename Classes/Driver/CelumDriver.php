@@ -519,6 +519,38 @@ class CelumDriver implements DriverInterface {
         else
             $ret = self::$client->getFolderInfo($folderIdentifier)['assets'];
         //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
+        if (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp')) {
+            if ($sortRev)
+                return array_reverse($ret);
+            else
+                return $ret;
+        } else {
+            $data = [];
+            foreach($ret as $id)
+                $data[] = self::$client->getFileInfo($id);
+            usort($data, function ($a, $b) use ($sortRev, $sort) {
+                if ($sort == 'fileext') {
+                    $a = $a['extension'];
+                    $b = $b['extension'];
+                    return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
+                } elseif ($sort == 'tstamp') {
+                    $a = $a['info']['ctime'];
+                    $b = $b['info']['ctime'];
+                    return $a <=> $b;
+                } elseif ($sort == 'name') {
+                    $a = $a['info']['name'];
+                    $b = $b['info']['name'];
+                    return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
+                } else { // size
+                    $a = $a['info']['size'];
+                    $b = $b['info']['size'];
+                    return $a <=> $b;
+                }
+            });
+            $ret = [];
+            foreach ($data as $d)
+                $ret[] = $d['info']['identifier'];
+        }
         return $ret;
     }
 
@@ -559,6 +591,24 @@ class CelumDriver implements DriverInterface {
             $ret = array_slice(self::$client->getFolderInfo($folderIdentifier)['children'], $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
         else
             $ret = self::$client->getFolderInfo($folderIdentifier)['children'];
+        if ($sort != 'name') {
+            if ($sortRev)
+                return array_reverse($ret);
+            else
+                return $ret;
+        } else {
+            $data = [];
+            foreach($ret as $id)
+                $data[] = self::$client->getFileInfo($id);
+            usort($data, function ($a, $b) use ($sortRev, $sort) {
+                $a = $a['info']['name'];
+                $b = $b['info']['name'];
+                return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
+            });
+            $ret = [];
+            foreach ($data as $d)
+                $ret[] = $d['info']['identifier'];
+        }
         //$this->log->debug("$this->instance: getFoldersInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($folderNameFilterCallbacks) . "$sort, $sortRev): " . json_encode($ret));
         return $ret;
     }

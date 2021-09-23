@@ -599,7 +599,7 @@ class CelumDriver implements DriverInterface {
         } else {
             $data = [];
             foreach($ret as $id)
-                $data[] = self::$client->getFileInfo($id);
+                $data[] = self::$client->getFolderInfo($id);
             usort($data, function ($a, $b) use ($sortRev, $sort) {
                 $a = $a['info']['name'];
                 $b = $b['info']['name'];

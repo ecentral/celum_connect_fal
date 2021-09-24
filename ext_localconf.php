@@ -18,7 +18,7 @@ $driverRegistry->registerDriverClass(
 $GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] = [
         'frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class,
         'options' => [
-            'defaultLifetime' => \Brix\CelumFal\Client\CelumClient::LIFE_TIME
+            'defaultLifetime' => 29 * 60
         ]
     ];
 

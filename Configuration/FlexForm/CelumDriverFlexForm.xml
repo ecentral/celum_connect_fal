@@ -74,6 +74,44 @@
                     </config>
                 </TCEforms>
             </directDownloadSecret>
+            <infoFieldSetterToken>
+                <TCEforms>
+                    <label>Token for the infoFieldSetter (required to write public URLs and for bullets)</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </infoFieldSetterToken>
+            <writePublicUrls>
+                <TCEforms>
+                    <label>Write public URLs (uncheck to only use bullets)</label>
+                    <config>
+                        <type>check</type>
+                    </config>
+                </TCEforms>
+            </writePublicUrls>
+            <informationFieldId>
+                <TCEforms>
+                    <label>Information field ID (checkbox or noderef, required for bullets)</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </informationFieldId>
+            <nodeId>
+                <TCEforms>
+                    <label>Node ID (node id to add to nodeRef field, if empty checkbox assumed)</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </nodeId>
             <publicURLsProviderImage>
                 <TCEforms>
                     <label>PublicUrls Provider for Images</label>

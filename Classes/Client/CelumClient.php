@@ -40,6 +40,9 @@ class CelumClient {
     private $writePublicUrls;
     private $infoFieldId;
     private $nodeId;
+    private $descriptionFieldName;
+    private $alternativeFieldName;
+    private $fieldSelect = '';
 
     public function __construct(array $config, $storage) {
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
@@ -68,9 +71,15 @@ class CelumClient {
             $this->lifetime = 29;
         $this->lifetime *= 60;
         $this->token = $config['infoFieldSetterToken'];
-        $this->writePublicUrls = ['writePublicUrls'];
-        $this->infoFieldId = ['informationFieldId'];
-        $this->nodeId = ['nodeId'];
+        $this->writePublicUrls = $config['writePublicUrls'];
+        $this->infoFieldId = $config['informationFieldId'];
+        $this->nodeId = $config['nodeId'];
+        $this->descriptionFieldName = $config['descriptionFieldName'];
+        if ($this->descriptionFieldName)
+            $this->fieldSelect .= ',informationFieldValues/' . $this->descriptionFieldName;
+        $this->alternativeFieldName = $config['alternativeTextFieldName'];
+        if ($this->alternativeFieldName)
+            $this->fieldSelect .= ',informationFieldValues/' . $this->alternativeFieldName;
     }
 
     protected function extractId($identifier) {
@@ -103,7 +112,7 @@ class CelumClient {
             $top = 200;
             for ($skip = 0; $continue; $skip += $top) {
                 $continue = false;
-                $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets', $this->options)->getBody();
+                $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets', $this->options)->getBody();
                 if ($response) {
                     $response = json_decode($response, true);
                     if ($skip == 0)
@@ -155,7 +164,7 @@ class CelumClient {
     public function getFileInfo($identifier) {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
-            $response = $this->client->request('GET', 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', $this->options)->getBody();
+            $response = $this->client->request('GET', 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '&$expand=publicUrls', $this->options)->getBody();
             if ($response) {
                 $response = json_decode($response, true);
                 $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->lifetime);
@@ -233,6 +242,8 @@ class CelumClient {
                 'size' => $arr['fileInformation']['originalFileSize'],
                 'width' => $width,
                 'height' => $height,
+                'description' => $this->getInfoFieldValue($this->descriptionFieldName, $arr),
+                'alternative' => $this->getInfoFieldValue($this->alternativeFieldName, $arr),
                 'mimetype' => $type . '/' . $arr['fileInformation']['fileExtension'],
                 'ctime' => strtotime($arr['modificationInformation']['creationDateTime']),
                 'mtime' => strtotime($arr['modificationInformation']['lastModificationDateTime']),
@@ -242,6 +253,19 @@ class CelumClient {
             'publicUrl' => $publicUrl,
             'extension' => $arr['fileInformation']['fileExtension']
         ];
+    }
+
+    private function getInfoFieldValue($name, $arr) {
+        if (!$arr['informationFieldValues'])
+            return '';
+        $val = $arr['informationFieldValues'][$name];
+        if (!$val)
+            return '';
+        if (is_array($val)) {
+            $v = $this->extractName($val);
+            return $v == null ? '' : $v;
+        } else
+            return $val;
     }
 
     function addPublicUrl($identifier, $url, $description) {

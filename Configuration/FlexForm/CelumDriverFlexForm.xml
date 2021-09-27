@@ -74,6 +74,26 @@
                     </config>
                 </TCEforms>
             </directDownloadSecret>
+            <descriptionFieldName>
+                <TCEforms>
+                    <label>Description field name ([localized] text [area])</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </descriptionFieldName>
+            <alternativeTextFieldName>
+                <TCEforms>
+                    <label>Alternative text field name ([localized] text [area])</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                    </config>
+                </TCEforms>
+            </alternativeTextFieldName>
             <infoFieldSetterToken>
                 <TCEforms>
                     <label>Token for the infoFieldSetter (required to write public URLs and for bullets)</label>

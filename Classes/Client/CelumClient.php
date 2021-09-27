@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
 
 class CelumClient {
 
@@ -137,7 +138,7 @@ class CelumClient {
                         }
                     }
                 } elseif ($skip == 0) {
-                    $this->cache->set($key, ['info' => null, 'children' => [], 'assets' => []], [], $this->lifetime);
+                    $this->cache->set($key, ['info' => null, 'children' => [], 'assets' => []], [], 60);
                     return $this->cache->get($key);
                 }
             }

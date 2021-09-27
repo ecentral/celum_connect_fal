@@ -89,6 +89,7 @@
                     <label>Write public URLs (uncheck to only use bullets)</label>
                     <config>
                         <type>check</type>
+                        <default>1</default>
                     </config>
                 </TCEforms>
             </writePublicUrls>

@@ -37,6 +37,10 @@ class CelumClient {
     private $options;
     private $format;
     private $lifetime;
+    private $token;
+    private $writePublicUrls;
+    private $infoFieldId;
+    private $nodeId;
 
     public function __construct(array $config, $storage) {
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
@@ -64,6 +68,10 @@ class CelumClient {
         if (($this->lifetime <= 0) or ($this->lifetime >= 30))
             $this->lifetime = 29;
         $this->lifetime *= 60;
+        $this->token = $config['infoFieldSetterToken'];
+        $this->writePublicUrls = ['writePublicUrls'];
+        $this->infoFieldId = ['informationFieldId'];
+        $this->nodeId = ['nodeId'];
     }
 
     protected function extractId($identifier) {
@@ -207,11 +215,62 @@ class CelumClient {
                     'extension' => $response['fileInformation']['fileExtension']
                 ], [], $this->lifetime);
             } else {
-                $this->cache->set($key, ['info' => null], [], $this->lifetime);
+                $this->cache->set($key, ['info' => null], [], 60); // short cache on error
             }
         }
         $this->log->debug("getFileInfo($identifier)" . json_encode($this->cache->get($key)));
         return $this->cache->get($key);
+    }
+
+    // TODO waiting for support about filter
+    /*
+    public function getFilesInFolder($identifier) {
+        $key = 'fif_' . str_replace('/', '_', $identifier);
+        if (!$this->cache->has($key)) {
+            $id = $this->extractId($identifier);
+            $response = $this->client->request('GET', 'Assets?$filter=...&$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', $this->options)->getBody();
+            if ($response) {
+
+            } else {
+                $this->cache->set($key, [], [], 60);
+            }
+        }
+        return $this->cache->get($key);
+    }
+    */
+
+    function addPublicUrl($identifier, $url, $description) {
+        if (!$this->token)
+            return;
+        $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier);
+        if ($this->writePublicUrls) {
+            $url .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=' . urlencode($url);
+        }
+        if ($this->infoFieldId) {
+            if ($this->nodeId) {
+                $url .= '&noderef-' . $this->infoFieldId . '=' . $this->nodeId;
+            } else {
+                $url .= '&info-' . $this->infoFieldId . '=true';
+            }
+        }
+        $this->client->request('POST', $url);
+    }
+
+    function deletePublicUrl($identifier, $description, $stillUsed) {
+        if (!$this->token)
+            return;
+        $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier);
+        if ($this->writePublicUrls) {
+            $url .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=delete';
+        }
+        if ($this->infoFieldId and !$stillUsed) {
+            if ($this->nodeId) {
+                $url .= '&noderef-' . $this->infoFieldId . '-remove=' . $this->nodeId;
+            } else {
+                $url .= '&info-' . $this->infoFieldId . '=false';
+            }
+        }
+        $this->client->request('POST', $url);
     }
 
     public function getUrl($identifier, $type='publicUrl') {

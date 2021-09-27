@@ -15,6 +15,8 @@ use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class CelumClient {
 
@@ -187,6 +189,8 @@ class CelumClient {
                 $this->cache->set($key, [
                     'info' => [
                         'identifier' => $identifier,
+                        'identifier_hash' => sha1($identifier),
+                        'folder_hash' => sha1(PathUtility::dirname($identifier)),
                         'name' => $name,
                         'title' => $name,
                         'storage' => $this->storage,

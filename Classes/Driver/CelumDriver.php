@@ -9,14 +9,16 @@
 namespace Brix\CelumFal\Driver;
 
 use Brix\CelumFal\Client\CelumClient;
+use TYPO3\CMS\Core\Resource\Driver\AbstractHierarchicalFilesystemDriver;
 use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
 use TYPO3\CMS\Core\Resource\Exception;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
-class CelumDriver implements DriverInterface {
+class CelumDriver extends AbstractHierarchicalFilesystemDriver {
 
     const EXTENSION_KEY = 'celum_connect_fal';
     const DRIVER_TYPE = 'BrixCelumDriver';
@@ -34,11 +36,13 @@ class CelumDriver implements DriverInterface {
     protected $storageUid;
 
     public function __construct(array $configuration = []) {
+        parent::__construct($configuration);
+
         $this->configuration = $configuration;
         $this->instance = rand();
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("$this->instance: __construct(" . json_encode($configuration) . ")");
-        $this->capabilities = ResourceStorage::CAPABILITY_BROWSABLE | ResourceStorage::CAPABILITY_PUBLIC;
+        $this->capabilities = ResourceStorage::CAPABILITY_BROWSABLE | ResourceStorage::CAPABILITY_PUBLIC | ResourceStorage::CAPABILITY_HIERARCHICAL_IDENTIFIERS;
     }
 
     /**
@@ -367,9 +371,12 @@ class CelumDriver implements DriverInterface {
      * @throws Exception
      */
     public function fileExistsInFolder($fileName, $folderIdentifier) {
-        //$this->log->debug("$this->instance: fileExistsInFolder($fileName, $folderIdentifier)");
-        throw new Exception('Only requests by identifier are supported.');
-        //return in_array($fileName, self::$client->getFolderInfo($folderIdentifier)['assetNames']);
+        return true;
+        $files = $this->getFilesInFolder($folderIdentifier);
+        DebuggerUtility::var_dump($files);
+        DebuggerUtility::var_dump($fileName);
+        DebuggerUtility::var_dump($folderIdentifier);
+       die();
     }
 
     /**

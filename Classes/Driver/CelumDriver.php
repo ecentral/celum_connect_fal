@@ -10,13 +10,11 @@ namespace Brix\CelumFal\Driver;
 
 use Brix\CelumFal\Client\CelumClient;
 use TYPO3\CMS\Core\Resource\Driver\AbstractHierarchicalFilesystemDriver;
-use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
 use TYPO3\CMS\Core\Resource\Exception;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class CelumDriver extends AbstractHierarchicalFilesystemDriver {
 
@@ -372,11 +370,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function fileExistsInFolder($fileName, $folderIdentifier) {
         return true;
-        $files = $this->getFilesInFolder($folderIdentifier);
-        DebuggerUtility::var_dump($files);
-        DebuggerUtility::var_dump($fileName);
-        DebuggerUtility::var_dump($folderIdentifier);
-       die();
     }
 
     /**

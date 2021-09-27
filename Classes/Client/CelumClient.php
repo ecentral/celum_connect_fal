@@ -225,6 +225,8 @@ class CelumClient {
         return [
             'info' => [
                 'identifier' => $identifier,
+                'identifier_hash' => sha1($identifier),
+                'folder_hash' => sha1(PathUtility::dirname($identifier)),
                 'name' => $name,
                 'title' => $name,
                 'storage' => $this->storage,

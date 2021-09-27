@@ -88,15 +88,21 @@ class CelumClient {
         return $default;
     }
 
-    public function getFolderInfo($identifier) {
+    // returns an array of the value selected for extraction or the folder info itself if nothing is specified
+    // extract: 'filename', 'foldername', 'file', 'folder'
+    public function getFolderInfo($identifier, $extract = '') {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
+            $filenames = [];
+            $foldernames = [];
+            $files = [];
+            $folders = [];
             $id = $this->extractId($identifier);
             $continue = true;
             $top = 200;
             for ($skip = 0; $continue; $skip += $top) {
                 $continue = false;
-                $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children($select=id%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets', $this->options)->getBody();
+                $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets', $this->options)->getBody();
                 if ($response) {
                     $response = json_decode($response, true);
                     if ($skip == 0)
@@ -105,7 +111,11 @@ class CelumClient {
                         $c = count($response['children']);
                         if ($c > 0) {
                             foreach ($response['children'] as $child) {
-                                $data['children'][] = $identifier . $child['id'] . '/';
+                                $fi = $identifier . $child['id'] . '/';
+                                $n = $this->extractName($child['name']);
+                                $data['children'][] = $fi;
+                                $foldernames[$n] = $fi;
+                                $folders[] = ['name' => $n, 'identifier' => $fi];
                             }
                             if ($c == $top)
                                 $continue = true;
@@ -115,7 +125,12 @@ class CelumClient {
                         $c = count($response['assets']);
                         if ($c > 0) {
                             foreach ($response['assets'] as $asset) {
-                                $data['assets'][] = $identifier . $asset['id'];
+                                $fi = $identifier . $asset['id'];
+                                $data['assets'][] = $fi;
+                                $a = $this->toAsset($asset, $fi);
+                                $this->cache->set($key . $asset['id'], $a, [], $this->lifetime);
+                                $files[] = $a;
+                                $filenames[$a['info']['name']] = $fi;
                             }
                             if ($c == $top)
                                 $continue = true;
@@ -127,9 +142,13 @@ class CelumClient {
                 }
             }
             $this->cache->set($key, $data, [], $this->lifetime);
+            $this->cache->set($key . 'file', $files, [], $this->lifetime);
+            $this->cache->set($key . 'filename', $filenames, [], $this->lifetime);
+            $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
+            $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
         }
-        $this->log->debug("getFolderInfo($identifier): " . json_encode($this->cache->get($key)));
-        return $this->cache->get($key);
+        $this->log->debug("getFolderInfo($identifier, $extract): " . json_encode($this->cache->get($key . $extract)));
+        return $this->cache->get($key . $extract);
     }
 
     public function getFileInfo($identifier) {
@@ -138,78 +157,7 @@ class CelumClient {
             $response = $this->client->request('GET', 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', $this->options)->getBody();
             if ($response) {
                 $response = json_decode($response, true);
-                foreach ($response['fileProperties'] as $prop) {
-                    if ($prop['name'] === 'width')
-                        $width = $prop['value'];
-                    elseif ($prop['name'] === 'height')
-                        $height = $prop['value'];
-                }
-                if ($width and $height) {
-                    $max = 0;
-                    if ($this->format === 'thmb') {
-                        $max = 250;
-                    } elseif ($this->format === 'prvw') {
-                        $max = 1024;
-                    } elseif ($this->format === 'largeprvw') {
-                        $max = 3000;
-                    }
-                    if (($max > 0) and (($width > $max) or ($height > $max))) {
-                        if ($width > $height) {
-                            $height = intval($height * $max / $width);
-                            $width = $max;
-                        } else {
-                            $width = intval($width * $max / $height);
-                            $height = $max;
-                        }
-                    }
-                } else {
-                    $width = 0;
-                    $height = 0;
-                }
-                $publicUrl = false;
-                $type = $response['fileCategory'];
-                if (($type == 'image') or ($type == 'video')) {
-                    // echo $this->description . " " . $this->provider . " " . json_encode($response['publicUrls']) . "; ";
-                    foreach ($response['publicUrls'] as $purl) {
-                        if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type]))
-                            $publicUrl = $purl['url'];
-                    }
-                }
-                if (!$publicUrl) {
-                    $id = $this->extractId($identifier);
-                    $publicUrl = $this->directDownload . $id;
-                    if ($this->secret)
-                        $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
-                }
-                $name = $response['name'];
-                if ($this->format === 'prvw' or $this->format === 'largeprvw' or $this->format === 'thumb')
-                    $ext = '.jpg';
-                else
-                    $ext = '.' . $response['fileInformation']['fileExtension'];
-                if (substr($name, -strlen($ext)) !== $ext) {
-                    if (substr($name, -1) === '.')
-                        $name .= substr($ext, 1);
-                    else
-                        $name .= $ext;
-                }
-                $this->cache->set($key, [
-                    'info' => [
-                        'identifier' => $identifier,
-                        'name' => $name,
-                        'title' => $name,
-                        'storage' => $this->storage,
-                        'size' => $response['fileInformation']['originalFileSize'],
-                        'width' => $width,
-                        'height' => $height,
-                        'mimetype' =>  $type . '/' . $response['fileInformation']['fileExtension'],
-                        'ctime' => strtotime($response['modificationInformation']['creationDateTime']),
-                        'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime']),
-                    ],
-                    'preview' => $response['previewInformation']['previewUrl'],
-                    'thumbnail' => $response['previewInformation']['thumbUrl'],
-                    'publicUrl' => $publicUrl,
-                    'extension' => $response['fileInformation']['fileExtension']
-                ], [], $this->lifetime);
+                $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->lifetime);
             } else {
                 $this->cache->set($key, ['info' => null], [], 60); // short cache on error
             }
@@ -218,22 +166,80 @@ class CelumClient {
         return $this->cache->get($key);
     }
 
-    // TODO waiting for support about filter
-    /*
-    public function getFilesInFolder($identifier) {
-        $key = 'fif_' . str_replace('/', '_', $identifier);
-        if (!$this->cache->has($key)) {
-            $id = $this->extractId($identifier);
-            $response = $this->client->request('GET', 'Assets?$filter=...&$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory&$expand=publicUrls', $this->options)->getBody();
-            if ($response) {
-
-            } else {
-                $this->cache->set($key, [], [], 60);
+    private function toAsset(&$arr, $identifier) {
+        foreach ($arr['fileProperties'] as $prop) {
+            if ($prop['name'] === 'width')
+                $width = $prop['value'];
+            elseif ($prop['name'] === 'height')
+                $height = $prop['value'];
+        }
+        if ($width and $height) {
+            $max = 0;
+            if ($this->format === 'thmb') {
+                $max = 250;
+            } elseif ($this->format === 'prvw') {
+                $max = 1024;
+            } elseif ($this->format === 'largeprvw') {
+                $max = 3000;
+            }
+            if (($max > 0) and (($width > $max) or ($height > $max))) {
+                if ($width > $height) {
+                    $height = intval($height * $max / $width);
+                    $width = $max;
+                } else {
+                    $width = intval($width * $max / $height);
+                    $height = $max;
+                }
+            }
+        } else {
+            $width = 0;
+            $height = 0;
+        }
+        $publicUrl = false;
+        $type = $arr['fileCategory'];
+        if (($type == 'image') or ($type == 'video')) {
+            // echo $this->description . " " . $this->provider . " " . json_encode($response['publicUrls']) . "; ";
+            foreach ($arr['publicUrls'] as $purl) {
+                if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type]))
+                    $publicUrl = $purl['url'];
             }
         }
-        return $this->cache->get($key);
+        if (!$publicUrl) {
+            $id = $this->extractId($identifier);
+            $publicUrl = $this->directDownload . $id;
+            if ($this->secret)
+                $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
+        }
+        $name = $arr['name'];
+        if ($this->format === 'prvw' or $this->format === 'largeprvw' or $this->format === 'thumb')
+            $ext = '.jpg';
+        else
+            $ext = '.' . $arr['fileInformation']['fileExtension'];
+        if (substr($name, -strlen($ext)) !== $ext) {
+            if (substr($name, -1) === '.')
+                $name .= substr($ext, 1);
+            else
+                $name .= $ext;
+        }
+        return [
+            'info' => [
+                'identifier' => $identifier,
+                'name' => $name,
+                'title' => $name,
+                'storage' => $this->storage,
+                'size' => $arr['fileInformation']['originalFileSize'],
+                'width' => $width,
+                'height' => $height,
+                'mimetype' => $type . '/' . $arr['fileInformation']['fileExtension'],
+                'ctime' => strtotime($arr['modificationInformation']['creationDateTime']),
+                'mtime' => strtotime($arr['modificationInformation']['lastModificationDateTime']),
+            ],
+            'preview' => $arr['previewInformation']['previewUrl'],
+            'thumbnail' => $arr['previewInformation']['thumbUrl'],
+            'publicUrl' => $publicUrl,
+            'extension' => $arr['fileInformation']['fileExtension']
+        ];
     }
-    */
 
     function addPublicUrl($identifier, $url, $description) {
         if (!$this->token)

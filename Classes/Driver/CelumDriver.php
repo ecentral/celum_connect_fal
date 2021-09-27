@@ -491,7 +491,7 @@ class CelumDriver implements DriverInterface {
      */
     public function getFileInFolder($fileName, $folderIdentifier) {
         //$this->log->debug("$this->instance: getFileInFolder($fileName, $folderIdentifier)");
-        throw new Exception('Only requests by identifier are supported.');
+        return self::$client->getFolderInfo($folderIdentifier, 'filename')[$fileName];
     }
 
     /**
@@ -512,22 +512,16 @@ class CelumDriver implements DriverInterface {
      */
     public function getFilesInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $filenameFilterCallbacks = [], $sort = '', $sortRev = false) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        if ($folderIdentifier == self::ROOT_FOLDER_IDENTIFIER)
+        if ($folderIdentifier == self::ROOT_FOLDER_IDENTIFIER) {
             $ret = [];
-        elseif (($start > 0) or ($numberOfItems > 0))
+        } elseif (($start > 0) or ($numberOfItems > 0)) {
             $ret = array_slice(self::$client->getFolderInfo($folderIdentifier)['assets'], $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
-        else
+        } elseif (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp')) {
             $ret = self::$client->getFolderInfo($folderIdentifier)['assets'];
-        //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
-        if (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp')) {
             if ($sortRev)
-                return array_reverse($ret);
-            else
-                return $ret;
+                $ret = array_reverse($ret);
         } else {
-            $data = [];
-            foreach($ret as $id)
-                $data[] = self::$client->getFileInfo($id);
+            $data = self::$client->getFolderInfo($folderIdentifier, 'file');
             usort($data, function ($a, $b) use ($sortRev, $sort) {
                 if ($sort == 'fileext') {
                     $a = $a['extension'];
@@ -551,6 +545,7 @@ class CelumDriver implements DriverInterface {
             foreach ($data as $d)
                 $ret[] = $d['info']['identifier'];
         }
+        //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
         return $ret;
     }
 
@@ -564,7 +559,7 @@ class CelumDriver implements DriverInterface {
      */
     public function getFolderInFolder($folderName, $folderIdentifier) {
         //$this->log->debug("$this->instance: getFolderInFolder($folderName, $folderIdentifier)");
-        throw new Exception('Only requests by identifier are supported.');
+        return self::$client->getFolderInfo($folderIdentifier, 'foldername')[$folderName];
     }
 
     /**
@@ -597,9 +592,7 @@ class CelumDriver implements DriverInterface {
             else
                 return $ret;
         } else {
-            $data = [];
-            foreach($ret as $id)
-                $data[] = self::$client->getFolderInfo($id);
+            $data = self::$client->getFolderInfo($folderIdentifier, 'folder');
             usort($data, function ($a, $b) use ($sortRev, $sort) {
                 $a = $a['info']['name'];
                 $b = $b['info']['name'];

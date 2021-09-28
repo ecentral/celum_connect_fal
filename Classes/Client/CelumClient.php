@@ -314,7 +314,7 @@ class CelumClient {
     function deletePublicUrl($identifier, $description, $stillUsed) {
         if (!$this->token)
             return;
-        $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier);
+        $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
         if ($this->writePublicUrls) {
             $url .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=delete';
         }

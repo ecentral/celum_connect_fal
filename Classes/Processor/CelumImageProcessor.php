@@ -60,7 +60,7 @@ class CelumImageProcessor implements ProcessorInterface {
             $task->getTargetFile()->setUsesOriginalFile();
         } else {
             $id = 'thumb' . $id;
-            $storage = $task->getSourceFile()->getStorage();
+            $storage = $task->getSourceFile()->getStorage()->getProcessingFolder()->getStorage();
             $task->getTargetFile()->setName($task->getTargetFileName());
             $task->getTargetFile()->setIdentifier($id);
             $task->getTargetFile()->setStorage($storage);

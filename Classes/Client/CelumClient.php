@@ -297,18 +297,18 @@ class CelumClient {
     function addPublicUrl($identifier, $url, $description) {
         if (!$this->token)
             return;
-        $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier);
+        $clientUrl = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier);
         if ($this->writePublicUrls) {
-            $url .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=' . urlencode($url);
+            $clientUrl .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=' . urlencode($url);
         }
         if ($this->infoFieldId) {
             if ($this->nodeId) {
-                $url .= '&noderef-' . $this->infoFieldId . '=' . $this->nodeId;
+                $clientUrl .= '&noderef-' . $this->infoFieldId . '=' . $this->nodeId;
             } else {
-                $url .= '&info-' . $this->infoFieldId . '=true';
+                $clientUrl .= '&info-' . $this->infoFieldId . '=true';
             }
         }
-        $this->client->request('POST', $url);
+        $this->client->request('POST', $clientUrl);
     }
 
     function deletePublicUrl($identifier, $description, $stillUsed) {

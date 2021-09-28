@@ -106,9 +106,9 @@ class CelumClient {
     // extract: 'filename', 'foldername', 'file', 'folder'
     // storage id only required for root folder
     public function getFolderInfo($identifier, $extract = '') {
-        $semaphore = sem_get(($identifier == '/' ? 0 : intval($this->extractId($identifier))) + 10); // 1 seems to be used by TYPO3
-        sem_acquire($semaphore);
-        try {
+        //$semaphore = sem_get(($identifier == '/' ? 0 : intval($this->extractId($identifier))) + 10); // 1 seems to be used by TYPO3
+        //sem_acquire($semaphore);
+        //try {
             $key = str_replace('/', '_', $identifier);
             if (!$this->cache->has($key)) {
                 if ($identifier == '/') {
@@ -182,9 +182,9 @@ class CelumClient {
             }
             $this->log->debug("getFolderInfo($identifier, $extract): " . json_encode($this->cache->get($key . $extract)));
             return $this->cache->get($key . $extract);
-        } finally {
-            sem_release($semaphore);
-        }
+        //} finally {
+        //    sem_release($semaphore);
+        //}
     }
 
     public function getFileInfo($identifier) {

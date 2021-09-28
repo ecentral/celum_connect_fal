@@ -112,7 +112,7 @@ class CelumClient {
             $key = str_replace('/', '_', $identifier);
             if (!$this->cache->has($key)) {
                 if ($identifier == '/') {
-                    $this->cache->set($key, ['identifier' => '/', 'name' => 'CELUM', 'storage' => $this->storage, 'assets' => [], 'children' => $this->roots], [], $this->lifetime);
+                    $this->cache->set($key, ['info' => ['identifier' => '/', 'name' => 'CELUM', 'storage' => $this->storage], 'assets' => [], 'children' => $this->roots], [], $this->lifetime);
                     $this->cache->set($key . 'file', [], [], $this->lifetime);
                     $this->cache->set($key . 'filename', [], [], $this->lifetime);
                     $folders = [];

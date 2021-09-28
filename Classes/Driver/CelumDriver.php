@@ -20,14 +20,11 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
 
     const EXTENSION_KEY = 'celum_connect_fal';
     const DRIVER_TYPE = 'BrixCelumDriver';
-    const ROOT_FOLDER_IDENTIFIER = '/';
-    const ROOT_FOLDER_NAME = 'Celum';
 
     /** @var $client CelumClient */
     public static $client;
     /** @var Logger */
     protected $log;
-    protected $roots;
     protected $instance;
     protected $capabilities;
     protected $configuration;
@@ -48,9 +45,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function processConfiguration() {
         //$this->log->debug("$this->instance: processConfiguration()");
-        $this->roots = preg_split('/\\s*,\\s*/', trim($this->configuration['roots']));
-        foreach ($this->roots as $key => $val)
-            $this->roots[$key] = "/$val/";
     }
 
     /**
@@ -473,10 +467,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function getFolderInfoByIdentifier($folderIdentifier) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        if ($folderIdentifier == self::ROOT_FOLDER_IDENTIFIER)
-            $ret = ['identifier' => self::ROOT_FOLDER_IDENTIFIER, 'name' => self::ROOT_FOLDER_NAME, 'storage' => $this->storageUid];
-        else
-            $ret = self::$client->getFolderInfo($folderIdentifier)['info'];
+        $ret = self::$client->getFolderInfo($folderIdentifier)['info'];
         //$this->log->debug("$this->instance: getFolderInfoByIdentifier($folderIdentifier): " . json_encode($ret));
         return $ret;
     }
@@ -512,9 +503,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function getFilesInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $filenameFilterCallbacks = [], $sort = '', $sortRev = false) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        if ($folderIdentifier == self::ROOT_FOLDER_IDENTIFIER) {
-            $ret = [];
-        } elseif (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp')) {
+        if (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp')) {
             $ret = self::$client->getFolderInfo($folderIdentifier)['assets'];
             if ($sortRev)
                 $ret = array_reverse($ret);
@@ -580,17 +569,10 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function getFoldersInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $folderNameFilterCallbacks = [], $sort = '', $sortRev = false) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        if ($folderIdentifier == self::ROOT_FOLDER_IDENTIFIER)
-            $ret = $this->roots;
-        elseif (($start > 0) or ($numberOfItems > 0))
-            $ret = array_slice(self::$client->getFolderInfo($folderIdentifier)['children'], $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
-        else
-            $ret = self::$client->getFolderInfo($folderIdentifier)['children'];
         if ($sort != 'name') {
+            $ret = self::$client->getFolderInfo($folderIdentifier)['children'];
             if ($sortRev)
-                return array_reverse($ret);
-            else
-                return $ret;
+                $ret =  array_reverse($ret);
         } else {
             $data = self::$client->getFolderInfo($folderIdentifier, 'folder');
             usort($data, function ($a, $b) use ($sortRev, $sort) {
@@ -602,6 +584,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
             foreach ($data as $d)
                 $ret[] = $d['info']['identifier'];
         }
+        if (($start > 0) or ($numberOfItems > 0))
+            $ret = array_slice($ret, $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
         //$this->log->debug("$this->instance: getFoldersInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($folderNameFilterCallbacks) . "$sort, $sortRev): " . json_encode($ret));
         return $ret;
     }

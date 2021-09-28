@@ -77,7 +77,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function getRootLevelFolder() {
         //$this->log->debug("$this->instance: getRootLevelFolder(): " . self::ROOT_FOLDER_IDENTIFIER);
-        return self::ROOT_FOLDER_IDENTIFIER;
+        return '/';
     }
 
     /**
@@ -165,7 +165,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function folderExists($folderIdentifier) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        $ret = (($folderIdentifier === self::ROOT_FOLDER_IDENTIFIER) or ($this->getFolderInfoByIdentifier($folderIdentifier) !== null));
+        $ret = (($folderIdentifier === '/') or ($this->getFolderInfoByIdentifier($folderIdentifier) !== null));
         $this->log->debug("$this->instance: folderExists($folderIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }

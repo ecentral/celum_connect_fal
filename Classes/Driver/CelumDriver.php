@@ -576,13 +576,13 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
         } else {
             $data = self::$client->getFolderInfo($folderIdentifier, 'folder');
             usort($data, function ($a, $b) use ($sortRev, $sort) {
-                $a = $a['info']['name'];
-                $b = $b['info']['name'];
+                $a = $a['name'];
+                $b = $b['name'];
                 return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
             });
             $ret = [];
             foreach ($data as $d)
-                $ret[] = $d['info']['identifier'];
+                $ret[] = $d['identifier'];
         }
         if (($start > 0) or ($numberOfItems > 0))
             $ret = array_slice($ret, $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);

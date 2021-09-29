@@ -169,3 +169,4 @@ local.properties
  
 ### LibreOffice
 .~lock.*#
+!/Classes/Hooks/

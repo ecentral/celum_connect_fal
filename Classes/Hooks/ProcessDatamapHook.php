@@ -46,31 +46,29 @@ class ProcessDatamapHook
             ->execute();
             $references = $query->fetchAllAssociative();
         } else {
-            if ($status === 'delete' || $status === 'new') {
-                $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-                    ->getQueryBuilderForTable('sys_file_reference');
-                $queryBuilder->getRestrictions()->removeAll();
-                $query = $queryBuilder
-                    ->select('*')
-                    ->from('sys_file_reference')
-                    ->where(
-                        $queryBuilder->expr()->eq(
-                            'tablenames',
-                            $queryBuilder->createNamedParameter($table, Connection::PARAM_STR)
-                        ),
-                        $queryBuilder->expr()->eq(
-                            'table_local',
-                            $queryBuilder->createNamedParameter('sys_file', Connection::PARAM_STR)
-                        ),
-                        $queryBuilder->expr()->eq(
-                            'uid_foreign',
-                            $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
-                        ),
-                    )
-                    ->execute();
+            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getQueryBuilderForTable('sys_file_reference');
+            $queryBuilder->getRestrictions()->removeAll();
+            $query = $queryBuilder
+                ->select('*')
+                ->from('sys_file_reference')
+                ->where(
+                    $queryBuilder->expr()->eq(
+                        'tablenames',
+                        $queryBuilder->createNamedParameter($table, Connection::PARAM_STR)
+                    ),
+                    $queryBuilder->expr()->eq(
+                        'table_local',
+                        $queryBuilder->createNamedParameter('sys_file', Connection::PARAM_STR)
+                    ),
+                    $queryBuilder->expr()->eq(
+                        'uid_foreign',
+                        $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
+                    ),
+                )
+                ->execute();
 
-                $references = $query->fetchAllAssociative();
-            }
+            $references = $query->fetchAllAssociative();
         }
 
         foreach ($references as $sysFileReference) {

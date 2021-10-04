@@ -363,7 +363,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @throws Exception
      */
     public function fileExistsInFolder($fileName, $folderIdentifier) {
-        return true;
+        return array_key_exists($fileName, self::$client->getFolderInfo($folderIdentifier, 'filename'));
     }
 
     /**
@@ -376,8 +376,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function folderExistsInFolder($folderName, $folderIdentifier) {
         //$this->log->debug("$this->instance: folderExistsInFolder($folderName, $folderIdentifier)");
-        throw new Exception('Only requests by identifier are supported.');
-        //return in_array($folderName, self::$client->getFolderInfo($folderIdentifier)['childrenNames']);
+        return array_key_exists($folderName, self::$client->getFolderInfo($folderIdentifier, 'foldername'));
     }
 
     /**

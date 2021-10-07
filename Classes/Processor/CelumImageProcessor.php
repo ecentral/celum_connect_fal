@@ -23,7 +23,7 @@ class CelumImageProcessor implements ProcessorInterface {
     public function canProcessTask(TaskInterface $task) {
         $this->log->debug("canProcessTask(" . json_encode($task) . ")");
         return ($task->getName() === 'Preview') and
-            $task->getSourceFile()->getStorage()->getDriverType() === CelumDriver::DRIVER_TYPE;
+            ($task->getSourceFile()->getStorage()->getDriverType() === CelumDriver::DRIVER_TYPE);
     }
 
     public function processTask(TaskInterface $task) {

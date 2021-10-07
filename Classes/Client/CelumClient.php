@@ -50,7 +50,7 @@ class CelumClient {
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);
         // Impossible to throw exceptions on invalid license, somehow there are instances created before the configuration is entered.
-        if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and $matches[2] > time()) {
+        if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
             $this->celumUrl = rtrim($matches[1]);
         } else {
             return;

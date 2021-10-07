@@ -439,7 +439,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
     public function isWithin($folderIdentifier, $identifier) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $id = rtrim($identifier, '/\\') . '/';
-        $ret = ($identifier and strpos($id, $folderIdentifier) === 0);
+        $ret = ($identifier and (strpos($id, $folderIdentifier) === 0));
         $this->log->debug("$this->instance: isWithin($folderIdentifier, $identifier): " . $ret ? 'true' : 'false');
         return $ret;
     }
@@ -502,10 +502,15 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function getFilesInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $filenameFilterCallbacks = [], $sort = '', $sortRev = false) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        if (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp')) {
+        if ($recursive or (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp'))) {
             $ret = self::$client->getFolderInfo($folderIdentifier)['assets'];
-            if ($sortRev)
+            if ($recursive) {
+                $folders = $this->getFoldersInFolder($folderIdentifier, 0, 0, true);
+                foreach ($folders as $folder)
+                    $ret = array_merge($ret, self::$client->getFolderInfo($folder)['assets']);
+            } elseif ($sortRev) {
                 $ret = array_reverse($ret);
+            }
         } else {
             $data = self::$client->getFolderInfo($folderIdentifier, 'file');
             usort($data, function ($a, $b) use ($sortRev, $sort) {
@@ -568,7 +573,12 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      */
     public function getFoldersInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $folderNameFilterCallbacks = [], $sort = '', $sortRev = false) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        if ($sort != 'name') {
+        if ($recursive) {
+            $ret = self::$client->getFolderInfo($folderIdentifier)['children'];
+            $tmp = $ret;
+            foreach ($tmp as $folder)
+                $ret = array_merge($ret, $this->getFoldersInFolder($folder, 0, 0, true));
+        } elseif ($sort != 'name') {
             $ret = self::$client->getFolderInfo($folderIdentifier)['children'];
             if ($sortRev)
                 $ret =  array_reverse($ret);

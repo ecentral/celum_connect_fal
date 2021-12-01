@@ -170,3 +170,8 @@ local.properties
 ### LibreOffice
 .~lock.*#
 !/Classes/Hooks/
+
+.Build
+.idea
+Build/testing-docker/.env
+composer.lock

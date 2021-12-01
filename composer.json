@@ -21,18 +21,28 @@
     "ext-json": "*",
     "ext-sysvsem": "*"
   },
-  "replace": {
-    "celum_connect_fal": "self.version",
-    "brix/celum-connect-fal": "self.version"
-  },
   "autoload": {
     "psr-4": {
       "Brix\\CelumFal\\": "Classes/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Brix\\CelumFal\\Tests\\": "Tests/"
+    }
+  },
   "extra": {
     "typo3/cms": {
-      "extension-key": "celum_connect_fal"
+      "extension-key": "celum_connect_fal",
+      "web-dir": ".Build/Web",
+      "cms-package-dir": "{$vendor-dir}/typo3/cms"
     }
+  },
+  "config": {
+    "vendor-dir": ".Build/vendor",
+    "bin-dir": ".Build/bin"
+  },
+  "require-dev": {
+    "typo3/testing-framework": "^6.15"
   }
 }

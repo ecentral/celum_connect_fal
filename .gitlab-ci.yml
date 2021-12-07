@@ -3,10 +3,6 @@ cache:
   paths:
     - .cache
 
-services:
-  - name: docker:20.10-dind
-    alias: docker
-
 stages:
   - composer
   - unit
@@ -14,7 +10,7 @@ stages:
   - functional
 
 unit php 7.4:
-  image: typo3/core-testing-docker:latest
+  image: ubuntu-20.04
   stage: composer
   except:
     refs:

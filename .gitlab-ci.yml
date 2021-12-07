@@ -3,11 +3,17 @@ cache:
   paths:
     - .cache
 
+services:
+  - name: docker:20.10-dind
+    alias: docker
+
+image: typo3/core-testing-docker:latest
+
 stages:
   - composer
-  - unit
-  - acceptance
-  - functional
+#  - unit
+#  - acceptance
+#  - functional
 
 composer:
   image: ubuntu-20.04

@@ -11,7 +11,7 @@ image: typo3/core-testing-docker:latest
 
 stages:
   - composer
-#  - unit
+  - unit
 #  - acceptance
 #  - functional
 
@@ -20,3 +20,15 @@ composer:
   script:
     - Build/Scripts/runTests.sh -s composerValidate -p 7.4
     - Build/Scripts/runTests.sh -s composerInstall -p 7.4
+
+unit php 7.4:
+  stage: unit
+  script:
+    - Build/Scripts/runTests.sh -s composerInstall -p 7.4
+    - Build/Scripts/runTests.sh -s unit -p 7.4
+
+unit php 8.0:
+  stage: unit
+  script:
+    - Build/Scripts/runTests.sh -s composerInstall -p 8.0
+    - Build/Scripts/runTests.sh -s unit -p 8.0

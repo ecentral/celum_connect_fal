@@ -7,8 +7,6 @@ services:
   - name: docker:20.10-dind
     alias: docker
 
-image: typo3/core-testing-docker:latest
-
 stages:
   - composer
   - unit
@@ -16,10 +14,12 @@ stages:
   - functional
 
 unit php 7.4:
+  image: typo3/core-testing-docker:latest
   stage: composer
   except:
     refs:
       - schedules
       - main
   script:
+    - Build/Scripts/runTests.sh -s composerValidate -p 7.4
     - Build/Scripts/runTests.sh -s composerInstall -p 7.4

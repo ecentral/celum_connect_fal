@@ -16,7 +16,6 @@ stages:
 #  - functional
 
 composer:
-  image: ubuntu-20.04
   stage: composer
   script:
     - Build/Scripts/runTests.sh -s composerValidate -p 7.4

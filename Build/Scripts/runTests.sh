@@ -29,6 +29,9 @@ setUpDockerComposeDotEnv() {
     echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}" >> .env
     echo "EXTRA_TEST_OPTIONS=${EXTRA_TEST_OPTIONS}" >> .env
     echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}" >> .env
+    echo "CELUM_LICENSEKEY=${CELUM_LICENSEKEY}" >> .env
+    echo "CELUM_DOWNLOAD_FORMAT=${CELUM_DOWNLOAD_FORMAT}" >> .env
+    echo "CELUM_APIKEY=${CELUM_APIKEY}" >> .env
 }
 
 # Load help text into $HELP
@@ -38,7 +41,7 @@ Also used by github actions for test execution.
 
 Usage: $0 [options] [file]
 
-No arguments: Run all unit tests with PHP 7.2
+No arguments: Run all unit tests with PHP 7.4
 
 Options:
     -s <...>
@@ -59,11 +62,9 @@ Options:
             - postgres: use postgres
             - sqlite: use sqlite
 
-    -p <7.2|7.3|7.4|8.0>
+    -p <|7.4|8.0>
         Specifies the PHP minor version to be used
-            - 7.2 (default): use PHP 7.2
-            - 7.3: use PHP 7.3
-            - 7.4: use PHP 7.4
+            - 7.4 (default): use PHP 7.4
             - 8.0: use PHP 8.0
 
     -e "<phpunit options>"
@@ -96,11 +97,11 @@ Options:
         Show this help.
 
 Examples:
-    # Run unit tests using PHP 7.2
+    # Run unit tests using PHP 7.4
     ./Build/Scripts/runTests.sh
 
-    # Run unit tests using PHP 7.3
-    ./Build/Scripts/runTests.sh -p 7.3
+    # Run unit tests using PHP 8.0
+    ./Build/Scripts/runTests.sh -p 8.0
 EOF
 
 # Test if docker-compose exists, else exit out with error
@@ -131,6 +132,9 @@ PHP_XDEBUG_ON=0
 PHP_XDEBUG_PORT=9003
 EXTRA_TEST_OPTIONS=""
 SCRIPT_VERBOSE=0
+CELUM_LICENSEKEY=nM7Wvdaio5Ocs9fq39jErN6Xfq3O3KCXuLe7vpyxwsiHdmNlhICNa3en
+CELUM_DOWNLOAD_FORMAT=largeprvw
+CELUM_APIKEY=3pi8ps5mm47tl8q9rsuddtpsl6
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell

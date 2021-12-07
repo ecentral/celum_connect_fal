@@ -16,6 +16,7 @@ use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class CelumClient {
 
@@ -34,6 +35,7 @@ class CelumClient {
     private $secret;
     private $client;
     private $options;
+    private $postOptions;
     private $format;
     private $lifetime;
     private $token;
@@ -64,11 +66,12 @@ class CelumClient {
         $this->defaultLocale = $config['defaultLocale'];
         $this->secret = $config['directDownloadSecret'];
         $this->storage = $storage;
-        $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache(CelumDriver::EXTENSION_KEY);
+        $this->cache = GeneralUtility::makeInstance(CacheManager::class)->hasCache(CelumDriver::EXTENSION_KEY) ? GeneralUtility::makeInstance(CacheManager::class)->getCache(CelumDriver::EXTENSION_KEY) : null;
         $this->client = new Client(['base_uri' => $this->cora]);
-        $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']]];
+        $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
+        $this->postOptions = ['verify' => false];
         $this->lifetime = intval($config['cacheLifetimeInMinutes']);
-        if (($this->lifetime <= 0) or ($this->lifetime >= 30))
+        if (($this->lifetime <= 0) || ($this->lifetime >= 30))
             $this->lifetime = 29;
         $this->lifetime *= 60;
         $this->token = $config['infoFieldSetterToken'];
@@ -86,11 +89,11 @@ class CelumClient {
             $this->roots[$key] = "/$val/";
     }
 
-    protected function extractId($identifier) {
+    public function extractId($identifier) {
         return basename(rtrim($identifier, '/'));
     }
 
-    protected function extractName(&$names) {
+    public function extractName(&$names) {
         $default = null;
         foreach ($names as $name) {
             if ($name['locale'] == $this->defaultLocale) {
@@ -308,7 +311,7 @@ class CelumClient {
                 $clientUrl .= '&info-' . $this->infoFieldId . '=true';
             }
         }
-        $this->client->request('POST', $clientUrl);
+        $this->client->request('POST', $clientUrl, $this->postOptions);
     }
 
     function deletePublicUrl($identifier, $description, $stillUsed) {
@@ -325,7 +328,7 @@ class CelumClient {
                 $url .= '&info-' . $this->infoFieldId . '=false';
             }
         }
-        $this->client->request('POST', $url);
+        $this->client->request('POST', $url, $this->postOptions);
     }
 
     public function getUrl($identifier, $type='publicUrl') {

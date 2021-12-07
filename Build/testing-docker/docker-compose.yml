@@ -290,6 +290,9 @@ services:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
     working_dir: ${ROOT_DIR}/.Build
+    environment:
+      celum_licenseKey: ${CELUM_LICENSEKEY}
+      celum_downloadFormat: ${CELUM_DOWNLOAD_FORMAT}
     command: >
       /bin/sh -c "
         if [ ${SCRIPT_VERBOSE} -eq 1 ]; then

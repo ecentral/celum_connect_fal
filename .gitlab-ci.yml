@@ -1,0 +1,25 @@
+cache:
+  key: main-composer
+  paths:
+    - .cache
+
+services:
+  - name: docker:20.10-dind
+    alias: docker
+
+image: typo3/core-testing-docker:latest
+
+stages:
+  - composer
+  - unit
+  - acceptance
+  - functional
+
+unit php 7.4:
+  stage: composer
+  except:
+    refs:
+      - schedules
+      - main
+  script:
+    - Build/Scripts/runTests.sh -s composerInstall -p 7.4

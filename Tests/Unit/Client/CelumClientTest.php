@@ -1,9 +1,8 @@
 <?php
-namespace Brix\CelumFal\Tests\Client;
+namespace Brix\CelumFal\Tests\Unit\Client;
 
 use Brix\CelumFal\Client\CelumClient;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class CelumClientTest extends UnitTestCase

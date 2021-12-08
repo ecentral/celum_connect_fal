@@ -17,7 +17,6 @@
     }
   ],
   "require": {
-    "typo3/cms-core": ">=11.0.0",
     "ext-json": "*",
     "ext-sysvsem": "*"
   },
@@ -35,14 +34,27 @@
     "typo3/cms": {
       "extension-key": "celum_connect_fal",
       "web-dir": ".Build/Web",
-      "cms-package-dir": "{$vendor-dir}/typo3/cms"
+      "app-dir": ".Build"
     }
   },
   "config": {
     "vendor-dir": ".Build/vendor",
-    "bin-dir": ".Build/bin"
+    "bin-dir": ".Build/bin",
+    "preferred-install": {
+      "typo3/cms-core": "source"
+    },
+    "sort-packages": true
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require-dev": {
-    "typo3/testing-framework": "^6.15"
+    "typo3/cms-core": "11.*.*@dev",
+    "typo3/cms-frontend": "11.*.*@dev",
+    "typo3/cms-install": "11.*.*@dev",
+    "typo3/testing-framework": "^6.14.0",
+    "codeception/codeception": "^4.1",
+    "codeception/module-asserts": "^1.2",
+    "codeception/module-cli": "^1.1",
+    "codeception/module-webdriver": "^1.1"
   }
 }

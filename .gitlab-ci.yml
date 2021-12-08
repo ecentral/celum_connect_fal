@@ -12,8 +12,8 @@ image: typo3/core-testing-docker:latest
 stages:
   - composer
   - unit
+  - functional
 #  - acceptance
-#  - functional
 
 composer:
   stage: composer
@@ -32,3 +32,27 @@ unit php 8.0:
   script:
     - Build/Scripts/runTests.sh -s composerInstall -p 8.0
     - Build/Scripts/runTests.sh -s unit -p 8.0
+
+unit php 8.1:
+  stage: unit
+  script:
+    - Build/Scripts/runTests.sh -s composerInstall -p 8.1
+    - Build/Scripts/runTests.sh -s unit -p 8.1
+
+functional php 7.4:
+  stage: functional
+  script:
+    - Build/Scripts/runTests.sh -s composerInstall -p 7.4
+    - Build/Scripts/runTests.sh -s functional -p 7.4
+
+functional php 8.0:
+  stage: functional
+  script:
+    - Build/Scripts/runTests.sh -s composerInstall -p 8.0
+    - Build/Scripts/runTests.sh -s functional -p 8.0
+
+functional php 8.1:
+  stage: functional
+  script:
+    - Build/Scripts/runTests.sh -s composerInstall -p 8.1
+    - Build/Scripts/runTests.sh -s functional -p 8.1

@@ -1,13 +1,5 @@
 {
   "name": "brix/celum-connect-fal",
-  "type": "typo3-cms-extension",
-  "description": "Provides a FAL driver for the CELUM DAM.",
-  "keywords": [
-    "celum", "dam", "brix", "fal"
-  ],
-  "license": [
-    "GPL-2.0+"
-  ],
   "authors": [
     {
       "name": "brix IT solutions",
@@ -16,25 +8,18 @@
       "homepage": "https://www.brix.ch"
     }
   ],
-  "require": {
-    "ext-json": "*",
-    "ext-sysvsem": "*"
-  },
+  "type": "typo3-cms-extension",
+  "description": "",
+  "homepage": "https://www.brix.ch",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "typo3",
+    "typo3 backend",
+    "celum"
+  ],
   "autoload": {
     "psr-4": {
       "Brix\\CelumFal\\": "Classes/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Brix\\CelumFal\\Tests\\": "Tests/"
-    }
-  },
-  "extra": {
-    "typo3/cms": {
-      "extension-key": "celum_connect_fal",
-      "web-dir": ".Build/Web",
-      "app-dir": ".Build"
     }
   },
   "config": {
@@ -45,16 +30,31 @@
     },
     "sort-packages": true
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "require-dev": {
-    "typo3/cms-core": "11.*.*@dev",
-    "typo3/cms-frontend": "11.*.*@dev",
-    "typo3/cms-install": "11.*.*@dev",
-    "typo3/testing-framework": "^6.14.0",
     "codeception/codeception": "^4.1",
     "codeception/module-asserts": "^1.2",
     "codeception/module-cli": "^1.1",
-    "codeception/module-webdriver": "^1.1"
+    "codeception/module-webdriver": "^1.1",
+    "phpstan/phpstan": "^1.2.0",
+    "typo3/cms-core": "11.*.*@dev",
+    "typo3/cms-frontend": "11.*.*@dev",
+    "typo3/cms-install": "11.*.*@dev",
+    "typo3/coding-standards": "^0.3.0",
+    "typo3/tailor": "^1.2",
+    "typo3/testing-framework": "^6.14.0"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload-dev": {
+    "psr-4": {
+      "Brix\\CelumFal\\Tests\\": "Tests"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "app-dir": ".Build",
+      "web-dir": ".Build/Web",
+      "extension-key": "celum_connect_fal"
+    }
   }
 }

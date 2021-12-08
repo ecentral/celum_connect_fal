@@ -16,7 +16,7 @@ modules:
 
 extensions:
   enabled:
-    - TYPO3\CMS\Styleguide\Tests\Acceptance\Support\Extension\BackendStyleguideEnvironment
+    - Brix\CelumFal\Tests\Acceptance\Support\Extension\BackendCelumEnvironment
 
 groups:
   AcceptanceTests-Job-*: AcceptanceTests-Job-*

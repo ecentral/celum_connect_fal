@@ -21,9 +21,6 @@ class BackendCelumEnvironment extends BackendEnvironment
             'frontend',
             'recordlist',
         ],
-        'testExtensionsToLoad' => [
-            'typo3conf/ext/celum_connect_fal'
-        ],
         'xmlDatabaseFixtures' => [
             'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
             'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',

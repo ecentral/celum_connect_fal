@@ -1,6 +1,8 @@
 <?php
 namespace Brix\CelumFal\Tests\Acceptance\Backend;
 
+use Brix\CelumFal\Tests\Acceptance\Support\BackendTester;
+
 class FileListCest
 {
     /**

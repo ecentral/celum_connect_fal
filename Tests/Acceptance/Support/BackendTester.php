@@ -1,7 +1,7 @@
 <?php
 namespace Brix\CelumFal\Tests\Acceptance\Support;
 
-use TYPO3\CMS\Styleguide\Tests\Acceptance\Support\_generated\BackendTesterActions;
+use Brix\CelumFal\Tests\Acceptance\Support\_generated\BackendTesterActions;
 use TYPO3\TestingFramework\Core\Acceptance\Step\FrameSteps;
 
 /**

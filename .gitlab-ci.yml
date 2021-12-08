@@ -13,7 +13,7 @@ stages:
   - composer
   - unit
   - functional
-#  - acceptance
+  - acceptance
 
 composer:
   stage: composer
@@ -58,7 +58,13 @@ functional php 8.1:
     - Build/Scripts/runTests.sh -s functional -p 8.1
 
 acceptance php 7.4:
-  stage: unit
+  stage: acceptance
   script:
     - Build/Scripts/runTests.sh -s composerUpdate -p 7.4
     - Build/Scripts/runTests.sh -s acceptance -p 7.4
+
+acceptance php 8.1:
+  stage: acceptance
+  script:
+    - Build/Scripts/runTests.sh -s composerUpdate -p 8.1
+    - Build/Scripts/runTests.sh -s acceptance -p 8.1

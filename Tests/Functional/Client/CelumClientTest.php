@@ -26,6 +26,38 @@ class CelumClientTest extends FunctionalTestCase
         $this->assertEquals($expectedResult, $folderInfo);
     }
 
+    /**
+     * @test
+     * @dataProvider checkGetFileInfoMethodDataProvider()
+     * @param array $config
+     * @param string $identifier
+     * @param array $expectedResult
+     */
+    public function checkGetFileInfoMethod(array $config, string $identifier, array $expectedResult): void
+    {
+        $this->initializeClient($config);
+        $fileInfo = $this->client->getFileInfo($identifier);
+        $this->assertEquals($expectedResult, $fileInfo);
+    }
+
+    /**
+     * @test
+     * @dataProvider checkGetUrlMethodDataProvider()
+     * @param array $config
+     * @param string $identifier
+     * @param string|null $expectedResult
+     */
+    public function checkGetUrlMethod(array $config, string $identifier, string $type, ?string $expectedResult): void
+    {
+        $this->initializeClient($config);
+        if (!empty($type)) {
+            $url = $this->client->getUrl($identifier, $type);
+        } else {
+            $url = $this->client->getUrl($identifier);
+        }
+        $this->assertEquals($expectedResult, $url);
+    }
+
     protected function initializeClient(?array $config = null, $storage = null): void
     {
         $clientConfig = [
@@ -149,7 +181,145 @@ class CelumClientTest extends FunctionalTestCase
                         '/11084/11090/'
                     ]
                 ]
-            ]
+            ],
+            'subfolders with assets and default config' => [
+                [],
+                '/11084/11086/',
+                [
+                    'info' => [
+                        'identifier' => '/11084/11086/',
+                        'name' => 'Menschen',
+                        'storage' => null
+                    ],
+                    'assets' => [
+                        '/11084/11086/1492',
+                        '/11084/11086/1494',
+                        '/11084/11086/1495',
+                        '/11084/11086/1496',
+                        '/11084/11086/1497',
+                        '/11084/11086/1498',
+                        '/11084/11086/1499',
+                        '/11084/11086/1500',
+                        '/11084/11086/1501',
+                        '/11084/11086/1502',
+                        '/11084/11086/1503',
+                        '/11084/11086/1504',
+                        '/11084/11086/1505',
+                        '/11084/11086/1506',
+                        '/11084/11086/1508',
+                        '/11084/11086/1509',
+                        '/11084/11086/1510',
+                        '/11084/11086/1511',
+                        '/11084/11086/1512',
+                        '/11084/11086/1513',
+                        '/11084/11086/1514',
+                        '/11084/11086/1515',
+                        '/11084/11086/1516',
+                        '/11084/11086/1517',
+                        '/11084/11086/1518',
+                        '/11084/11086/1519',
+                        '/11084/11086/1520',
+                    ],
+                    'children' => []
+                ]
+            ],
+
+        ];
+    }
+
+    public function checkGetFileInfoMethodDataProvider(): array
+    {
+        return [
+            'default config' => [
+                [],
+                '/11084/11086/1494',
+                [
+                    'info' => [
+                        'identifier' => '/11084/11086/1494',
+                        'identifier_hash' => '9d29e53f01364d0af173ed0e1a08b96c421b6652',
+                        'folder_hash' => '87a152fb1c7cd7fb0f73b5d3232ae238dad1d9d8',
+                        'name' => 'people crossing a street.jpg',
+                        'title' => 'people crossing a street.jpg',
+                        'storage' => null,
+                        'size' => 3843034,
+                        'width' => 3000,
+                        'height' => 1996,
+                        'description' => '',
+                        'alternative' => '',
+                        'mimetype' => 'image/jpg',
+                        'ctime' => 1630680583,
+                        'mtime' => 1639147058
+                    ],
+                    'preview' => 'https://contenthub-demo.brix.ch/cora/download?ticket=cf874d9a-fb89-402d-b444-411d8aae29ad',
+                    'publicUrl' => 'https://contenthub-demo.brix.ch/direct/download?format=largeprvw&id=1494',
+                    'thumbnail' => 'https://contenthub-demo.brix.ch/cora/download?ticket=6f4a06f9-029c-45d2-bd32-054bc3dc0e5b',
+                    'extension' => 'jpg'
+                ]
+            ],
+            'english locale' => [
+                [
+                    'locale' => 'en'
+                ],
+                '/11084/11086/1494',
+                [
+                    'info' => [
+                        'identifier' => '/11084/11086/1494',
+                        'identifier_hash' => '9d29e53f01364d0af173ed0e1a08b96c421b6652',
+                        'folder_hash' => '87a152fb1c7cd7fb0f73b5d3232ae238dad1d9d8',
+                        'name' => 'people crossing a street.jpg',
+                        'title' => 'people crossing a street.jpg',
+                        'storage' => null,
+                        'size' => 3843034,
+                        'width' => 3000,
+                        'height' => 1996,
+                        'description' => '',
+                        'alternative' => '',
+                        'mimetype' => 'image/jpg',
+                        'ctime' => 1630680583,
+                        'mtime' => 1639147058
+                    ],
+                    'preview' => 'https://contenthub-demo.brix.ch/cora/download?ticket=cf874d9a-fb89-402d-b444-411d8aae29ad',
+                    'publicUrl' => 'https://contenthub-demo.brix.ch/direct/download?format=largeprvw&id=1494',
+                    'thumbnail' => 'https://contenthub-demo.brix.ch/cora/download?ticket=6f4a06f9-029c-45d2-bd32-054bc3dc0e5b',
+                    'extension' => 'jpg'
+                ]
+            ],
+        ];
+    }
+
+    public function checkGetUrlMethodDataProvider(): array
+    {
+        return [
+            'default type' => [
+                [],
+                '/11084/11086/1494',
+                '',
+                'https://contenthub-demo.brix.ch/direct/download?format=largeprvw&id=1494'
+            ],
+            'publicUrl' => [
+                [],
+                '/11084/11086/1494',
+                'publicUrl',
+                'https://contenthub-demo.brix.ch/direct/download?format=largeprvw&id=1494'
+            ],
+            'thumbnail' => [
+                [],
+                '/11084/11086/1494',
+                'thumbnail',
+                'https://contenthub-demo.brix.ch/cora/download?ticket=6f4a06f9-029c-45d2-bd32-054bc3dc0e5b'
+            ],
+            'preview' => [
+                [],
+                '/11084/11086/1494',
+                'preview',
+                'https://contenthub-demo.brix.ch/cora/download?ticket=cf874d9a-fb89-402d-b444-411d8aae29ad'
+            ],
+            'fake type' => [
+                [],
+                '/11084/11086/1494',
+                'fake',
+                null
+            ],
         ];
     }
 }

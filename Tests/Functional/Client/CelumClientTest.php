@@ -2,7 +2,6 @@
 namespace Brix\CelumFal\Tests\Functional\Client;
 
 use Brix\CelumFal\Client\CelumClient;
-use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use GuzzleHttp\Exception\ClientException;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
@@ -14,16 +13,16 @@ class CelumClientTest extends FunctionalTestCase
     /**
      * @test
      *
-     * @dataProvider checkRootFolderAndChildrenDataProvider()
+     * @dataProvider checkGetFolderInfoMethodDataProvider()
      */
-    public function checkRootFolderAndChildren(array $config, bool $shouldSucceed, array $expectedResult, string $exceptionClassName = '', string $exceptionMessage = ''): void
+    public function checkGetFolderInfoMethod(array $config, string $identifier, array $expectedResult, string $exceptionClassName = '', string $exceptionMessage = ''): void
     {
         $this->initializeClient($config);
-        if (!$shouldSucceed) {
+        if ($exceptionClassName) {
             $this->expectException($exceptionClassName);
             $this->expectExceptionMessage($exceptionMessage);
         }
-        $folderInfo = $this->client->getFolderInfo('/');
+        $folderInfo = $this->client->getFolderInfo($identifier);
         $this->assertEquals($expectedResult, $folderInfo);
     }
 
@@ -56,12 +55,12 @@ class CelumClientTest extends FunctionalTestCase
         $this->client = new CelumClient($clientConfig, $storage);
     }
 
-    public function checkRootFolderAndChildrenDataProvider(): array
+    public function checkGetFolderInfoMethodDataProvider(): array
     {
         return [
             'default config' => [
                 [],
-                true,
+                '/',
                 [
                     'info' => [
                         'identifier' => '/',
@@ -78,7 +77,7 @@ class CelumClientTest extends FunctionalTestCase
                 [
                     'locale' => 'en'
                 ],
-                true,
+                '/',
                 [
                     'info' => [
                         'identifier' => '/',
@@ -95,7 +94,7 @@ class CelumClientTest extends FunctionalTestCase
                 [
                     'roots' => '-1'
                 ],
-                false,
+                '/',
                 [],
                 ClientException::class,
                 'NodeId: id must be > 0'
@@ -104,11 +103,53 @@ class CelumClientTest extends FunctionalTestCase
                 [
                     'roots' => '1'
                 ],
-                false,
+                '/',
                 [],
                 ClientException::class,
                 'NOT_FOUND_ENTITY_OF_COLLECTION_WITH_IDENTIFIER'
             ],
+            'subfolders with default config' => [
+                [],
+                '/11084/',
+                [
+                    'info' => [
+                        'identifier' => '/11084/',
+                        'name' => 'Testbilder',
+                        'storage' => null
+                    ],
+                    'assets' => [],
+                    'children' => [
+                        '/11084/11085/',
+                        '/11084/11086/',
+                        '/11084/11087/',
+                        '/11084/11088/',
+                        '/11084/11089/',
+                        '/11084/11090/'
+                    ]
+                ]
+            ],
+            'subfolders with english locale' => [
+                [
+                    'locale' => 'en'
+                ],
+                '/11084/',
+                [
+                    'info' => [
+                        'identifier' => '/11084/',
+                        'name' => 'Test images',
+                        'storage' => null
+                    ],
+                    'assets' => [],
+                    'children' => [
+                        '/11084/11085/',
+                        '/11084/11086/',
+                        '/11084/11087/',
+                        '/11084/11088/',
+                        '/11084/11089/',
+                        '/11084/11090/'
+                    ]
+                ]
+            ]
         ];
     }
 }

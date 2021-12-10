@@ -20,10 +20,10 @@ class BackendCelumEnvironment extends BackendEnvironment
             'install',
             'frontend',
             'recordlist',
+            'filelist'
         ],
         'xmlDatabaseFixtures' => [
             'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_users.xml',
-            'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_sessions.xml',
             'PACKAGE:typo3/testing-framework/Resources/Core/Acceptance/Fixtures/be_groups.xml',
         ],
     ];

@@ -2,6 +2,7 @@
 namespace Brix\CelumFal\Tests\Unit\Client;
 
 use Brix\CelumFal\Client\CelumClient;
+use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -35,6 +36,20 @@ class CelumClientTest extends UnitTestCase
     {
         $this->initializeClient(['locale' => $locale]);
         $this->assertEquals($expectedResult, $this->client->extractName($names));
+    }
+
+    /**
+     * @test
+     *
+     * @dataProvider configDataProvider()
+     */
+    public function initializeClientWithDifferentConfigs(array $config, bool $shouldSucceed, string $exceptionMessage = ''): void
+    {
+        if (!$shouldSucceed) {
+            $this->expectException(InvalidConfigurationException::class);
+            $this->expectExceptionMessage($exceptionMessage);
+        }
+        $this->initializeClient($config);
     }
 
 
@@ -154,6 +169,26 @@ class CelumClientTest extends UnitTestCase
                     ]
                 ],
                 'Cities'
+            ],
+        ];
+    }
+
+    public function configDataProvider(): array
+    {
+        return [
+            'default config' => [
+                [],
+                true
+            ],
+            'missing licensekey' => [
+                ['licenseKey' => ''],
+                false,
+                'No licenseKey given'
+            ],
+            'invalid licensekey' => [
+                ['licenseKey' => 'foobar'],
+                false,
+                'No valid license'
             ],
         ];
     }

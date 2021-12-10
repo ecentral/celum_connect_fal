@@ -34,6 +34,9 @@ setUpDockerComposeDotEnv() {
         echo "CELUM_LICENSEKEY=${CELUM_LICENSEKEY}" >> .env
         echo "CELUM_DOWNLOAD_FORMAT=${CELUM_DOWNLOAD_FORMAT}" >> .env
         echo "CELUM_APIKEY=${CELUM_APIKEY}" >> .env
+        echo "CELUM_ROOTS=${CELUM_ROOTS}" >> .env
+        echo "CELUM_NODE_ID=${CELUM_NODE_ID}" >> .env
+        echo "CELUM_INFORMATION_FIELD_ID=${CELUM_INFORMATION_FIELD_ID}" >> .env
     } > .env
 }
 
@@ -193,6 +196,9 @@ DATABASE_DRIVER=""
 CELUM_LICENSEKEY=nM7Wvdaio5Ocs9fq39jErN6Xfq3O3KCXuLe7vpyxwsiHdmNlhICNa3en
 CELUM_DOWNLOAD_FORMAT=largeprvw
 CELUM_APIKEY=3pi8ps5mm47tl8q9rsuddtpsl6
+CELUM_ROOTS=11084
+CELUM_NODE_ID=2127
+CELUM_INFORMATION_FIELD_ID=103
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell

@@ -9,6 +9,8 @@
 namespace Brix\CelumFal\Client;
 
 use Brix\CelumFal\Driver\CelumDriver;
+use Brix\CelumFal\Exceptions\InvalidConfigurationException;
+use Brix\CelumFal\Utility\Cache;
 use GuzzleHttp\Client;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -48,14 +50,21 @@ class CelumClient {
     private $roots;
 
     public function __construct(array $config, $storage) {
+        if (empty($config['licenseKey'])) {
+            throw new InvalidConfigurationException('No licenseKey given');
+        }
+
+        if (empty($config['celumApiKey'])) {
+            throw new InvalidConfigurationException('No celumApiKey given');
+        }
+
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);
-        // Impossible to throw exceptions on invalid license, somehow there are instances created before the configuration is entered.
         if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
             $this->celumUrl = rtrim($matches[1]);
         } else {
-            return;
+            throw new InvalidConfigurationException('No valid license');
         }
         $this->cora = $this->celumUrl . '/cora/';
         $this->format = $config['downloadFormat'];
@@ -66,7 +75,7 @@ class CelumClient {
         $this->defaultLocale = $config['defaultLocale'];
         $this->secret = $config['directDownloadSecret'];
         $this->storage = $storage;
-        $this->cache = GeneralUtility::makeInstance(CacheManager::class)->hasCache(CelumDriver::EXTENSION_KEY) ? GeneralUtility::makeInstance(CacheManager::class)->getCache(CelumDriver::EXTENSION_KEY) : null;
+        $this->cache = GeneralUtility::makeInstance(Cache::class);
         $this->client = new Client(['base_uri' => $this->cora]);
         $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
         $this->postOptions = ['verify' => false];
@@ -297,7 +306,7 @@ class CelumClient {
             return $val;
     }
 
-    function addPublicUrl($identifier, $url, $description) {
+    public function addPublicUrl($identifier, $url, $description) {
         if (!$this->token)
             return;
         $clientUrl = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
@@ -314,7 +323,7 @@ class CelumClient {
         $this->client->request('POST', $clientUrl, $this->postOptions);
     }
 
-    function deletePublicUrl($identifier, $description, $stillUsed) {
+    public function deletePublicUrl($identifier, $description, $stillUsed) {
         if (!$this->token)
             return;
         $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);

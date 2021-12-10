@@ -3,6 +3,7 @@ namespace Brix\CelumFal\Tests\Functional\Client;
 
 use Brix\CelumFal\Client\CelumClient;
 use Brix\CelumFal\Exceptions\InvalidConfigurationException;
+use GuzzleHttp\Exception\ClientException;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
@@ -15,9 +16,13 @@ class CelumClientTest extends FunctionalTestCase
      *
      * @dataProvider checkRootFolderAndChildrenDataProvider()
      */
-    public function checkRootFolderAndChildren(array $config, array $expectedResult): void
+    public function checkRootFolderAndChildren(array $config, bool $shouldSucceed, array $expectedResult, string $exceptionClassName = '', string $exceptionMessage = ''): void
     {
         $this->initializeClient($config);
+        if (!$shouldSucceed) {
+            $this->expectException($exceptionClassName);
+            $this->expectExceptionMessage($exceptionMessage);
+        }
         $folderInfo = $this->client->getFolderInfo('/');
         $this->assertEquals($expectedResult, $folderInfo);
     }
@@ -56,6 +61,7 @@ class CelumClientTest extends FunctionalTestCase
         return [
             'default config' => [
                 [],
+                true,
                 [
                     'info' => [
                         'identifier' => '/',
@@ -72,6 +78,7 @@ class CelumClientTest extends FunctionalTestCase
                 [
                     'locale' => 'en'
                 ],
+                true,
                 [
                     'info' => [
                         'identifier' => '/',
@@ -83,6 +90,24 @@ class CelumClientTest extends FunctionalTestCase
                         '/11084/'
                     ]
                 ]
+            ],
+            'invalid roots' => [
+                [
+                    'roots' => '-1'
+                ],
+                false,
+                [],
+                ClientException::class,
+                'NodeId: id must be > 0'
+            ],
+            'wrong roots' => [
+                [
+                    'roots' => '1'
+                ],
+                false,
+                [],
+                ClientException::class,
+                'NOT_FOUND_ENTITY_OF_COLLECTION_WITH_IDENTIFIER'
             ],
         ];
     }

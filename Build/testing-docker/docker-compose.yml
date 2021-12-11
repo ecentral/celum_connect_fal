@@ -293,6 +293,7 @@ services:
       celum_roots: ${CELUM_ROOTS}
       celum_nodeId: ${CELUM_NODE_ID}
       celum_informationFieldId: ${CELUM_INFORMATION_FIELD_ID}
+      celum_infoFieldSetterToken: ${CELUM_INFO_FIELD_SETTER_TOKEN}
     working_dir: ${ROOT_DIR}/.Build
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -308,8 +309,8 @@ services:
         echo Database is up;
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          XDEBUG_MODE=\"off\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          XDEBUG_MODE=\"coverage\" \
+          bin/phpunit -c ../Build/FunctionalTests.xml ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
@@ -340,6 +341,7 @@ services:
       celum_roots: ${CELUM_ROOTS}
       celum_nodeId: ${CELUM_NODE_ID}
       celum_informationFieldId: ${CELUM_INFORMATION_FIELD_ID}
+      celum_infoFieldSetterToken: ${CELUM_INFO_FIELD_SETTER_TOKEN}
     working_dir: ${ROOT_DIR}/.Build
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -355,148 +357,13 @@ services:
         echo Database is up;
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          XDEBUG_MODE=\"off\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          XDEBUG_MODE=\"coverage\" \
+          bin/phpunit -c ../Build/FunctionalTests.xml ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
           bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
-        fi
-      "
-
-  functional_mssql2019latest:
-    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
-    user: "${HOST_UID}"
-    links:
-      - mssql2019latest
-    volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    environment:
-      typo3DatabaseDriver: "${DATABASE_DRIVER}"
-      typo3DatabaseName: func
-      typo3DatabasePassword: "Test1234!"
-      typo3DatabaseUsername: SA
-      typo3DatabasePort: 1433
-      typo3DatabaseCharset: utf-8
-      typo3DatabaseHost: mssql2019latest
-      celum_licenseKey: ${CELUM_LICENSEKEY}
-      celum_apiKey: ${CELUM_APIKEY}
-      celum_downloadFormat: ${CELUM_DOWNLOAD_FORMAT}
-      celum_roots: ${CELUM_ROOTS}
-      celum_nodeId: ${CELUM_NODE_ID}
-      celum_informationFieldId: ${CELUM_INFORMATION_FIELD_ID}
-    working_dir: ${ROOT_DIR}/.Build
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    command: >
-      /bin/sh -c "
-        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
-          set -x
-        fi
-        echo Waiting for database start...;
-        while ! nc -z mssql2019latest 1433; do
-          sleep 1;
-        done;
-        sleep 5;
-        echo Database is up;
-        php -v | grep '^PHP';
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          XDEBUG_MODE=\"off\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE};
-        else
-          XDEBUG_MODE=\"debug,develop\" \
-          XDEBUG_TRIGGER=\"foo\" \
-          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-mssql ${TEST_FILE};
-        fi
-      "
-
-  functional_postgres10:
-    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
-    user: "${HOST_UID}"
-    links:
-      - postgres10
-    volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    environment:
-      typo3DatabaseDriver: pdo_pgsql
-      typo3DatabaseName: bamboo
-      typo3DatabaseUsername: ${HOST_USER}
-      typo3DatabaseHost: postgres10
-      typo3DatabasePassword: funcp
-      celum_licenseKey: ${CELUM_LICENSEKEY}
-      celum_apiKey: ${CELUM_APIKEY}
-      celum_downloadFormat: ${CELUM_DOWNLOAD_FORMAT}
-      celum_roots: ${CELUM_ROOTS}
-      celum_nodeId: ${CELUM_NODE_ID}
-      celum_informationFieldId: ${CELUM_INFORMATION_FIELD_ID}
-    working_dir: ${ROOT_DIR}/.Build
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    command: >
-      /bin/sh -c "
-        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
-          set -x
-        fi
-        echo Waiting for database start...;
-        while ! nc -z postgres10 5432; do
-          sleep 1;
-        done;
-        echo Database is up;
-        php -v | grep '^PHP';
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          XDEBUG_MODE=\"off\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE};
-        else
-          XDEBUG_MODE=\"debug,develop\" \
-          XDEBUG_TRIGGER=\"foo\" \
-          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-postgres ${TEST_FILE};
-        fi
-      "
-
-  functional_sqlite:
-    image: typo3/core-testing-${DOCKER_PHP_IMAGE}:latest
-    user: "${HOST_UID}"
-    volumes:
-      - ${ROOT_DIR}:${ROOT_DIR}
-      - ${HOST_HOME}:${HOST_HOME}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    tmpfs:
-      - ${ROOT_DIR}/.Build/Web/typo3temp/var/tests/functional-sqlite-dbs/:rw,noexec,nosuid,uid=${HOST_UID}
-    environment:
-      typo3DatabaseDriver: pdo_sqlite
-      celum_licenseKey: ${CELUM_LICENSEKEY}
-      celum_apiKey: ${CELUM_APIKEY}
-      celum_downloadFormat: ${CELUM_DOWNLOAD_FORMAT}
-      celum_roots: ${CELUM_ROOTS}
-      celum_nodeId: ${CELUM_NODE_ID}
-      celum_informationFieldId: ${CELUM_INFORMATION_FIELD_ID}
-    working_dir: ${ROOT_DIR}/.Build
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    command: >
-      /bin/sh -c "
-        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
-          set -x
-        fi
-        php -v | grep '^PHP';
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          XDEBUG_MODE=\"off\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE};
-        else
-          XDEBUG_MODE=\"debug,develop\" \
-          XDEBUG_TRIGGER=\"foo\" \
-          XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} --exclude-group not-sqlite ${TEST_FILE};
         fi
       "
 
@@ -560,8 +427,8 @@ services:
         fi
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          XDEBUG_MODE=\"off\" \
-          bin/phpunit -c ../Build/UnitTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          XDEBUG_MODE=\"coverage\" \
+          bin/phpunit -c ../Build/UnitTests.xml ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \

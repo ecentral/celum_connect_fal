@@ -28,6 +28,7 @@ setUpDockerComposeDotEnv() {
         echo "PHP_XDEBUG_PORT=${PHP_XDEBUG_PORT}"
         echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}"
         echo "EXTRA_TEST_OPTIONS=${EXTRA_TEST_OPTIONS}"
+        echo "COVERAGE=${COVERAGE}"
         echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}"
         echo "CGLCHECK_DRY_RUN=${CGLCHECK_DRY_RUN}"
         echo "DATABASE_DRIVER=${DATABASE_DRIVER}"
@@ -37,6 +38,7 @@ setUpDockerComposeDotEnv() {
         echo "CELUM_ROOTS=${CELUM_ROOTS}" >> .env
         echo "CELUM_NODE_ID=${CELUM_NODE_ID}" >> .env
         echo "CELUM_INFORMATION_FIELD_ID=${CELUM_INFORMATION_FIELD_ID}" >> .env
+        echo "CELUM_INFO_FIELD_SETTER_TOKEN=${CELUM_INFO_FIELD_SETTER_TOKEN}" >> .env
     } > .env
 }
 
@@ -109,6 +111,9 @@ Options:
             - mssql
                 - sqlsrv (default)
                 - pdo_sqlsrv
+
+    -c
+        COVERAGE
 
     -d <mariadb|mysql|mssql|postgres|sqlite>
         Only with -s acceptance,functional
@@ -193,12 +198,14 @@ EXTRA_TEST_OPTIONS=""
 SCRIPT_VERBOSE=0
 CGLCHECK_DRY_RUN=""
 DATABASE_DRIVER=""
+COVERAGE="--coverage-text --colors=never"
 CELUM_LICENSEKEY=nM7Wvdaio5Ocs9fq39jErN6Xfq3O3KCXuLe7vpyxwsiHdmNlhICNa3en
 CELUM_DOWNLOAD_FORMAT=largeprvw
 CELUM_APIKEY=3pi8ps5mm47tl8q9rsuddtpsl6
 CELUM_ROOTS=11084
 CELUM_NODE_ID=2127
 CELUM_INFORMATION_FIELD_ID=103
+CELUM_INFO_FIELD_SETTER_TOKEN=rwEYfozXfd5exQXy57YPT5seQ8GhVzg8
 
 # Option parsing
 # Reset in case getopts has been used previously in the shell
@@ -206,7 +213,7 @@ OPTIND=1
 # Array for invalid options
 INVALID_OPTIONS=();
 # Simple option parsing based on getopts (! not getopt)
-while getopts ":s:a:d:p:e:xy:nhuv" OPT; do
+while getopts ":s:a:d:p:e:xy:nhuvc" OPT; do
     case ${OPT} in
         s)
             TEST_SUITE=${OPTARG}
@@ -241,6 +248,9 @@ while getopts ":s:a:d:p:e:xy:nhuv" OPT; do
             ;;
         v)
             SCRIPT_VERBOSE=1
+            ;;
+        c)
+            COVERAGE="--coverage-html coverage"
             ;;
         \?)
             INVALID_OPTIONS+=(${OPTARG})

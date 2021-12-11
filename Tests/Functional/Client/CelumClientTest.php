@@ -37,8 +37,18 @@ class CelumClientTest extends FunctionalTestCase
     {
         $this->initializeClient($config);
         $fileInfo = $this->client->getFileInfo($identifier);
-        $this->assertEquals($expectedResult, $fileInfo);
+
+        foreach (['identifier', 'identifier_hash', 'folder_hash', 'name', 'title', 'storage', 'size', 'width', 'height', 'description', 'alternative', 'mimetype', 'ctime'] as $key) {
+            $this->assertEquals($expectedResult['info'][$key], $fileInfo['info'][$key]);
+        }
+
+        $this->assertEquals($expectedResult['extension'], $fileInfo['extension']);
+        $this->assertEquals($expectedResult['publicUrl'], $fileInfo['publicUrl']);
+        $this->assertStringStartsWith($expectedResult['preview'], $fileInfo['preview']);
+        $this->assertStringStartsWith($expectedResult['thumbnail'], $fileInfo['thumbnail']);
     }
+
+
 
     /**
      * @test
@@ -47,15 +57,38 @@ class CelumClientTest extends FunctionalTestCase
      * @param string $identifier
      * @param string|null $expectedResult
      */
-    public function checkGetUrlMethod(array $config, string $identifier, string $type, ?string $expectedResult): void
+    public function checkGetUrlMethod(array $config, string $identifier, string $type, ?string $expectedResult, ?string $errorClass = null): void
     {
         $this->initializeClient($config);
+        if ($errorClass) {
+            $this->expectException($errorClass);
+        }
+
         if (!empty($type)) {
             $url = $this->client->getUrl($identifier, $type);
         } else {
             $url = $this->client->getUrl($identifier);
         }
-        $this->assertEquals($expectedResult, $url);
+
+        if ($expectedResult) {
+            $this->assertStringStartsWith($expectedResult, $url);
+        } else {
+            $this->assertNull($url);
+        }
+    }
+
+    /**
+     * @test
+     * @dataProvider checkAddPublicUrlMethodDataProvider()
+     * @param array $config
+     * @param string $identifier
+     * @param string $url
+     * @param string $description
+     */
+    public function checkAddPublicUrlMethod(array $config, string $identifier, string $url, string $description)
+    {
+        $this->initializeClient($config);
+        $this->client->addPublicUrl($identifier, $url, $description);
     }
 
     protected function initializeClient(?array $config = null, $storage = null): void
@@ -73,7 +106,7 @@ class CelumClientTest extends FunctionalTestCase
             'celumApiKey' => getenv('celum_apiKey') ?: '',
             'cacheLifetimeInMinutes' => getenv('celum_cacheLifetimeInMinutes') ?: '',
             'infoFieldSetterToken' => getenv('celum_infoFieldSetterToken') ?: '',
-            'writePublicUrls' => getenv('celum_writePublicUrls') ?: '',
+            'writePublicUrls' => getenv('celum_writePublicUrls') ?: true,
             'informationFieldId' => getenv('celum_informationFieldId') ?: '',
             'nodeId' => getenv('celum_nodeId') ?: '',
             'descriptionFieldName' => getenv('celum_descriptionFieldName') ?: '',
@@ -223,6 +256,92 @@ class CelumClientTest extends FunctionalTestCase
                     'children' => []
                 ]
             ],
+            'subfolders with assets in thmb' => [
+                [
+                    'downloadFormat' => 'thmb'
+                ],
+                '/11084/11086/',
+                [
+                    'info' => [
+                        'identifier' => '/11084/11086/',
+                        'name' => 'Menschen',
+                        'storage' => null
+                    ],
+                    'assets' => [
+                        '/11084/11086/1492',
+                        '/11084/11086/1494',
+                        '/11084/11086/1495',
+                        '/11084/11086/1496',
+                        '/11084/11086/1497',
+                        '/11084/11086/1498',
+                        '/11084/11086/1499',
+                        '/11084/11086/1500',
+                        '/11084/11086/1501',
+                        '/11084/11086/1502',
+                        '/11084/11086/1503',
+                        '/11084/11086/1504',
+                        '/11084/11086/1505',
+                        '/11084/11086/1506',
+                        '/11084/11086/1508',
+                        '/11084/11086/1509',
+                        '/11084/11086/1510',
+                        '/11084/11086/1511',
+                        '/11084/11086/1512',
+                        '/11084/11086/1513',
+                        '/11084/11086/1514',
+                        '/11084/11086/1515',
+                        '/11084/11086/1516',
+                        '/11084/11086/1517',
+                        '/11084/11086/1518',
+                        '/11084/11086/1519',
+                        '/11084/11086/1520',
+                    ],
+                    'children' => []
+                ]
+            ],
+            'subfolders with assets in prvw' => [
+                [
+                    'downloadFormat' => 'prvw'
+                ],
+                '/11084/11086/',
+                [
+                    'info' => [
+                        'identifier' => '/11084/11086/',
+                        'name' => 'Menschen',
+                        'storage' => null
+                    ],
+                    'assets' => [
+                        '/11084/11086/1492',
+                        '/11084/11086/1494',
+                        '/11084/11086/1495',
+                        '/11084/11086/1496',
+                        '/11084/11086/1497',
+                        '/11084/11086/1498',
+                        '/11084/11086/1499',
+                        '/11084/11086/1500',
+                        '/11084/11086/1501',
+                        '/11084/11086/1502',
+                        '/11084/11086/1503',
+                        '/11084/11086/1504',
+                        '/11084/11086/1505',
+                        '/11084/11086/1506',
+                        '/11084/11086/1508',
+                        '/11084/11086/1509',
+                        '/11084/11086/1510',
+                        '/11084/11086/1511',
+                        '/11084/11086/1512',
+                        '/11084/11086/1513',
+                        '/11084/11086/1514',
+                        '/11084/11086/1515',
+                        '/11084/11086/1516',
+                        '/11084/11086/1517',
+                        '/11084/11086/1518',
+                        '/11084/11086/1519',
+                        '/11084/11086/1520',
+                    ],
+                    'children' => []
+                ]
+            ],
 
         ];
     }
@@ -247,12 +366,11 @@ class CelumClientTest extends FunctionalTestCase
                         'description' => '',
                         'alternative' => '',
                         'mimetype' => 'image/jpg',
-                        'ctime' => 1630680583,
-                        'mtime' => 1639147058
+                        'ctime' => 1630680583
                     ],
-                    'preview' => 'https://contenthub-demo.brix.ch/cora/download?ticket=cf874d9a-fb89-402d-b444-411d8aae29ad',
+                    'preview' => 'https://contenthub-demo.brix.ch/cora/download?ticket=',
                     'publicUrl' => 'https://contenthub-demo.brix.ch/direct/download?format=largeprvw&id=1494',
-                    'thumbnail' => 'https://contenthub-demo.brix.ch/cora/download?ticket=6f4a06f9-029c-45d2-bd32-054bc3dc0e5b',
+                    'thumbnail' => 'https://contenthub-demo.brix.ch/cora/download?ticket=',
                     'extension' => 'jpg'
                 ]
             ],
@@ -276,11 +394,10 @@ class CelumClientTest extends FunctionalTestCase
                         'alternative' => '',
                         'mimetype' => 'image/jpg',
                         'ctime' => 1630680583,
-                        'mtime' => 1639147058
                     ],
-                    'preview' => 'https://contenthub-demo.brix.ch/cora/download?ticket=cf874d9a-fb89-402d-b444-411d8aae29ad',
+                    'preview' => 'https://contenthub-demo.brix.ch/cora/download?ticket=',
                     'publicUrl' => 'https://contenthub-demo.brix.ch/direct/download?format=largeprvw&id=1494',
-                    'thumbnail' => 'https://contenthub-demo.brix.ch/cora/download?ticket=6f4a06f9-029c-45d2-bd32-054bc3dc0e5b',
+                    'thumbnail' => 'https://contenthub-demo.brix.ch/cora/download?ticket=',
                     'extension' => 'jpg'
                 ]
             ],
@@ -306,13 +423,26 @@ class CelumClientTest extends FunctionalTestCase
                 [],
                 '/11084/11086/1494',
                 'thumbnail',
-                'https://contenthub-demo.brix.ch/cora/download?ticket=6f4a06f9-029c-45d2-bd32-054bc3dc0e5b'
+                'https://contenthub-demo.brix.ch/cora/download?ticket='
+            ],
+            'thumb' => [
+                [],
+                'thumb/11084/11086/1494',
+                '',
+                'https://contenthub-demo.brix.ch/cora/download?ticket='
+            ],
+            'thumb-wrong' => [
+                [],
+                'thumb/foo/bar',
+                '',
+                '',
+                ClientException::class
             ],
             'preview' => [
                 [],
                 '/11084/11086/1494',
                 'preview',
-                'https://contenthub-demo.brix.ch/cora/download?ticket=cf874d9a-fb89-402d-b444-411d8aae29ad'
+                'https://contenthub-demo.brix.ch/cora/download?ticket='
             ],
             'fake type' => [
                 [],
@@ -320,6 +450,18 @@ class CelumClientTest extends FunctionalTestCase
                 'fake',
                 null
             ],
+        ];
+    }
+
+    public function checkAddPublicUrlMethodDataProvider(): array
+    {
+        return [
+            '' => [
+                [],
+                '/11084/11086/1494',
+                'https://typo3.org',
+                'Website of TYPO3'
+            ]
         ];
     }
 }

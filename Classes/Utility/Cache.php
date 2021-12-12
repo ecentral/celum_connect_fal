@@ -16,7 +16,7 @@ class Cache implements SingletonInterface
     {
         $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
         if ($cacheManager->hasCache(CelumDriver::EXTENSION_KEY)) {
-            $this->cache = $this->cacheManager->getCache(CelumDriver::EXTENSION_KEY);
+            $this->cache = $cacheManager->getCache(CelumDriver::EXTENSION_KEY);
         }
     }
 

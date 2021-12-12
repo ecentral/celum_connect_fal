@@ -9,6 +9,8 @@
 namespace Brix\CelumFal\Client;
 
 use Brix\CelumFal\Driver\CelumDriver;
+use Brix\CelumFal\Exceptions\InvalidConfigurationException;
+use Brix\CelumFal\Utility\Cache;
 use GuzzleHttp\Client;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -16,6 +18,7 @@ use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class CelumClient {
 
@@ -34,6 +37,7 @@ class CelumClient {
     private $secret;
     private $client;
     private $options;
+    private $postOptions;
     private $format;
     private $lifetime;
     private $token;
@@ -46,14 +50,21 @@ class CelumClient {
     private $roots;
 
     public function __construct(array $config, $storage) {
+        if (empty($config['licenseKey'])) {
+            throw new InvalidConfigurationException('No licenseKey given');
+        }
+
+        if (empty($config['celumApiKey'])) {
+            throw new InvalidConfigurationException('No celumApiKey given');
+        }
+
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);
-        // Impossible to throw exceptions on invalid license, somehow there are instances created before the configuration is entered.
         if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
             $this->celumUrl = rtrim($matches[1]);
         } else {
-            return;
+            throw new InvalidConfigurationException('No valid license');
         }
         $this->cora = $this->celumUrl . '/cora/';
         $this->format = $config['downloadFormat'];
@@ -64,11 +75,12 @@ class CelumClient {
         $this->defaultLocale = $config['defaultLocale'];
         $this->secret = $config['directDownloadSecret'];
         $this->storage = $storage;
-        $this->cache = GeneralUtility::makeInstance(CacheManager::class)->getCache(CelumDriver::EXTENSION_KEY);
+        $this->cache = GeneralUtility::makeInstance(Cache::class);
         $this->client = new Client(['base_uri' => $this->cora]);
-        $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']]];
+        $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
+        $this->postOptions = ['verify' => false];
         $this->lifetime = intval($config['cacheLifetimeInMinutes']);
-        if (($this->lifetime <= 0) or ($this->lifetime >= 30))
+        if (($this->lifetime <= 0) || ($this->lifetime >= 30))
             $this->lifetime = 29;
         $this->lifetime *= 60;
         $this->token = $config['infoFieldSetterToken'];
@@ -86,11 +98,11 @@ class CelumClient {
             $this->roots[$key] = "/$val/";
     }
 
-    protected function extractId($identifier) {
+    public function extractId($identifier) {
         return basename(rtrim($identifier, '/'));
     }
 
-    protected function extractName(&$names) {
+    public function extractName(&$names) {
         $default = null;
         foreach ($names as $name) {
             if ($name['locale'] == $this->defaultLocale) {
@@ -294,7 +306,7 @@ class CelumClient {
             return $val;
     }
 
-    function addPublicUrl($identifier, $url, $description) {
+    public function addPublicUrl($identifier, $url, $description) {
         if (!$this->token)
             return;
         $clientUrl = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
@@ -308,10 +320,10 @@ class CelumClient {
                 $clientUrl .= '&info-' . $this->infoFieldId . '=true';
             }
         }
-        $this->client->request('POST', $clientUrl);
+        $this->client->request('POST', $clientUrl, $this->postOptions);
     }
 
-    function deletePublicUrl($identifier, $description, $stillUsed) {
+    public function deletePublicUrl($identifier, $description, $stillUsed) {
         if (!$this->token)
             return;
         $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
@@ -325,7 +337,7 @@ class CelumClient {
                 $url .= '&info-' . $this->infoFieldId . '=false';
             }
         }
-        $this->client->request('POST', $url);
+        $this->client->request('POST', $url, $this->postOptions);
     }
 
     public function getUrl($identifier, $type='publicUrl') {

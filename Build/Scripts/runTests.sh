@@ -29,6 +29,7 @@ setUpDockerComposeDotEnv() {
         echo "DOCKER_PHP_IMAGE=${DOCKER_PHP_IMAGE}"
         echo "EXTRA_TEST_OPTIONS=${EXTRA_TEST_OPTIONS}"
         echo "COVERAGE=${COVERAGE}"
+        echo "EXCLUDE_GROUPS=${EXCLUDE_GROUPS}"
         echo "SCRIPT_VERBOSE=${SCRIPT_VERBOSE}"
         echo "CGLCHECK_DRY_RUN=${CGLCHECK_DRY_RUN}"
         echo "DATABASE_DRIVER=${DATABASE_DRIVER}"
@@ -274,6 +275,8 @@ fi
 
 # Move "7.4" to "php74", the latter is the docker container name
 DOCKER_PHP_IMAGE=`echo "php${PHP_VERSION}" | sed -e 's/\.//'`
+
+EXCLUDE_GROUPS="--exclude-group not-${DOCKER_PHP_IMAGE}"
 
 # Set $1 to first mass argument, this is the optional test file or test directory to execute
 shift $((OPTIND - 1))

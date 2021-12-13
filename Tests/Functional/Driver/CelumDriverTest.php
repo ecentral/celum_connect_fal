@@ -199,6 +199,7 @@ class CelumDriverTest extends FunctionalTestCase
 
     /**
      * @test
+     * @group not-php74
      * @dataProvider checkGetFilesInFolderDataProvider()
      */
     public function checkGetFilesInFolder(string $folderIdentifier, array $expectedFiles, bool $recursive = false, int $start = 0, int $numberOfItems = 0, string $sort = ''): void

@@ -310,12 +310,12 @@ services:
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"coverage\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          bin/phpunit -c ../Build/FunctionalTests.xml ${EXCLUDE_GROUPS} ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          bin/phpunit -c ../Build/FunctionalTests.xml ${EXCLUDE_GROUPS} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         fi
       "
 
@@ -358,12 +358,12 @@ services:
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"coverage\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          bin/phpunit -c ../Build/FunctionalTests.xml ${EXCLUDE_GROUPS} ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/phpunit -c ../Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          bin/phpunit -c ../Build/FunctionalTests.xml ${EXCLUDE_GROUPS} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         fi
       "
 
@@ -428,11 +428,11 @@ services:
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
           XDEBUG_MODE=\"coverage\" \
-          bin/phpunit -c ../Build/UnitTests.xml ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          bin/phpunit -c ../Build/UnitTests.xml ${EXCLUDE_GROUPS} ${COVERAGE} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
           XDEBUG_MODE=\"debug,develop\" \
           XDEBUG_TRIGGER=\"foo\" \
           XDEBUG_CONFIG=\"client_port=${PHP_XDEBUG_PORT} client_host=host.docker.internal\" \
-          bin/phpunit -c ../Build/UnitTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
+          bin/phpunit -c ../Build/UnitTests.xml ${EXCLUDE_GROUPS} ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         fi
       "

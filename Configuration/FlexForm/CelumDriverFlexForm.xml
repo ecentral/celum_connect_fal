@@ -53,9 +53,9 @@
                     </config>
                 </TCEforms>
             </roots>
-            <downloadFormat>
+            <imageDownloadFormat>
                 <TCEforms>
-                    <label>Download format (download format ID, prvw (recommended, optimized), thumb, largeprvw, thumb or orig)</label>
+                    <label>Download format for images (download format ID, prvw (recommended, optimized), thumb, largeprvw, thumb or orig)</label>
                     <config>
                         <type>input</type>
                         <eval>trim</eval>
@@ -63,7 +63,29 @@
                         <default>prvw</default>
                     </config>
                 </TCEforms>
-            </downloadFormat>
+            </imageDownloadFormat>
+            <videoDownloadFormat>
+                <TCEforms>
+                    <label>Download format for videos (download format ID, prvw, thumb, largeprvw, thumb or orig (recommended))</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                        <default>orig</default>
+                    </config>
+                </TCEforms>
+            </videoDownloadFormat>
+            <othersDownloadFormat>
+                <TCEforms>
+                    <label>Download format for other file categories (download format ID, prvw, thumb, largeprvw, thumb or orig (recommended))</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim</eval>
+                        <size>256</size>
+                        <default>orig</default>
+                    </config>
+                </TCEforms>
+            </othersDownloadFormat>
             <directDownloadSecret>
                 <TCEforms>
                     <label>Direct Download secret</label>

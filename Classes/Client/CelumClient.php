@@ -38,7 +38,9 @@ class CelumClient {
     private $client;
     private $options;
     private $postOptions;
-    private $format;
+    private $imageFormat;
+    private $videoFormat;
+    private $othersFormat;
     private $lifetime;
     private $token;
     private $writePublicUrls;
@@ -67,8 +69,10 @@ class CelumClient {
             throw new InvalidConfigurationException('No valid license');
         }
         $this->cora = $this->celumUrl . '/cora/';
-        $this->format = $config['downloadFormat'];
-        $this->directDownload = $this->celumUrl . '/direct/download?format=' . $config['downloadFormat'] . '&id=';
+        $this->imageFormat = $config['imageDownloadFormat'];
+        $this->videoFormat = $config['videoDownloadFormat'];
+        $this->othersFormat = $config['othersDownloadFormat'];
+        $this->directDownload = $this->celumUrl . '/direct/download?';
         $this->provider = ['video' => $config['publicURLsProviderVideo'], 'image' => $config['publicURLsProviderImage']];
         $this->description = ['video' => $config['publicURLsDescriptionVideo'], 'image' => $config['publicURLsDescriptionImage']];
         $this->locale = $config['locale'];
@@ -215,6 +219,8 @@ class CelumClient {
     }
 
     private function toAsset(&$arr, $identifier) {
+        $type = $arr['fileCategory'];
+        $format = ($type == 'image' ? $this->imageFormat : ($type == 'video' ? $this->videoFormat : $this->othersFormat));
         foreach ($arr['fileProperties'] as $prop) {
             if ($prop['name'] === 'width')
                 $width = $prop['value'];
@@ -223,11 +229,11 @@ class CelumClient {
         }
         if ($width and $height) {
             $max = 0;
-            if ($this->format === 'thmb') {
+            if ($format === 'thmb') {
                 $max = 250;
-            } elseif ($this->format === 'prvw') {
+            } elseif ($format === 'prvw') {
                 $max = 1024;
-            } elseif ($this->format === 'largeprvw') {
+            } elseif ($format === 'largeprvw') {
                 $max = 3000;
             }
             if (($max > 0) and (($width > $max) or ($height > $max))) {
@@ -244,7 +250,6 @@ class CelumClient {
             $height = 0;
         }
         $publicUrl = false;
-        $type = $arr['fileCategory'];
         if (($type == 'image') or ($type == 'video')) {
             // echo $this->description . " " . $this->provider . " " . json_encode($response['publicUrls']) . "; ";
             foreach ($arr['publicUrls'] as $purl) {
@@ -254,12 +259,12 @@ class CelumClient {
         }
         if (!$publicUrl) {
             $id = $this->extractId($identifier);
-            $publicUrl = $this->directDownload . $id;
+            $publicUrl = $this->directDownload . 'format=' . $format . '&id=' . $id;
             if ($this->secret)
                 $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
         }
         $name = $arr['name'];
-        if ($this->format === 'prvw' or $this->format === 'largeprvw' or $this->format === 'thumb')
+        if ($format === 'prvw' or $format === 'largeprvw' or $format === 'thumb')
             $ext = '.jpg';
         else
             $ext = '.' . $arr['fileInformation']['fileExtension'];

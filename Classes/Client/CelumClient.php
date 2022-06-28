@@ -65,13 +65,11 @@ class CelumClient {
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);
-        /*
         if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
             $this->celumUrl = rtrim($matches[1]);
-        } else {
+        }/* else {
             throw new InvalidConfigurationException('No valid license');
-        }
-        */
+        }*/
         $this->cora = $this->celumUrl . '/cora/';
         $this->imageFormat = $config['imageDownloadFormat'];
         $this->videoFormat = $config['videoDownloadFormat'];

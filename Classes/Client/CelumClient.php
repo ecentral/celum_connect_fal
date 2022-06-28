@@ -52,6 +52,8 @@ class CelumClient {
     private $roots;
 
     public function __construct(array $config, $storage) {
+        // The following leads to being unable to configure a driver, because T3 makes an instance before it is configured
+        /*
         if (empty($config['licenseKey'])) {
             throw new InvalidConfigurationException('No licenseKey given');
         }
@@ -59,7 +61,7 @@ class CelumClient {
         if (empty($config['celumApiKey'])) {
             throw new InvalidConfigurationException('No celumApiKey given');
         }
-
+        */
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->log->debug("__construct(" . json_encode($config) . ")");
         $res = $this->decrypt($config['licenseKey']);

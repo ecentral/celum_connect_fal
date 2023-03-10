@@ -55,12 +55,12 @@
             </roots>
             <imageDownloadFormat>
                 <TCEforms>
-                    <label>Download format for images (download format ID, prvw (recommended, optimized), thumb, largeprvw, thumb or orig)</label>
+                    <label>Download format for images (download format ID, prvw, thumb, largeprvw (recommended, optimized), thumb or orig)</label>
                     <config>
                         <type>input</type>
                         <eval>trim</eval>
                         <size>256</size>
-                        <default>prvw</default>
+                        <default>largeprvw</default>
                     </config>
                 </TCEforms>
             </imageDownloadFormat>

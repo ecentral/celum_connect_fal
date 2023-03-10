@@ -222,7 +222,7 @@ class CelumClient {
 
     private function toAsset(&$arr, $identifier) {
         $type = $arr['fileCategory'];
-        $format = ($type == 'image' ? $this->imageFormat : ($type == 'video' ? $this->videoFormat : $this->othersFormat));
+        $format = (($type == 'image') ? $this->imageFormat : (($type == 'video') ? $this->videoFormat : $this->othersFormat));
         foreach ($arr['fileProperties'] as $prop) {
             if ($prop['name'] === 'width')
                 $width = $prop['value'];

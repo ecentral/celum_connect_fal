@@ -11,6 +11,7 @@ namespace Brix\CelumFal\Client;
 use Brix\CelumFal\Driver\CelumDriver;
 use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use Brix\CelumFal\Utility\Cache;
+use Exception;
 use GuzzleHttp\Client;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -62,46 +63,50 @@ class CelumClient {
             throw new InvalidConfigurationException('No celumApiKey given');
         }
         */
-        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-        $this->log->debug("__construct(" . json_encode($config) . ")");
-        $res = $this->decrypt($config['licenseKey']);
-        if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
-            $this->celumUrl = rtrim($matches[1]);
-        }/* else {
+        try {
+            $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+            $this->log->debug("__construct(" . json_encode($config) . ")");
+            $res = $this->decrypt($config['licenseKey']);
+            if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
+                $this->celumUrl = rtrim($matches[1]);
+            }/* else {
             throw new InvalidConfigurationException('No valid license');
         }*/
-        $this->cora = $this->celumUrl . '/cora/';
-        $this->imageFormat = $config['imageDownloadFormat'];
-        $this->videoFormat = $config['videoDownloadFormat'];
-        $this->othersFormat = $config['othersDownloadFormat'];
-        $this->directDownload = $this->celumUrl . '/direct/download?';
-        $this->provider = ['video' => $config['publicURLsProviderVideo'], 'image' => $config['publicURLsProviderImage']];
-        $this->description = ['video' => $config['publicURLsDescriptionVideo'], 'image' => $config['publicURLsDescriptionImage']];
-        $this->locale = $config['locale'];
-        $this->defaultLocale = $config['defaultLocale'];
-        $this->secret = $config['directDownloadSecret'];
-        $this->storage = $storage;
-        $this->cache = GeneralUtility::makeInstance(Cache::class);
-        $this->client = new Client(['base_uri' => $this->cora]);
-        $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
-        $this->postOptions = ['verify' => false];
-        $this->lifetime = intval($config['cacheLifetimeInMinutes']);
-        if (($this->lifetime <= 0) || ($this->lifetime >= 30))
-            $this->lifetime = 29;
-        $this->lifetime *= 60;
-        $this->token = $config['infoFieldSetterToken'];
-        $this->writePublicUrls = $config['writePublicUrls'];
-        $this->infoFieldId = $config['informationFieldId'];
-        $this->nodeId = $config['nodeId'];
-        $this->descriptionFieldName = $config['descriptionFieldName'];
-        if ($this->descriptionFieldName)
-            $this->fieldSelect .= ',informationFieldValues/' . $this->descriptionFieldName;
-        $this->alternativeFieldName = $config['alternativeTextFieldName'];
-        if ($this->alternativeFieldName)
-            $this->fieldSelect .= ',informationFieldValues/' . $this->alternativeFieldName;
-        $this->roots = preg_split('/\\s*,\\s*/', trim($config['roots']));
-        foreach ($this->roots as $key => $val)
-            $this->roots[$key] = "/$val/";
+            $this->cora = $this->celumUrl . '/cora/';
+            $this->imageFormat = $config['imageDownloadFormat'];
+            $this->videoFormat = $config['videoDownloadFormat'];
+            $this->othersFormat = $config['othersDownloadFormat'];
+            $this->directDownload = $this->celumUrl . '/direct/download?';
+            $this->provider = ['video' => $config['publicURLsProviderVideo'], 'image' => $config['publicURLsProviderImage']];
+            $this->description = ['video' => $config['publicURLsDescriptionVideo'], 'image' => $config['publicURLsDescriptionImage']];
+            $this->locale = $config['locale'];
+            $this->defaultLocale = $config['defaultLocale'];
+            $this->secret = $config['directDownloadSecret'];
+            $this->storage = $storage;
+            $this->cache = GeneralUtility::makeInstance(Cache::class);
+            $this->client = new Client(['base_uri' => $this->cora]);
+            $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
+            $this->postOptions = ['verify' => false];
+            $this->lifetime = intval($config['cacheLifetimeInMinutes']);
+            if (($this->lifetime <= 0) || ($this->lifetime >= 30))
+                $this->lifetime = 29;
+            $this->lifetime *= 60;
+            $this->token = $config['infoFieldSetterToken'];
+            $this->writePublicUrls = $config['writePublicUrls'];
+            $this->infoFieldId = $config['informationFieldId'];
+            $this->nodeId = $config['nodeId'];
+            $this->descriptionFieldName = $config['descriptionFieldName'];
+            if ($this->descriptionFieldName)
+                $this->fieldSelect .= ',informationFieldValues/' . $this->descriptionFieldName;
+            $this->alternativeFieldName = $config['alternativeTextFieldName'];
+            if ($this->alternativeFieldName)
+                $this->fieldSelect .= ',informationFieldValues/' . $this->alternativeFieldName;
+            $this->roots = preg_split('/\\s*,\\s*/', trim($config['roots']));
+            foreach ($this->roots as $key => $val)
+                $this->roots[$key] = "/$val/";
+        } catch (Exception $exception) {
+            $this->log->error($exception->getMessage());
+        }
     }
 
     public function extractId($identifier) {

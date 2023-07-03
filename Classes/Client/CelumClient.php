@@ -125,7 +125,6 @@ class CelumClient {
         return $default;
     }
 
-
     protected function initCacheRoot()
     {
         $key = "_";
@@ -175,7 +174,9 @@ class CelumClient {
                     $top = 200;
                     for ($skip = 0; $continue; $skip += $top) {
                         $continue = false;
-                        $response = $this->client->request('GET', 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets', $this->options)->getBody();
+                        $request =  'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets';
+                        $this->log->debug('request: GET:' . $request);
+                        $response = $this->client->request('GET',$request, $this->options)->getBody();
                         if ($response) {
                             $response = json_decode($response, true);
                             if ($skip == 0)
@@ -231,7 +232,9 @@ class CelumClient {
     public function getFileInfo($identifier) {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
-            $response = $this->client->request('GET', 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '&$expand=publicUrls', $this->options)->getBody();
+            $request =  'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '&$expand=publicUrls';
+            $this->log->debug('request: GET:' . $request);
+            $response = $this->client->request('GET', $request, $this->options)->getBody();
             if ($response) {
                 $response = json_decode($response, true);
                 $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->lifetime);

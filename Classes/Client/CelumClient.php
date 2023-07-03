@@ -23,6 +23,9 @@ use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class CelumClient {
 
+
+    const API_MAX_ASSET_CHILD_SIZE = 200;
+
 	protected $celumUrl;
     protected $cora;
     protected $locale;
@@ -152,81 +155,145 @@ class CelumClient {
         $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
     }
 
+    private function queryBasicFolderInformation($identifier){
+        $filenames = [];
+        $foldernames = [];
+        $files = [];
+        $folders = [];
+        $id = $this->extractId($identifier);
+        $request =  'Nodes(' . $id . ')?$select=id,name,children,assets';
+        $this->log->debug('request: GET:' . $request);
+
+        $response = $this->client->request('GET',$request, $this->options)->getBody();
+
+        $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
+
+        if ($response) {
+            $response = json_decode($response, true);
+
+            $folderInfoReturnValue = [
+                'info' => [
+                    'identifier' => $identifier,
+                    'name' => $this->extractName($response['name']),
+                    'storage' => $this->storage],
+                'children' => [],
+                'assets' => []
+            ];
+        }
+        return $folderInfoReturnValue;
+    }
+
+    private function querySubfolderAndAssets($identifier){
+        $filenames = [];
+        $foldernames = [];
+        $files = [];
+        $folders = [];
+
+
+        $id = $this->extractId($identifier);
+        $continue = true;
+        $top = CelumClient::API_MAX_ASSET_CHILD_SIZE;
+
+        $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
+
+        for ($skip = 0; $continue; $skip += $top) {
+            $continue = false;
+            $request =  'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets';
+            $this->log->debug('request: GET:' . $request);
+            $response = $this->client->request('GET',$request, $this->options)->getBody();
+            if ($response) {
+                $response = json_decode($response, true);
+                if ($skip == 0)
+                    $folderInfoReturnValue = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
+                if (isset($response['children'])) {
+                    $c = count($response['children']);
+                    if ($c > 0) {
+                        foreach ($response['children'] as $child) {
+                            $fi = $identifier . $child['id'] . '/';
+                            $folderInfoReturnValue['children'][] = $fi;
+
+                            $n = $this->extractName($child['name']);
+                            $foldernames[$n] = $fi;
+                            $folders[] = ['name' => $n, 'identifier' => $fi];
+                        }
+                        if ($c == $top)
+                            $continue = true;
+                    }
+                }
+                if (isset($response['assets'])) {
+                    $c = count($response['assets']);
+                    if ($c > 0) {
+                        foreach ($response['assets'] as $asset) {
+                            $fi = $identifier . $asset['id'];
+                            $folderInfoReturnValue['assets'][] = $fi;
+                            $a = $this->toAsset($asset, $fi);
+                            $files[] = $a;
+                            $filenames[$a['info']['name']] = $fi;
+                        }
+                        if ($c == $top)
+                            $continue = true;
+                    }
+                }
+            } elseif ($skip == 0) {
+                // no response on first request, exit without data
+                return ['info' => null, 'children' => [], 'assets' => []];
+            }
+        }
+
+        // pass additional information in reurnvalue // ToDo: Refactor
+        $folderInfoReturnValue['xfilenames'] = $filenames;
+        $folderInfoReturnValue['xfoldernames'] = $foldernames;
+        $folderInfoReturnValue['xfiles'] = $files;
+        $folderInfoReturnValue['xfolders'] = $folders;
+
+        return $folderInfoReturnValue;
+    }
+
+
 
     // returns an array of the value selected for extraction or the folder info itself if nothing is specified
     // extract: 'filename', 'foldername', 'file', 'folder'
     // storage id only required for root folder
-    public function getFolderInfo($identifier, $extract = '') {
-        //$semaphore = sem_get(($identifier == '/' ? 0 : intval($this->extractId($identifier))) + 10); // 1 seems to be used by TYPO3
-        //sem_acquire($semaphore);
-        //try {
-            $key = str_replace('/', '_', $identifier);
-            if (!$this->cache->has($key)) {
-                if ($identifier == '/') {
-                    $this->initCacheRoot();
-                } else {
-                    $filenames = [];
-                    $foldernames = [];
-                    $files = [];
-                    $folders = [];
-                    $id = $this->extractId($identifier);
-                    $continue = true;
-                    $top = 200;
-                    for ($skip = 0; $continue; $skip += $top) {
-                        $continue = false;
-                        $request =  'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets';
-                        $this->log->debug('request: GET:' . $request);
-                        $response = $this->client->request('GET',$request, $this->options)->getBody();
-                        if ($response) {
-                            $response = json_decode($response, true);
-                            if ($skip == 0)
-                                $data = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
-                            if (isset($response['children'])) {
-                                $c = count($response['children']);
-                                if ($c > 0) {
-                                    foreach ($response['children'] as $child) {
-                                        $fi = $identifier . $child['id'] . '/';
-                                        $n = $this->extractName($child['name']);
-                                        $data['children'][] = $fi;
-                                        $foldernames[$n] = $fi;
-                                        $folders[] = ['name' => $n, 'identifier' => $fi];
-                                    }
-                                    if ($c == $top)
-                                        $continue = true;
-                                }
-                            }
-                            if (isset($response['assets'])) {
-                                $c = count($response['assets']);
-                                if ($c > 0) {
-                                    foreach ($response['assets'] as $asset) {
-                                        $fi = $identifier . $asset['id'];
-                                        $data['assets'][] = $fi;
-                                        $a = $this->toAsset($asset, $fi);
-                                        $this->cache->set($key . $asset['id'], $a, [], $this->lifetime);
-                                        $files[] = $a;
-                                        $filenames[$a['info']['name']] = $fi;
-                                    }
-                                    if ($c == $top)
-                                        $continue = true;
-                                }
-                            }
-                        } elseif ($skip == 0) {
-                            $this->cache->set($key, ['info' => null, 'children' => [], 'assets' => []], [], 60);
-                            return $this->cache->get($key);
-                        }
+    public function getFolderInfo($identifier, $extract = '')
+    {
+        $key = str_replace('/', '_', $identifier);
+        if (!$this->cache->has($key. $extract)) {
+            if ($identifier == '/') {
+                $this->initCacheRoot();
+            } else {
+                if ($extract === '') {
+                    // we are looking for basic folder information no recursion
+                    $folderInfo = $this->queryBasicFolderInformation($identifier);
+                    if (!isset($folderInfo['info'])) {
+                        $this->cache->set($key, $folderInfo, 60);  // set cache with short ttl to revisit shortly
+                        return $folderInfo;
                     }
-                    $this->cache->set($key, $data, [], $this->lifetime);
-                    $this->cache->set($key . 'file', $files, [], $this->lifetime);
-                    $this->cache->set($key . 'filename', $filenames, [], $this->lifetime);
-                    $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
-                    $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
+                    $this->cache->set($key, $folderInfo, [], $this->lifetime);
+                } else {
+                    $folderInfo = $this->querySubfolderAndAssets($identifier);
+                    if (!isset($folderInfo['info'])) {
+                        $this->cache->set($key, $folderInfo, 60);  // set cache with short ttl to revisit shortly
+                        return $folderInfo;
+                    }
+
+                    // add additional Cache values for further proccessing
+                    $this->cache->set($key . 'file', $folderInfo['xfiles'], [], $this->lifetime);
+                    $this->cache->set($key . 'filename', $folderInfo['xfilenames'], [], $this->lifetime);
+                    $this->cache->set($key . 'folder', $folderInfo['xfolders'], [], $this->lifetime);
+                    $this->cache->set($key . 'foldername', $folderInfo['xfoldernames'], [], $this->lifetime);
+                    unset($folderInfo['xfilenames']);
+                    unset($folderInfo['xfoldernames']);
+                    unset($folderInfo['xfiles']);
+                    unset($folderInfo['xfolders']);
+
+                    $this->cache->set($key, $folderInfo, [], $this->lifetime);
+
                 }
             }
-            $this->log->debug("getFolderInfo($identifier, $extract): " . json_encode($this->cache->get($key . $extract)));
-            return $this->cache->get($key . $extract);
-        //} finally {
-        //    sem_release($semaphore);
-        //}
+        }
+        $this->log->debug("getFolderInfo($identifier, $extract): " . json_encode($this->cache->get($key . $extract)));
+        return $this->cache->get($key . $extract);
+
     }
 
     public function getFileInfo($identifier) {

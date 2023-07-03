@@ -503,7 +503,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
     public function getFilesInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $filenameFilterCallbacks = [], $sort = '', $sortRev = false) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         if ($recursive or (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp'))) {
-            self::$client->getFolderInfo($folderIdentifier, 'files'); // ToDo Azu Remove required CacheWarmUp
+            self::$client->getFolderInfo($folderIdentifier, 'file'); // ToDo  Remove required CacheWarmUp (file eq. assets param?)
             $ret = self::$client->getFolderInfo($folderIdentifier)['assets'];
             if ($recursive) {
                 $folders = $this->getFoldersInFolder($folderIdentifier, 0, 0, true);
@@ -575,13 +575,13 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
     public function getFoldersInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $folderNameFilterCallbacks = [], $sort = '', $sortRev = false) {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         if ($recursive) {
-            $data = self::$client->getFolderInfo($folderIdentifier, 'folder'); // ToDo Azu Remove required CacheWarmUp
+            $data = self::$client->getFolderInfo($folderIdentifier, 'folder'); // ToDo Remove required CacheWarmUp (folder eq children?)
             $ret = self::$client->getFolderInfo($folderIdentifier)['children'];
             $tmp = $ret;
             foreach ($tmp as $folder)
                 $ret = array_merge($ret, $this->getFoldersInFolder($folder, 0, 0, true));
         } elseif ($sort != 'name') {
-            $data = self::$client->getFolderInfo($folderIdentifier, 'folder'); // ToDo Azu Remove required CacheWarmUp
+            $data = self::$client->getFolderInfo($folderIdentifier, 'folder'); // ToDo Remove required CacheWarmUp (folder eq children?)
             $ret = self::$client->getFolderInfo($folderIdentifier)['children'];
             if ($sortRev)
                 $ret =  array_reverse($ret);

@@ -147,19 +147,15 @@ class CelumClient {
         $folders = [];
         $foldernames = [];
         foreach ($this->roots as $root) {
-            $f = $this->getFolderInfo($root);
-            $folders[] = ['identifier' => $root, 'name' => $f['name']];
-            $foldernames[$f['name']] = $root;
+            $f = $this->getFolderInfo( $root, '');
+            $folders[] = ['identifier' => $root, 'name' => $f['info']['name']];
+            $foldernames[  $f['info']['name']] = $root;
         }
         $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
         $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
     }
 
     private function queryBasicFolderInformation($identifier){
-        $filenames = [];
-        $foldernames = [];
-        $files = [];
-        $folders = [];
         $id = $this->extractId($identifier);
         $request =  'Nodes(' . $id . ')?$select=id,name,children,assets';
         $this->log->debug('request: GET:' . $request);
@@ -182,6 +178,56 @@ class CelumClient {
         }
         return $folderInfoReturnValue;
     }
+
+
+    private function querySubfolder($identifier){
+        $foldernames = [];
+        $folders = [];
+
+
+        $id = $this->extractId($identifier);
+        $continue = true;
+        $top = CelumClient::API_MAX_ASSET_CHILD_SIZE;
+
+        $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
+
+        for ($skip = 0; $continue; $skip += $top) {
+            $continue = false;
+            $request =  'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets';
+            $this->log->debug('request: GET:' . $request);
+            $response = $this->client->request('GET',$request, $this->options)->getBody();
+            if ($response) {
+                $response = json_decode($response, true);
+                if ($skip == 0)
+                    $folderInfoReturnValue = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
+                if (isset($response['children'])) {
+                    $c = count($response['children']);
+                    if ($c > 0) {
+                        foreach ($response['children'] as $child) {
+                            $fi = $identifier . $child['id'] . '/';
+                            $folderInfoReturnValue['children'][] = $fi;
+
+                            $n = $this->extractName($child['name']);
+                            $foldernames[$n] = $fi;
+                            $folders[] = ['name' => $n, 'identifier' => $fi];
+                        }
+                        if ($c == $top)
+                            $continue = true;
+                    }
+                }
+            } elseif ($skip == 0) {
+                // no response on first request, exit without data
+                return ['info' => null, 'children' => [], 'assets' => []];
+            }
+        }
+
+        // pass additional information in reurnvalue // ToDo: Refactor
+        $folderInfoReturnValue['xfoldernames'] = $foldernames;
+        $folderInfoReturnValue['xfolders'] = $folders;
+
+        return $folderInfoReturnValue;
+    }
+
 
     private function querySubfolderAndAssets($identifier){
         $filenames = [];
@@ -268,7 +314,22 @@ class CelumClient {
                         $this->cache->set($key, $folderInfo, 60);  // set cache with short ttl to revisit shortly
                         return $folderInfo;
                     }
-                    $this->cache->set($key, $folderInfo, [], $this->lifetime);
+                } elseif ($extract === 'folder'){
+                    $folderInfo = $this->querySubfolder($identifier);
+                    if (!isset($folderInfo['info'])) {
+                        $this->cache->set($key, $folderInfo, 60);  // set cache with short ttl to revisit shortly
+                        return $folderInfo;
+                    }
+
+                    // add additional Cache values for further processing
+                    $this->cache->set($key . 'folder', $folderInfo['xfolders'], [], $this->lifetime);
+                    $this->cache->set($key . 'foldername', $folderInfo['xfoldernames'], [], $this->lifetime);
+
+                    // fill up cache with asset information
+
+                    unset($folderInfo['xfoldernames']);
+                    unset($folderInfo['xfolders']);
+
                 } else {
                     $folderInfo = $this->querySubfolderAndAssets($identifier);
                     if (!isset($folderInfo['info'])) {
@@ -276,19 +337,25 @@ class CelumClient {
                         return $folderInfo;
                     }
 
-                    // add additional Cache values for further proccessing
+                    // add additional Cache values for further processing
                     $this->cache->set($key . 'file', $folderInfo['xfiles'], [], $this->lifetime);
                     $this->cache->set($key . 'filename', $folderInfo['xfilenames'], [], $this->lifetime);
                     $this->cache->set($key . 'folder', $folderInfo['xfolders'], [], $this->lifetime);
                     $this->cache->set($key . 'foldername', $folderInfo['xfoldernames'], [], $this->lifetime);
+
+                    // fill up cache with asset information
+                    foreach ($folderInfo['xfiles'] as $asset){
+                        $assetKey = str_replace('/', '_', $asset['info']['identifier']);
+                        $this->cache->set($assetKey, $asset, [], $this->lifetime);
+                    }
+
                     unset($folderInfo['xfilenames']);
                     unset($folderInfo['xfoldernames']);
                     unset($folderInfo['xfiles']);
                     unset($folderInfo['xfolders']);
 
-                    $this->cache->set($key, $folderInfo, [], $this->lifetime);
-
                 }
+                $this->cache->set($key, $folderInfo, [], $this->lifetime);
             }
         }
         $this->log->debug("getFolderInfo($identifier, $extract): " . json_encode($this->cache->get($key . $extract)));

@@ -327,7 +327,7 @@ class CelumClient {
     }
 
     private function getInfoFieldValue($name, $arr) {
-        if (!$arr['informationFieldValues'])
+        if (!isset($arr['informationFieldValues']) || !$arr['informationFieldValues'])
             return '';
         $val = $arr['informationFieldValues'][$name];
         if (!$val)

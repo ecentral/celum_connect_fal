@@ -125,6 +125,35 @@ class CelumClient {
         return $default;
     }
 
+
+    protected function initCacheRoot()
+    {
+        $key = "_";
+        $rootFolderInfo = [
+            'info' => [
+                'identifier' => '/',
+                'name' => 'CELUM',
+                'storage' => $this->storage
+            ],
+            'assets' => [],
+            'children' => $this->roots];
+        $this->cache->set($key, $rootFolderInfo , [], $this->lifetime);
+        $this->cache->set($key . 'file', [], [], $this->lifetime);          // no files in storage root
+        $this->cache->set($key . 'filename', [], [], $this->lifetime);      // no files in storage root
+
+        // add DAM nodes as root folders
+        $folders = [];
+        $foldernames = [];
+        foreach ($this->roots as $root) {
+            $f = $this->getFolderInfo($root);
+            $folders[] = ['identifier' => $root, 'name' => $f['name']];
+            $foldernames[$f['name']] = $root;
+        }
+        $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
+        $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
+    }
+
+
     // returns an array of the value selected for extraction or the folder info itself if nothing is specified
     // extract: 'filename', 'foldername', 'file', 'folder'
     // storage id only required for root folder
@@ -135,18 +164,7 @@ class CelumClient {
             $key = str_replace('/', '_', $identifier);
             if (!$this->cache->has($key)) {
                 if ($identifier == '/') {
-                    $this->cache->set($key, ['info' => ['identifier' => '/', 'name' => 'CELUM', 'storage' => $this->storage], 'assets' => [], 'children' => $this->roots], [], $this->lifetime);
-                    $this->cache->set($key . 'file', [], [], $this->lifetime);
-                    $this->cache->set($key . 'filename', [], [], $this->lifetime);
-                    $folders = [];
-                    $foldernames = [];
-                    foreach ($this->roots as $root) {
-                        $f = $this->getFolderInfo($root);
-                        $folders[] = ['identifier' => $root, 'name' => $f['name']];
-                        $foldernames[$f['name']] = $root;
-                    }
-                    $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
-                    $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
+                    $this->initCacheRoot();
                 } else {
                     $filenames = [];
                     $foldernames = [];

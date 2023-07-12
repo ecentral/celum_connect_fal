@@ -1,0 +1,18 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Brix\CelumFal\Command\RefreshMetaCommand:
+    tags:
+      - name: 'console.command'
+        command: 'celumfal:refreshmeta'
+
+  Brix\CelumFal\Command\CompleteImportCommand:
+    tags:
+      - name: 'console.command'
+        command: 'celumfal:completeimport'
+
+  Brix\CelumFal\Index\Extractor:
+    public: true

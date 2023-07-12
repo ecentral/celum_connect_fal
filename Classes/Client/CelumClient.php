@@ -114,11 +114,19 @@ class CelumClient
         }
     }
 
+    /**
+     * @param $identifier
+     * @return string
+     */
     public function extractId($identifier)
     {
         return basename(rtrim($identifier, '/'));
     }
 
+    /**
+     * @param $names
+     * @return mixed|null
+     */
     public function extractName(&$names)
     {
         $default = null;
@@ -132,6 +140,9 @@ class CelumClient
         return $default;
     }
 
+    /**
+     * @return void
+     */
     protected function initCacheRoot()
     {
         $key = "_";
@@ -157,13 +168,15 @@ class CelumClient
         }
         $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
         $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
+        $this->cache->set($key . 'children', $rootFolderInfo['children'], [], $this->lifetime);
+        $this->cache->set($key . 'assets', $rootFolderInfo['assets'], [], $this->lifetime);
     }
 
     /**
      * @param $identifier
      * @return array
      */
-    private function queryBasicFolderInformation($identifier)
+    private function queryBasicFolderInformation($identifier): array
     {
         $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
 
@@ -328,11 +341,13 @@ class CelumClient
     }
 
 
-
-    // returns an array of the value selected for extraction or the folder info itself if nothing is specified
-    // extract: 'filename', 'foldername', 'file', 'folder'
-    // storage id only required for root folder
-    public function getFolderInfo($identifier, $extract = '')
+    /**
+     *  returns an array of the value selected for extraction or the folder info itself if nothing is specified
+     * @param $identifier
+     * @param $extract     string 'filename', 'foldername', 'file', 'folder' or ''
+     * @return array|mixed
+     */
+    public function getFolderInfo($identifier, string $extract = '')
     {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key . $extract)) {
@@ -502,6 +517,13 @@ class CelumClient
             return $val;
     }
 
+    /**
+     * @param $identifier
+     * @param $url
+     * @param $description
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function addPublicUrl($identifier, $url, $description)
     {
         if (!$this->token)
@@ -520,6 +542,13 @@ class CelumClient
         $this->client->request('POST', $clientUrl, $this->postOptions);
     }
 
+    /**
+     * @param $identifier
+     * @param $description
+     * @param $stillUsed
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function deletePublicUrl($identifier, $description, $stillUsed)
     {
         if (!$this->token)
@@ -538,6 +567,11 @@ class CelumClient
         $this->client->request('POST', $url, $this->postOptions);
     }
 
+    /**
+     * @param $identifier
+     * @param $type
+     * @return mixed
+     */
     public function getUrl($identifier, $type = 'publicUrl')
     {
         if (substr($identifier, 0, 5) === 'thumb') {

@@ -13,6 +13,7 @@ use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use Brix\CelumFal\Utility\Cache;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Log\LogManager;
@@ -25,7 +26,7 @@ class CelumClient
 {
 
 
-    const API_MAX_ASSET_CHILD_SIZE = 200;
+    const API_MAX_ASSET_CHUNK = 200; // API defined maximum of child assets per request (max api page size)
 
     protected $celumUrl;
     protected $cora;
@@ -153,7 +154,8 @@ class CelumClient
                 'storage' => $this->storage
             ],
             'assets' => [],
-            'children' => $this->roots];
+            'children' => $this->roots
+        ];
         $this->cache->set($key, $rootFolderInfo, [], $this->lifetime);
         $this->cache->set($key . 'file', [], [], $this->lifetime);          // no files in storage root
         $this->cache->set($key . 'filename', [], [], $this->lifetime);      // no files in storage root
@@ -202,7 +204,7 @@ class CelumClient
                     'assets' => []
                 ];
             }
-        } catch (\GuzzleHttp\Exception\GuzzleException $exception) {
+        } catch (GuzzleException $exception) {
             $this->log->error($exception->getMessage());
         }
         return $folderInfoReturnValue;
@@ -220,12 +222,10 @@ class CelumClient
 
         $id = $this->extractId($identifier);
         $continue = true;
-        $top = CelumClient::API_MAX_ASSET_CHILD_SIZE;
+        $top = CelumClient::API_MAX_ASSET_CHUNK;
 
         $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
         try {
-
-
             for ($skip = 0; $continue; $skip += $top) {
                 $continue = false;
                 $request = 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets';
@@ -260,7 +260,7 @@ class CelumClient
             // pass additional information in reurnvalue // ToDo: Refactor
             $folderInfoReturnValue['xfoldernames'] = $foldernames;
             $folderInfoReturnValue['xfolders'] = $folders;
-        } catch (\GuzzleHttp\Exception\GuzzleException $exception) {
+        } catch (GuzzleException $exception) {
             $this->log->error($exception->getMessage());
         }
         return [$folderInfoReturnValue, $foldernames, $folders];
@@ -280,7 +280,7 @@ class CelumClient
 
         $id = $this->extractId($identifier);
         $continue = true;
-        $top = CelumClient::API_MAX_ASSET_CHILD_SIZE;
+        $top = CelumClient::API_MAX_ASSET_CHUNK;
 
         $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
         try {
@@ -334,7 +334,7 @@ class CelumClient
                     return [['info' => null, 'children' => [], 'assets' => []], null, null, null, null];
                 }
             }
-        } catch (\GuzzleHttp\Exception\GuzzleException $exception) {
+        } catch (GuzzleException $exception) {
             $this->log->error($exception->getMessage());
         }
         return [$folderInfoReturnValue, $foldernames, $folders, $filenames, $files];
@@ -522,7 +522,7 @@ class CelumClient
      * @param $url
      * @param $description
      * @return void
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function addPublicUrl($identifier, $url, $description)
     {
@@ -547,7 +547,7 @@ class CelumClient
      * @param $description
      * @param $stillUsed
      * @return void
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function deletePublicUrl($identifier, $description, $stillUsed)
     {

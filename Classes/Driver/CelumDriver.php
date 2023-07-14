@@ -16,7 +16,8 @@ use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class CelumDriver extends AbstractHierarchicalFilesystemDriver {
+class CelumDriver extends AbstractHierarchicalFilesystemDriver
+{
 
     const EXTENSION_KEY = 'celum_connect_fal';
     const DRIVER_TYPE = 'BrixCelumDriver';
@@ -30,7 +31,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
     protected $configuration;
     protected $storageUid;
 
-    public function __construct(array $configuration = []) {
+    public function __construct(array $configuration = [])
+    {
         parent::__construct($configuration);
 
         $this->configuration = $configuration;
@@ -43,7 +45,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
     /**
      * Processes the configuration for this driver.
      */
-    public function processConfiguration() {
+    public function processConfiguration()
+    {
         //$this->log->debug("$this->instance: processConfiguration()");
     }
 
@@ -51,7 +54,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * Initializes this object. This is called by the storage after the driver
      * has been attached.
      */
-    public function initialize() {
+    public function initialize()
+    {
         //$this->log->debug("$this->instance: initialize()");
         self::$client = new CelumClient($this->configuration, $this->storageUid);
     }
@@ -64,7 +68,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param int $capabilities
      * @return int
      */
-    public function mergeConfigurationCapabilities($capabilities) {
+    public function mergeConfigurationCapabilities($capabilities)
+    {
         $this->capabilities &= $capabilities;
         //$this->log->debug("$this->instance: mergeConfigurationCapabilities($capabilities): $this->capabilities");
         return $this->capabilities;
@@ -75,7 +80,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *
      * @return string
      */
-    public function getRootLevelFolder() {
+    public function getRootLevelFolder()
+    {
         //$this->log->debug("$this->instance: getRootLevelFolder(): " . self::ROOT_FOLDER_IDENTIFIER);
         return '/';
     }
@@ -85,7 +91,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *
      * @return string
      */
-    public function getDefaultFolder() {
+    public function getDefaultFolder()
+    {
         $ret = $this->getRootLevelFolder();
         $this->log->debug("$this->instance: getDefaultFolder(): $ret");
         return $ret;
@@ -98,7 +105,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $identifier
      * @return string|null NULL if file is missing or deleted, the generated url otherwise
      */
-    public function getPublicUrl($identifier) {
+    public function getPublicUrl($identifier)
+    {
         $ret = self::$client->getUrl($identifier);
         $this->log->debug("$this->instance: getPublicURL($identifier): $ret");
         return $ret;
@@ -114,7 +122,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string the Identifier of the new folder
      * @throws Exception
      */
-    public function createFolder($newFolderName, $parentFolderIdentifier = '', $recursive = false) {
+    public function createFolder($newFolderName, $parentFolderIdentifier = '', $recursive = false)
+    {
         //$this->log->debug("$this->instance: createFolder($newFolderName, $parentFolderIdentifier, $recursive");
         throw new Exception('Storage is read-only.');
     }
@@ -127,7 +136,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return array A map of old to new file identifiers of all affected resources
      * @throws Exception
      */
-    public function renameFolder($folderIdentifier, $newName) {
+    public function renameFolder($folderIdentifier, $newName)
+    {
         //$this->log->debug("$this->instance: renameFolder($folderIdentifier, $newName)");
         throw new Exception('Storage is read-only.');
     }
@@ -140,7 +150,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return bool
      * @throws Exception
      */
-    public function deleteFolder($folderIdentifier, $deleteRecursively = false) {
+    public function deleteFolder($folderIdentifier, $deleteRecursively = false)
+    {
         //$this->log->debug("$this->instance: deleteFolder($folderIdentifier, $deleteRecursively)");
         throw new Exception('Storage is read-only.');
     }
@@ -151,7 +162,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $fileIdentifier
      * @return bool
      */
-    public function fileExists($fileIdentifier) {
+    public function fileExists($fileIdentifier)
+    {
         $ret = ((substr($fileIdentifier, -1, 1) != '/') and ($this->getFileInfoByIdentifier($fileIdentifier) !== null));
         $this->log->debug("$this->instance: fileExists($fileIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
@@ -163,7 +175,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $folderIdentifier
      * @return bool
      */
-    public function folderExists($folderIdentifier) {
+    public function folderExists($folderIdentifier)
+    {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $ret = (($folderIdentifier === '/') or ($this->getFolderInfoByIdentifier($folderIdentifier) !== null));
         $this->log->debug("$this->instance: folderExists($folderIdentifier): " . ($ret ? 'true' : 'false'));
@@ -176,7 +189,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $folderIdentifier
      * @return bool TRUE if there are no files and folders within $folder
      */
-    public function isFolderEmpty($folderIdentifier) {
+    public function isFolderEmpty($folderIdentifier)
+    {
         $ret = $this->countFoldersInFolder($folderIdentifier) + $this->countFilesInFolder($folderIdentifier) == 0;
         $this->log->debug("$this->instance: isFolderEmpty($folderIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
@@ -196,7 +210,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string the identifier of the new file
      * @throws Exception
      */
-    public function addFile($localFilePath, $targetFolderIdentifier, $newFileName = '', $removeOriginal = true) {
+    public function addFile($localFilePath, $targetFolderIdentifier, $newFileName = '', $removeOriginal = true)
+    {
         //$this->log->debug("$this->instance: addFile($localFilePath, $targetFolderIdentifier, $newFileName, $removeOriginal)");
         throw new Exception('Storage is read-only.');
     }
@@ -209,7 +224,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string
      * @throws Exception
      */
-    public function createFile($fileName, $parentFolderIdentifier) {
+    public function createFile($fileName, $parentFolderIdentifier)
+    {
         //$this->log->debug("$this->instance: createFile($fileName, $parentFolderIdentifier)");
         throw new Exception('Storage is read-only.');
     }
@@ -225,7 +241,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string the Identifier of the new file
      * @throws Exception
      */
-    public function copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName) {
+    public function copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName)
+    {
         //$this->log->debug("$this->instance: copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName)");
         throw new Exception('Storage is read-only.');
     }
@@ -238,7 +255,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string The identifier of the file after renaming
      * @throws Exception
      */
-    public function renameFile($fileIdentifier, $newName) {
+    public function renameFile($fileIdentifier, $newName)
+    {
         //$this->log->debug("$this->instance: renameFile($fileIdentifier, $newName)");
         throw new Exception('Storage is read-only.');
     }
@@ -251,7 +269,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return bool TRUE if the operation succeeded
      * @throws Exception
      */
-    public function replaceFile($fileIdentifier, $localFilePath) {
+    public function replaceFile($fileIdentifier, $localFilePath)
+    {
         //$this->log->debug("$this->instance: replaceFile($fileIdentifier, $localFilePath)");
         throw new Exception('Storage is read-only.');
     }
@@ -265,7 +284,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return bool TRUE if deleting the file succeeded
      * @throws Exception
      */
-    public function deleteFile($fileIdentifier) {
+    public function deleteFile($fileIdentifier)
+    {
         //$this->log->debug("$this->instance: deleteFile($fileIdentifier)");
         throw new Exception('Storage is read-only.');
     }
@@ -277,7 +297,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $hashAlgorithm The hash algorithm to use
      * @return string
      */
-    public function hash($fileIdentifier, $hashAlgorithm) {
+    public function hash($fileIdentifier, $hashAlgorithm)
+    {
         $ret = $this->hashIdentifier($fileIdentifier);
         $this->log->debug("$this->instance: hash($fileIdentifier, $hashAlgorithm): $ret");
         return $ret;
@@ -294,7 +315,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string
      * @throws Exception
      */
-    public function moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName) {
+    public function moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName)
+    {
         //$this->log->debug("$this->instance: moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName)");
         throw new Exception('Storage is read-only.');
     }
@@ -308,7 +330,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return array All files which are affected, map of old => new file identifiers
      * @throws Exception
      */
-    public function moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName) {
+    public function moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)
+    {
         //$this->log->debug("$this->instance: moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)");
         throw new Exception('Storage is read-only.');
     }
@@ -322,7 +345,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return bool
      * @throws Exception
      */
-    public function copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName) {
+    public function copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)
+    {
         //$this->log->debug("$this->instance: copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)");
         throw new Exception('Storage is read-only.');
     }
@@ -336,7 +360,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $fileIdentifier
      * @return string The file contents
      */
-    public function getFileContents($fileIdentifier) {
+    public function getFileContents($fileIdentifier)
+    {
         //$this->log->debug("$this->instance: getFileContents($fileIdentifier)");
         return file_get_contents(self::$client->getUrl($fileIdentifier));
     }
@@ -349,7 +374,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return int The number of bytes written to the file
      * @throws Exception
      */
-    public function setFileContents($fileIdentifier, $contents) {
+    public function setFileContents($fileIdentifier, $contents)
+    {
         //$this->log->debug("$this->instance: setFileContents($fileIdentifier, $contents)");
         throw new Exception('Storage is read-only.');
     }
@@ -362,7 +388,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return bool
      * @throws Exception
      */
-    public function fileExistsInFolder($fileName, $folderIdentifier) {
+    public function fileExistsInFolder($fileName, $folderIdentifier)
+    {
         return array_key_exists($fileName, self::$client->getFolderInfo($folderIdentifier, 'filename'));
     }
 
@@ -374,7 +401,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return bool
      * @throws Exception
      */
-    public function folderExistsInFolder($folderName, $folderIdentifier) {
+    public function folderExistsInFolder($folderName, $folderIdentifier)
+    {
         //$this->log->debug("$this->instance: folderExistsInFolder($folderName, $folderIdentifier)");
         return array_key_exists($folderName, self::$client->getFolderInfo($folderIdentifier, 'foldername'));
     }
@@ -390,7 +418,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *                       have set this flag!
      * @return string The path to the file on the local disk
      */
-    public function getFileForLocalProcessing($fileIdentifier, $writable = true) {
+    public function getFileForLocalProcessing($fileIdentifier, $writable = true)
+    {
         //$this->log->debug("$this->instance: getFileForLocalProcessing($fileIdentifier, $writable)");
         $tmp = GeneralUtility::tempnam('fal-tempfile-', '.' . self::$client->getFileInfo($fileIdentifier)['extension']);
         file_put_contents($tmp, fopen(self::$client->getUrl($fileIdentifier), 'r'));
@@ -404,7 +433,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $identifier
      * @return array
      */
-    public function getPermissions($identifier) {
+    public function getPermissions($identifier)
+    {
         //$this->log->debug("$this->instance: getPermissions($identifier)");
         return ['r' => true, 'w' => false];
     }
@@ -416,7 +446,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *
      * @param string $identifier
      */
-    public function dumpFileContents($identifier) {
+    public function dumpFileContents($identifier)
+    {
         //$this->log->debug("$this->instance: dumpFileContents($identifier)");
         $handle = fopen('php://output', 'w');
         fputs($handle, file_get_contents(self::$client->getUrl($identifier))); // ex thumbnail
@@ -436,7 +467,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $identifier identifier to be checked against $folderIdentifier
      * @return bool TRUE if $content is within or matches $folderIdentifier
      */
-    public function isWithin($folderIdentifier, $identifier) {
+    public function isWithin($folderIdentifier, $identifier)
+    {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $id = rtrim($identifier, '/\\') . '/';
         $ret = ($identifier and (strpos($id, $folderIdentifier) === 0));
@@ -452,9 +484,10 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *                                   If empty all will be extracted
      * @return array
      */
-    public function getFileInfoByIdentifier($fileIdentifier, array $propertiesToExtract = []) {
+    public function getFileInfoByIdentifier($fileIdentifier, array $propertiesToExtract = [])
+    {
         $ret = self::$client->getFileInfo($fileIdentifier)['info'];
-        $this->log->debug("$this->instance: getFileInfoByIdentifier($fileIdentifier, " . json_encode($propertiesToExtract). "): " . json_encode($ret));
+        $this->log->debug("$this->instance: getFileInfoByIdentifier($fileIdentifier, " . json_encode($propertiesToExtract) . "): " . json_encode($ret));
         return $ret;
     }
 
@@ -464,7 +497,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $folderIdentifier
      * @return array
      */
-    public function getFolderInfoByIdentifier($folderIdentifier) {
+    public function getFolderInfoByIdentifier($folderIdentifier)
+    {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $ret = self::$client->getFolderInfo($folderIdentifier)['info'];
         //$this->log->debug("$this->instance: getFolderInfoByIdentifier($folderIdentifier): " . json_encode($ret));
@@ -479,7 +513,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string file identifier
      * @throws Exception
      */
-    public function getFileInFolder($fileName, $folderIdentifier) {
+    public function getFileInFolder($fileName, $folderIdentifier)
+    {
         //$this->log->debug("$this->instance: getFileInFolder($fileName, $folderIdentifier)");
         return self::$client->getFolderInfo($folderIdentifier, 'filename')[$fileName];
     }
@@ -500,14 +535,15 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param bool $sortRev TRUE to indicate reverse sorting (last to first)
      * @return array of FileIdentifiers
      */
-    public function getFilesInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $filenameFilterCallbacks = [], $sort = '', $sortRev = false) {
+    public function getFilesInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $filenameFilterCallbacks = [], $sort = '', $sortRev = false)
+    {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         if ($recursive or (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp'))) {
             $ret = self::$client->getFolderInfo($folderIdentifier, 'assets');
             if ($recursive) {
                 $folders = $this->getFoldersInFolder($folderIdentifier, 0, 0, true);
                 foreach ($folders as $folder)
-                    $ret = array_merge($ret, self::$client->getFolderInfo($folder,'assets'));
+                    $ret = array_merge($ret, self::$client->getFolderInfo($folder, 'assets'));
             } elseif ($sortRev) {
                 $ret = array_reverse($ret);
             }
@@ -538,7 +574,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
         }
         if (($start > 0) or ($numberOfItems > 0))
             $ret = array_slice($ret, $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
-    //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
+        //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
         return $ret;
     }
 
@@ -550,7 +586,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return string folder identifier
      * @throws Exception
      */
-    public function getFolderInFolder($folderName, $folderIdentifier) {
+    public function getFolderInFolder($folderName, $folderIdentifier)
+    {
         //$this->log->debug("$this->instance: getFolderInFolder($folderName, $folderIdentifier)");
         return self::$client->getFolderInfo($folderIdentifier, 'foldername')[$folderName];
     }
@@ -571,17 +608,18 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param bool $sortRev TRUE to indicate reverse sorting (last to first)
      * @return array of Folder Identifier
      */
-    public function getFoldersInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $folderNameFilterCallbacks = [], $sort = '', $sortRev = false) {
+    public function getFoldersInFolder($folderIdentifier, $start = 0, $numberOfItems = 0, $recursive = false, array $folderNameFilterCallbacks = [], $sort = '', $sortRev = false)
+    {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         if ($recursive) {
-            $ret = self::$client->getFolderInfo($folderIdentifier,'children');
+            $ret = self::$client->getFolderInfo($folderIdentifier, 'children');
             $tmp = $ret;
             foreach ($tmp as $folder)
                 $ret = array_merge($ret, $this->getFoldersInFolder($folder, 0, 0, true));
         } elseif ($sort != 'name') {
-            $ret = self::$client->getFolderInfo($folderIdentifier,'children') ;
+            $ret = self::$client->getFolderInfo($folderIdentifier, 'children');
             if ($sortRev)
-                $ret =  array_reverse($ret);
+                $ret = array_reverse($ret);
         } else {
             $data = self::$client->getFolderInfo($folderIdentifier, 'folder');
             usort($data, function ($a, $b) use ($sortRev, $sort) {
@@ -607,7 +645,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param array $filenameFilterCallbacks callbacks for filtering the items
      * @return int Number of files in folder
      */
-    public function countFilesInFolder($folderIdentifier, $recursive = false, array $filenameFilterCallbacks = []) {
+    public function countFilesInFolder($folderIdentifier, $recursive = false, array $filenameFilterCallbacks = [])
+    {
         $ret = count($this->getFilesInFolder($folderIdentifier, 0, 0, $recursive, $filenameFilterCallbacks));
         $this->log->debug("$this->instance: countFilesInFolder($folderIdentifier, $recursive, " . json_encode($filenameFilterCallbacks) . "): $ret");
         return $ret;
@@ -621,7 +660,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param array $folderNameFilterCallbacks callbacks for filtering the items
      * @return int Number of folders in folder
      */
-    public function countFoldersInFolder($folderIdentifier, $recursive = false, array $folderNameFilterCallbacks = []) {
+    public function countFoldersInFolder($folderIdentifier, $recursive = false, array $folderNameFilterCallbacks = [])
+    {
         $ret = count($this->getFoldersInFolder($folderIdentifier, 0, 0, $recursive, $folderNameFilterCallbacks));
         $this->log->debug("$this->instance: countFoldersInFolder($folderIdentifier, $recursive, " . json_encode($folderNameFilterCallbacks) . "): $ret");
         return $ret;
@@ -632,7 +672,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *
      * @param int $storageUid
      */
-    public function setStorageUid($storageUid) {
+    public function setStorageUid($storageUid)
+    {
         //$this->log->debug("$this->instance: setStorageUid($storageUid)");
         $this->storageUid = $storageUid;
     }
@@ -643,7 +684,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @return int
      * @see Storage::CAPABILITY_* constants
      */
-    public function getCapabilities() {
+    public function getCapabilities()
+    {
         //$this->log->debug("$this->instance: getCapabilities(): $this->capabilities");
         return $this->capabilities;
     }
@@ -654,7 +696,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param int $capability A capability, as defined in a CAPABILITY_* constant
      * @return bool
      */
-    public function hasCapability($capability) {
+    public function hasCapability($capability)
+    {
         $ret = ($this->capabilities & $capability) === $capability;
         $this->log->debug("$this->instance: hasCapability($capability): $ret");
         return $ret;
@@ -669,7 +712,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *
      * @return bool
      */
-    public function isCaseSensitiveFileSystem() {
+    public function isCaseSensitiveFileSystem()
+    {
         //$this->log->debug("$this->instance: isCaseSensitiveFileSystem(): true");
         return true;
     }
@@ -682,7 +726,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      *                        (defaults to current charset; depending on context)
      * @return string the cleaned filename
      */
-    public function sanitizeFileName($fileName, $charset = '') {
+    public function sanitizeFileName($fileName, $charset = '')
+    {
         //$this->log->debug("$this->instance: sanitizeFileName($fileName, $charset): $fileName");
         return $fileName;
     }
@@ -695,7 +740,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $identifier
      * @return string
      */
-    public function hashIdentifier($identifier) {
+    public function hashIdentifier($identifier)
+    {
         $ret = sha1($identifier);
         $this->log->debug("$this->instance: hashIdentifier($identifier): $ret");
         return $ret;
@@ -707,7 +753,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver {
      * @param string $fileIdentifier
      * @return string
      */
-    public function getParentFolderIdentifierOfIdentifier($fileIdentifier) {
+    public function getParentFolderIdentifierOfIdentifier($fileIdentifier)
+    {
         $ret = rtrim(dirname($fileIdentifier), '/\\') . '/';
         $this->log->debug("$this->instance: getParentFolderIdentifierOfIdentifier($fileIdentifier): $ret");
         return $ret;

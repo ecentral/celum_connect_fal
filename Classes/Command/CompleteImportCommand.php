@@ -16,11 +16,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class CompleteImportCommand extends Command
 {
 
-    public function __construct()
-    {
-        parent::__construct(null);
-    }
-
     /**
      * Configure the command by defining the name, options and arguments
      */

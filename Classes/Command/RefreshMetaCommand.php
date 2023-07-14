@@ -100,11 +100,8 @@ EOF
 
         foreach ($files as $fileIdentifier) {
             $progressBar->advance();
-            $file = ['identifier' => $fileIdentifier,
-                'storage' => $storage->getUid()];
 
             try {
-                //        $file = GeneralUtility::makeInstance(File::class, $file, $storage);
                 $file = $factory->getFileObjectFromCombinedIdentifier($storageUid . ':' . $fileIdentifier);
                 assert($file instanceof File);
                 $metaData = $this->metadataExtractor->extractMetaData($file);

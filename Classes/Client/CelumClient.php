@@ -219,7 +219,6 @@ class CelumClient
         $foldernames = [];
         $folders = [];
 
-
         $id = $this->extractId($identifier);
         $continue = true;
         $top = CelumClient::API_MAX_ASSET_CHUNK;

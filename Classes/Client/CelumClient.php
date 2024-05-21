@@ -57,6 +57,9 @@ class CelumClient
     private $fieldSelect = '';
     private $roots;
 
+    /**
+     * @throws InvalidConfigurationException
+     */
     public function __construct(array $config, $storage)
     {
         // The following leads to being unable to configure a driver, because T3 makes an instance before it is configured
@@ -75,9 +78,9 @@ class CelumClient
             $res = $this->decrypt($config['licenseKey']);
             if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
                 $this->celumUrl = rtrim($matches[1]);
-            }/* else {
-            throw new InvalidConfigurationException('No valid license');
-        }*/
+            } else {
+                throw new InvalidConfigurationException('No valid license');
+            }
             $this->cora = $this->celumUrl . '/cora/';
             $this->imageFormat = $config['imageDownloadFormat'];
             $this->videoFormat = $config['videoDownloadFormat'];
@@ -188,7 +191,7 @@ class CelumClient
         }
 
         $id = $this->extractId($identifier);
-        $request = 'Nodes(' . $id . ')?$select=id,name,children,assets';
+        $request = 'Nodes(' . $id . ')?$select=id,name,children,assets,modificationInformation';
         $this->log->debug('request: GET:' . $request);
         try {
             $response = $this->client->request('GET', $request, $this->options)->getBody();
@@ -199,7 +202,9 @@ class CelumClient
                     'info' => [
                         'identifier' => $identifier,
                         'name' => $this->extractName($response['name']),
-                        'storage' => $this->storage],
+                        'storage' => $this->storage,
+                        'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime']),
+                    ],
                     'children' => [],
                     'assets' => []
                 ];
@@ -227,14 +232,14 @@ class CelumClient
         try {
             for ($skip = 0; $continue; $skip += $top) {
                 $continue = false;
-                $request = 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets';
+                $request = 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets,modificationInformation';
                 $this->log->debug('request: GET:' . $request);
 
                 $response = $this->client->request('GET', $request, $this->options)->getBody();
                 if ($response) {
                     $response = json_decode($response, true);
                     if ($skip == 0)
-                        $folderInfoReturnValue = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage], 'children' => [], 'assets' => []];
+                        $folderInfoReturnValue = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage, 'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime'])], 'children' => [], 'assets' => []];
                     if (isset($response['children'])) {
                         $c = count($response['children']);
                         if ($c > 0) {
@@ -285,7 +290,7 @@ class CelumClient
         try {
             for ($skip = 0; $continue; $skip += $top) {
                 $continue = false;
-                $request = 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets';
+                $request = 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets,modificationInformation';
                 $this->log->debug('request: GET:' . $request);
                 $response = $this->client->request('GET', $request, $this->options)->getBody();
                 if ($response) {
@@ -295,7 +300,9 @@ class CelumClient
                             'info' => [
                                 'identifier' => $identifier,
                                 'name' => $this->extractName($response['name']),
-                                'storage' => $this->storage],
+                                'storage' => $this->storage,
+                                'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime'])
+                            ],
                             'children' => [],
                             'assets' => []
                         ];

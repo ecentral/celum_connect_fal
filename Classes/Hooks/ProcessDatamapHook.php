@@ -58,10 +58,6 @@ class ProcessDatamapHook
                         $queryBuilder->createNamedParameter($table, Connection::PARAM_STR)
                     ),
                     $queryBuilder->expr()->eq(
-                        'table_local',
-                        $queryBuilder->createNamedParameter('sys_file', Connection::PARAM_STR)
-                    ),
-                    $queryBuilder->expr()->eq(
                         'uid_foreign',
                         $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
                     ),
@@ -118,6 +114,6 @@ class ProcessDatamapHook
     protected function getTableName(string $table)
     {
         $title = $GLOBALS['TCA'][$table]['ctrl']['title'];
-        return  TranslationService::getInstance()->translate($title, null, null, null, $title);
+        return GeneralUtility::makeInstance(TranslationService::class)->translate($title, null, null, null, $title);
     }
 }

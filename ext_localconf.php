@@ -1,5 +1,5 @@
 <?php
-defined('TYPO3_MODE') or die('Access denied.');
+defined('TYPO3') || die('Access denied.');
 
 // Driver
 /** @var \TYPO3\CMS\Core\Resource\Driver\DriverRegistry $driverRegistry */
@@ -12,11 +12,13 @@ $driverRegistry->registerDriverClass(
 );
 
 // Extractor
-\TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::getInstance()->registerExtractionService(\Brix\CelumFal\Index\Extractor::class);
+$extractorRegistry = new \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry();
+$extractorRegistry->registerExtractionService(\Brix\CelumFal\Index\Extractor::class);
 
 // Caching
-$GLOBALS['TYPO3_CONF_VARS'] ['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] = [
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] = [
         'frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class,
+        'groups' => ['system', 'all'],
         'options' => [
             'defaultLifetime' => 29 * 60
         ]

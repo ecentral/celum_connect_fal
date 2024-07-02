@@ -51,4 +51,12 @@ class Cache implements SingletonInterface
 
         return $this->cacheData[$entryIdentifier];
     }
+
+    public function clearCache(): void
+    {
+        if ($this->cache) {
+            $this->cache->flush();
+        }
+        $this->cacheData = [];
+    }
 }

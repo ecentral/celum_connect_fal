@@ -412,6 +412,7 @@ class CelumClient
 
     public function getFileInfo($identifier)
     {
+        $this->cache->clearCache();
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
             $request = 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '&$expand=publicUrls';

@@ -39,32 +39,30 @@ class CelumImageProcessor implements ProcessorInterface
     {
         $this->log->debug('processTask');
 
-    public function processTask(TaskInterface $task) {
-        $this->log->debug("processTask(" . json_encode($task) . ")");
-        if (!$this->canProcessTask($task))
-            throw new InvalidArgumentException('Cannot process task of type "' . $task->getType() . '.' . $task->getName() . '"');
-        $id = $task->getSourceFile()->getIdentifier();
-        $info = CelumDriver::$client->getFileInfo($id);
-        $width = $info['info']['width'];
-        $height = $info['info']['height'];
-        $original = false;
-        if ($width and $height) {
-            $max = 250;
-            if (($width > $max) or ($height > $max)) {
-                if ($width > $height) {
-                    $height = intval($height * $max / $width);
-                    $width = $max;
-                } else {
-                    $width = intval($width * $max / $height);
-                    $height = $max;
+        try {
+            $imageDimension = ImageDimension::fromProcessingTask($task);
+        } catch (ZeroImageDimensionException $e) {
+            $imageDimension = new ImageDimension(64, 64);
+
+            $id = $task->getSourceFile()->getIdentifier();
+            $info = CelumDriver::$client->getFileInfo($id);
+            $width = $info['info']['width'];
+            $height = $info['info']['height'];
+            /*if ($width and $height) {
+                $max = 250;
+                if (($width > $max) or ($height > $max)) {
+                    if ($width > $height) {
+                        $height = intval($height * $max / $width);
+                        $width = $max;
+                    } else {
+                        $width = intval($width * $max / $height);
+                        $height = $max;
+                    }
                 }
             } else {
-                $original = true;
-            }
-        } else {
-            $original = true;
-            $width = 0;
-            $height = 0;
+                $width = 0;
+                $height = 0;
+            }*/
         }
 
         $processedFile = $task->getTargetFile();

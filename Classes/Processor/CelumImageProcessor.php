@@ -48,7 +48,7 @@ class CelumImageProcessor implements ProcessorInterface
             $info = CelumDriver::$client->getFileInfo($id);
             $width = $info['info']['width'];
             $height = $info['info']['height'];
-            if ($width and $height) {
+            /*if ($width and $height) {
                 $max = 250;
                 if (($width > $max) or ($height > $max)) {
                     if ($width > $height) {
@@ -62,7 +62,7 @@ class CelumImageProcessor implements ProcessorInterface
             } else {
                 $width = 0;
                 $height = 0;
-            }
+            }*/
         }
 
         $processedFile = $task->getTargetFile();

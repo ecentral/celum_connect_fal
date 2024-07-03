@@ -16,3 +16,8 @@ services:
 
   Brix\CelumFal\Index\Extractor:
     public: true
+
+  Brix\CelumFal\EventListener\ModifyClearCacheActionsEventListener:
+    tags:
+      - name: event.listener
+        identifier: 'celum_fal-clear-cache-actions'

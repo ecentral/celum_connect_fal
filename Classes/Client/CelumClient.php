@@ -412,16 +412,17 @@ class CelumClient
 
     public function getFileInfo($identifier)
     {
-        $this->cache->clearCache();
         $key = str_replace('/', '_', $identifier);
-        $request = 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '&$expand=publicUrls';
-        $this->log->debug('request: GET:' . $request);
-        $response = $this->client->request('GET', $request, $this->options)->getBody();
-        if ($response) {
-            $response = json_decode($response, true);
-            $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->lifetime);
-        } else {
-            $this->cache->set($key, ['info' => null], [], 60); // short cache on error
+        if (!$this->cache->has($key)) {
+            $request = 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '&$expand=publicUrls';
+            $this->log->debug('request: GET:' . $request);
+            $response = $this->client->request('GET', $request, $this->options)->getBody();
+            if ($response) {
+                $response = json_decode($response, true);
+                $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->lifetime);
+            } else {
+                $this->cache->set($key, ['info' => null], [], 60); // short cache on error
+            }
         }
         $this->log->debug("getFileInfo($identifier)" . json_encode($this->cache->get($key)));
         return $this->cache->get($key);

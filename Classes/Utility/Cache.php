@@ -52,11 +52,20 @@ class Cache implements SingletonInterface
         return $this->cacheData[$entryIdentifier];
     }
 
-    public function clearCache(): void
+
+
+    /**
+     * clear the celum cache
+     *
+     * @param ResponseInterface $response the current response
+     * @return ResponseInterface
+     */
+    public function clearCache(): ResponseInterface
     {
         if ($this->cache) {
             $this->cache->flush();
         }
         $this->cacheData = [];
+        return new HtmlResponse('');
     }
 }

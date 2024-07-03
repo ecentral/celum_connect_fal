@@ -17,7 +17,9 @@ services:
   Brix\CelumFal\Index\Extractor:
     public: true
 
-  Brix\CelumFal\EventListener\ModifyClearCacheActionsEventListener:
+  Brix\CelumFal\Utility\HtmlResponse:
+    public: true
+
+  Brix\CelumFal\ToolbarItem\CumulusCacheCleanerItem:
     tags:
-      - name: event.listener
-        identifier: 'celum_fal-clear-cache-actions'
+      - name: backend.toolbar.item

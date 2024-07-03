@@ -9,11 +9,11 @@
 namespace Brix\CelumFal\Driver;
 
 use Brix\CelumFal\Client\CelumClient;
+use TYPO3\CMS\Core\Log\Logger;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\Driver\AbstractHierarchicalFilesystemDriver;
 use TYPO3\CMS\Core\Resource\Exception;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
-use TYPO3\CMS\Core\Log\LogManager;
-use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CelumDriver extends AbstractHierarchicalFilesystemDriver
@@ -38,7 +38,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
         $this->configuration = $configuration;
         $this->instance = rand();
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-        $this->log->debug("$this->instance: __construct(" . json_encode($configuration) . ")");
+        $this->log->debug("$this->instance: __construct(" . json_encode($configuration) . ')');
         $this->capabilities = ResourceStorage::CAPABILITY_BROWSABLE | ResourceStorage::CAPABILITY_PUBLIC | ResourceStorage::CAPABILITY_HIERARCHICAL_IDENTIFIERS;
     }
 
@@ -450,7 +450,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
     {
         //$this->log->debug("$this->instance: dumpFileContents($identifier)");
         $handle = fopen('php://output', 'w');
-        fputs($handle, file_get_contents(self::$client->getUrl($identifier))); // ex thumbnail
+        fwrite($handle, file_get_contents(self::$client->getUrl($identifier))); // ex thumbnail
         fclose($handle);
     }
 
@@ -487,7 +487,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
     public function getFileInfoByIdentifier($fileIdentifier, array $propertiesToExtract = [])
     {
         $ret = self::$client->getFileInfo($fileIdentifier)['info'];
-        $this->log->debug("$this->instance: getFileInfoByIdentifier($fileIdentifier, " . json_encode($propertiesToExtract) . "): " . json_encode($ret));
+        $this->log->debug("$this->instance: getFileInfoByIdentifier($fileIdentifier, " . json_encode($propertiesToExtract) . '): ' . json_encode($ret));
         return $ret;
     }
 
@@ -542,8 +542,9 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
             $ret = self::$client->getFolderInfo($folderIdentifier, 'assets');
             if ($recursive) {
                 $folders = $this->getFoldersInFolder($folderIdentifier, 0, 0, true);
-                foreach ($folders as $folder)
+                foreach ($folders as $folder) {
                     $ret = array_merge($ret, self::$client->getFolderInfo($folder, 'assets'));
+                }
             } elseif ($sortRev) {
                 $ret = array_reverse($ret);
             }
@@ -554,26 +555,30 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
                     $a = $a['extension'];
                     $b = $b['extension'];
                     return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
-                } elseif ($sort == 'tstamp') {
+                }
+                if ($sort == 'tstamp') {
                     $a = $a['info']['ctime'];
                     $b = $b['info']['ctime'];
                     return $sortRev ? $b <=> $a : $a <=> $b;
-                } elseif ($sort == 'name') {
+                }
+                if ($sort == 'name') {
                     $a = $a['info']['name'];
                     $b = $b['info']['name'];
                     return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
-                } else { // size
-                    $a = $a['info']['size'];
-                    $b = $b['info']['size'];
-                    return $sortRev ? $b <=> $a : $a <=> $b;
-                }
+                }   // size
+                $a = $a['info']['size'];
+                $b = $b['info']['size'];
+                return $sortRev ? $b <=> $a : $a <=> $b;
+
             });
             $ret = [];
-            foreach ($data as $d)
+            foreach ($data as $d) {
                 $ret[] = $d['info']['identifier'];
+            }
         }
-        if (($start > 0) or ($numberOfItems > 0))
+        if (($start > 0) or ($numberOfItems > 0)) {
             $ret = array_slice($ret, $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
+        }
         //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
         return $ret;
     }
@@ -614,12 +619,14 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
         if ($recursive) {
             $ret = self::$client->getFolderInfo($folderIdentifier, 'children');
             $tmp = $ret;
-            foreach ($tmp as $folder)
+            foreach ($tmp as $folder) {
                 $ret = array_merge($ret, $this->getFoldersInFolder($folder, 0, 0, true));
+            }
         } elseif ($sort != 'name') {
             $ret = self::$client->getFolderInfo($folderIdentifier, 'children');
-            if ($sortRev)
+            if ($sortRev) {
                 $ret = array_reverse($ret);
+            }
         } else {
             $data = self::$client->getFolderInfo($folderIdentifier, 'folder');
             usort($data, function ($a, $b) use ($sortRev, $sort) {
@@ -628,11 +635,13 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
                 return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
             });
             $ret = [];
-            foreach ($data as $d)
+            foreach ($data as $d) {
                 $ret[] = $d['identifier'];
+            }
         }
-        if (($start > 0) or ($numberOfItems > 0))
+        if (($start > 0) or ($numberOfItems > 0)) {
             $ret = array_slice($ret, $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
+        }
         //$this->log->debug("$this->instance: getFoldersInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($folderNameFilterCallbacks) . "$sort, $sortRev): " . json_encode($ret));
         return $ret;
     }

@@ -52,7 +52,6 @@ class CelumClientTest extends UnitTestCase
         $this->initializeClient($config);
     }
 
-
     protected function initializeClient(?array $config = null, $storage = null): void
     {
         $clientConfig = [

@@ -9,18 +9,20 @@
 namespace Brix\CelumFal\Index;
 
 use Brix\CelumFal\Driver\CelumDriver;
-use TYPO3\CMS\Core\Log\LogManager;
-use TYPO3\CMS\Core\Resource\Index\ExtractorInterface;
-use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Log\Logger;
+use TYPO3\CMS\Core\Log\LogManager;
+use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\Index\ExtractorInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class Extractor implements ExtractorInterface {
+class Extractor implements ExtractorInterface
+{
 
     /** @var Logger */
     protected $log;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
     }
 
@@ -30,7 +32,8 @@ class Extractor implements ExtractorInterface {
      *
      * @return array
      */
-    public function getFileTypeRestrictions() {
+    public function getFileTypeRestrictions()
+    {
         return [];
     }
 
@@ -46,7 +49,8 @@ class Extractor implements ExtractorInterface {
      *
      * @return array
      */
-    public function getDriverRestrictions() {
+    public function getDriverRestrictions()
+    {
         return [CelumDriver::DRIVER_TYPE];
     }
 
@@ -59,7 +63,8 @@ class Extractor implements ExtractorInterface {
      *
      * @return int
      */
-    public function getPriority() {
+    public function getPriority()
+    {
         return 50;
     }
 
@@ -69,7 +74,8 @@ class Extractor implements ExtractorInterface {
      *
      * @return int
      */
-    public function getExecutionPriority() {
+    public function getExecutionPriority()
+    {
         return 50;
     }
 
@@ -79,7 +85,8 @@ class Extractor implements ExtractorInterface {
      * @param File $file
      * @return bool
      */
-    public function canProcess(File $file) {
+    public function canProcess(File $file)
+    {
         return $file->getStorage()->getDriverType() === CelumDriver::DRIVER_TYPE;
     }
 
@@ -92,8 +99,9 @@ class Extractor implements ExtractorInterface {
      * @param array $previousExtractedData optional, contains the array of already extracted data
      * @return array
      */
-    public function extractMetaData(File $file, array $previousExtractedData = []) {
-        $this->log->debug("extractMetaData(" . $file->getIdentifier() . ", " . json_encode($previousExtractedData) . ")");
+    public function extractMetaData(File $file, array $previousExtractedData = [])
+    {
+        $this->log->debug('extractMetaData(' . $file->getIdentifier() . ', ' . json_encode($previousExtractedData) . ')');
         return CelumDriver::$client->getFileInfo($file->getIdentifier())['info'];
     }
 }

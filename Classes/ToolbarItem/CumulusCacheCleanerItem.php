@@ -52,7 +52,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
             'href' => $clearCacheUri,
             'iconIdentifier' => 'actions-synchronize',
         ];
-        $this->optionValues[] = 'pages';
+        $this->optionValues[] = 'celum';
 
 
 

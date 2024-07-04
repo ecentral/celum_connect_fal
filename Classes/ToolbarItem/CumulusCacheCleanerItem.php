@@ -50,9 +50,9 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
             'title' => 'LLL:EXT:celum_connect_fal/Resources/Private/Language/locallang.xlf:be_clear_cache_title',
             'description' => 'LLL:EXT:celum_connect_fal/Resources/Private/Language/locallang.xlf:be_clear_cache_description',
             'href' => $clearCacheUri,
-            'iconIdentifier' => 'actions-system-cache-clear-impact-medium',
+            'iconIdentifier' => 'actions-synchronize',
         ];
-        $this->optionValues[] = 'pages';
+        $this->optionValues[] = 'celum';
 
 
 
@@ -72,7 +72,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
      */
     public function checkAccess(): bool
     {
-        /*$backendUser = $this->getBackendUser();
+        $backendUser = $this->getBackendUser();
         if ($backendUser->isAdmin()) {
             return true;
         }
@@ -80,8 +80,8 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
             if ($backendUser->getTSConfig()['options.']['clearCache.'][$value] ?? false) {
                 return true;
             }
-        }*/
-        return true;
+        }
+        return false;
     }
 
     /**

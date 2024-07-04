@@ -76,6 +76,7 @@ class CelumClient
             $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
             $this->log->debug("__construct(" . json_encode($config) . ")");
             $res = $this->decrypt($config['licenseKey']);
+
             if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
                 $this->celumUrl = rtrim($matches[1]);
             } else {
@@ -97,22 +98,26 @@ class CelumClient
             $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
             $this->postOptions = ['verify' => false];
             $this->lifetime = intval($config['cacheLifetimeInMinutes']);
-            if (($this->lifetime <= 0) || ($this->lifetime >= 30))
+            if (($this->lifetime <= 0) || ($this->lifetime >= 30)) {
                 $this->lifetime = 29;
+            }
             $this->lifetime *= 60;
             $this->token = $config['infoFieldSetterToken'];
             $this->writePublicUrls = $config['writePublicUrls'];
             $this->infoFieldId = $config['informationFieldId'];
             $this->nodeId = $config['nodeId'];
             $this->descriptionFieldName = $config['descriptionFieldName'];
-            if ($this->descriptionFieldName)
+            if ($this->descriptionFieldName) {
                 $this->fieldSelect .= ',informationFieldValues/' . $this->descriptionFieldName;
+            }
             $this->alternativeFieldName = $config['alternativeTextFieldName'];
-            if ($this->alternativeFieldName)
+            if ($this->alternativeFieldName) {
                 $this->fieldSelect .= ',informationFieldValues/' . $this->alternativeFieldName;
+            }
             $this->roots = preg_split('/\\s*,\\s*/', trim($config['roots']));
-            foreach ($this->roots as $key => $val)
+            foreach ($this->roots as $key => $val) {
                 $this->roots[$key] = "/$val/";
+            }
         } catch (Exception $exception) {
             $this->log->error($exception->getMessage());
         }
@@ -145,11 +150,10 @@ class CelumClient
     }
 
     /**
-     * @return void
      */
     protected function initCacheRoot()
     {
-        $key = "_";
+        $key = '_';
         $rootFolderInfo = [
             'info' => [
                 'identifier' => '/',
@@ -238,8 +242,9 @@ class CelumClient
                 $response = $this->client->request('GET', $request, $this->options)->getBody();
                 if ($response) {
                     $response = json_decode($response, true);
-                    if ($skip == 0)
+                    if ($skip == 0) {
                         $folderInfoReturnValue = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage, 'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime'])], 'children' => [], 'assets' => []];
+                    }
                     if (isset($response['children'])) {
                         $c = count($response['children']);
                         if ($c > 0) {
@@ -251,8 +256,9 @@ class CelumClient
                                 $foldernames[$n] = $fi;
                                 $folders[] = ['name' => $n, 'identifier' => $fi];
                             }
-                            if ($c == $top)
+                            if ($c == $top) {
                                 $continue = true;
+                            }
                         }
                     }
                 } elseif ($skip == 0) {
@@ -281,7 +287,6 @@ class CelumClient
         $files = [];
         $folders = [];
 
-
         $id = $this->extractId($identifier);
         $continue = true;
         $top = CelumClient::API_MAX_ASSET_CHUNK;
@@ -295,7 +300,7 @@ class CelumClient
                 $response = $this->client->request('GET', $request, $this->options)->getBody();
                 if ($response) {
                     $response = json_decode($response, true);
-                    if ($skip == 0)
+                    if ($skip == 0) {
                         $folderInfoReturnValue = [
                             'info' => [
                                 'identifier' => $identifier,
@@ -306,6 +311,7 @@ class CelumClient
                             'children' => [],
                             'assets' => []
                         ];
+                    }
                     if (isset($response['children'])) {
                         $c = count($response['children']);
                         if ($c > 0) {
@@ -317,8 +323,9 @@ class CelumClient
                                 $foldernames[$n] = $fi;
                                 $folders[] = ['name' => $n, 'identifier' => $fi];
                             }
-                            if ($c == $top)
+                            if ($c == $top) {
                                 $continue = true;
+                            }
                         }
                     }
                     if (isset($response['assets'])) {
@@ -331,8 +338,9 @@ class CelumClient
                                 $files[] = $a;
                                 $filenames[$a['info']['name']] = $fi;
                             }
-                            if ($c == $top)
+                            if ($c == $top) {
                                 $continue = true;
+                            }
                         }
                     }
                 } elseif ($skip == 0) {
@@ -345,7 +353,6 @@ class CelumClient
         }
         return [$folderInfoReturnValue, $foldernames, $folders, $filenames, $files];
     }
-
 
     /**
      *  returns an array of the value selected for extraction or the folder info itself if nothing is specified
@@ -400,7 +407,6 @@ class CelumClient
                     $this->cache->set($key . 'assets', $folderInfo['assets'], [], $this->lifetime);
                     $this->cache->set($key . 'children', $folderInfo['children'], [], $this->lifetime);
 
-
                 }
                 $this->cache->set($key, $folderInfo, [], $this->lifetime);
             }
@@ -433,10 +439,11 @@ class CelumClient
         $type = $arr['fileCategory'];
         $format = (($type == 'image') ? $this->imageFormat : (($type == 'video') ? $this->videoFormat : $this->othersFormat));
         foreach ($arr['fileProperties'] as $prop) {
-            if ($prop['name'] === 'width')
+            if ($prop['name'] === 'width') {
                 $width = $prop['value'];
-            elseif ($prop['name'] === 'height')
+            } elseif ($prop['name'] === 'height') {
                 $height = $prop['value'];
+            }
         }
         if ($width and $height) {
             $max = 0;
@@ -464,26 +471,30 @@ class CelumClient
         if (($type == 'image') or ($type == 'video')) {
             // echo $this->description . " " . $this->provider . " " . json_encode($response['publicUrls']) . "; ";
             foreach ($arr['publicUrls'] as $purl) {
-                if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type]))
+                if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type])) {
                     $publicUrl = $purl['url'];
+                }
             }
         }
         if (!$publicUrl) {
             $id = $this->extractId($identifier);
             $publicUrl = $this->directDownload . 'format=' . $format . '&id=' . $id;
-            if ($this->secret)
+            if ($this->secret) {
                 $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
+            }
         }
         $name = $arr['name'];
-        if ($format === 'prvw' or $format === 'largeprvw' or $format === 'thumb')
+        if ($format === 'prvw' or $format === 'largeprvw' or $format === 'thumb') {
             $ext = '.jpg';
-        else
+        } else {
             $ext = '.' . $arr['fileInformation']['fileExtension'];
+        }
         if (substr($name, -strlen($ext)) !== $ext) {
-            if (substr($name, -1) === '.')
+            if (substr($name, -1) === '.') {
                 $name .= substr($ext, 1);
-            else
+            } else {
                 $name .= $ext;
+            }
         }
         return [
             'info' => [
@@ -511,29 +522,31 @@ class CelumClient
 
     private function getInfoFieldValue($name, $arr)
     {
-        if (!isset($arr['informationFieldValues']) || !$arr['informationFieldValues'])
+        if (!isset($arr['informationFieldValues']) || !$arr['informationFieldValues']) {
             return '';
+        }
         $val = $arr['informationFieldValues'][$name];
-        if (!$val)
+        if (!$val) {
             return '';
+        }
         if (is_array($val)) {
             $v = $this->extractName($val);
             return $v == null ? '' : $v;
-        } else
-            return $val;
+        }
+        return $val;
     }
 
     /**
      * @param $identifier
      * @param $url
      * @param $description
-     * @return void
      * @throws GuzzleException
      */
     public function addPublicUrl($identifier, $url, $description)
     {
-        if (!$this->token)
+        if (!$this->token) {
             return;
+        }
         $clientUrl = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
         if ($this->writePublicUrls) {
             $clientUrl .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=' . urlencode($url);
@@ -552,13 +565,13 @@ class CelumClient
      * @param $identifier
      * @param $description
      * @param $stillUsed
-     * @return void
      * @throws GuzzleException
      */
     public function deletePublicUrl($identifier, $description, $stillUsed)
     {
-        if (!$this->token)
+        if (!$this->token) {
             return;
+        }
         $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
         if ($this->writePublicUrls) {
             $url .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=delete';
@@ -597,7 +610,7 @@ class CelumClient
 
     private function decrypt($sData)
     {
-        $secretKey = "ZbMchtd9DivzjPDi5QIio1iVERFnNZiSE33QKY3Gw9rYfCNLFiKloJQt3zi4";
+        $secretKey = 'ZbMchtd9DivzjPDi5QIio1iVERFnNZiSE33QKY3Gw9rYfCNLFiKloJQt3zi4';
         $sResult = '';
         $sData = $this->decode_base64($sData);
         for ($i = 0; $i < strlen($sData); $i++) {

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Brix\CelumFal\Command;
 
@@ -16,21 +16,19 @@ use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-
 class RefreshMetaCommand extends Command
 {
     protected static $defaultName = 'celumfal:refreshmeta';
 
     private Extractor $metadataExtractor;
 
-    public function __construct( Extractor $extractor)
+    public function __construct(Extractor $extractor)
     {
         $this->metadataExtractor = $extractor;
         parent::__construct(self::$defaultName);
     }
 
     /**
-     * @return void
      */
     public function configure(): void
     {
@@ -78,7 +76,7 @@ EOF
         $folders = [];
         $progressBar = new ProgressBar($output, count($folderIdentifiers));
         $progressBar->start();
-        $output->writeln("");
+        $output->writeln('');
         foreach ($folderIdentifiers as $folderIdentifier) {
             $progressBar->advance();
             // The folder identifier can also be an int-like string, resulting in int array keys.
@@ -86,17 +84,17 @@ EOF
             $filesInFolder = $celumDriver->getFilesInFolder($folderIdentifier);
             $files = array_merge($files, $filesInFolder);
             $folders[$folderIdentifier] = $files;
-            $output->writeln("Files found: " . count($filesInFolder));
+            $output->writeln('Files found: ' . count($filesInFolder));
         }
 
         $progressBar->finish();
-        $output->writeln("");
+        $output->writeln('');
         $output->writeln('Total files found in DAM: ' . count($files));
         $output->writeln('Start processing File Meta ...');
 
         $progressBar = new ProgressBar($output, count($files));
         $progressBar->start();
-        $output->writeln("");
+        $output->writeln('');
 
         foreach ($files as $fileIdentifier) {
             $progressBar->advance();
@@ -123,4 +121,3 @@ EOF
         return self::SUCCESS;
     }
 }
-

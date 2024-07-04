@@ -48,8 +48,6 @@ class CelumClientTest extends FunctionalTestCase
         $this->assertStringStartsWith($expectedResult['thumbnail'], $fileInfo['thumbnail']);
     }
 
-
-
     /**
      * @test
      * @dataProvider checkGetUrlMethodDataProvider()

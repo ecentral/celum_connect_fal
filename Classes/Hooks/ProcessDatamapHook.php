@@ -68,46 +68,46 @@ class ProcessDatamapHook
         }
 
         foreach ($references as $sysFileReference) {
-                $resourceFactory = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\ResourceFactory::class);
-                $file = $resourceFactory->getFileObject($sysFileReference['uid_local']);
+            $resourceFactory = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\ResourceFactory::class);
+            $file = $resourceFactory->getFileObject($sysFileReference['uid_local']);
 
-                if ($file->getStorage()->getDriverType() === 'BrixCelumDriver') {
-                    $tableName = $sysFileReference['tablenames'] ?: $table;
-                    $recordId = $sysFileReference['uid_foreign'] ?: $id;
+            if ($file->getStorage()->getDriverType() === 'BrixCelumDriver') {
+                $tableName = $sysFileReference['tablenames'] ?: $table;
+                $recordId = $sysFileReference['uid_foreign'] ?: $id;
 
-                    if ($tableName !== 'sys_file_reference') {
-                        if ($sysFileReference['deleted'] === 1 || $sysFileReference['hidden'] === 1) {
-                            $usedOnOtherPlaces = false;
+                if ($tableName !== 'sys_file_reference') {
+                    if ($sysFileReference['deleted'] === 1 || $sysFileReference['hidden'] === 1) {
+                        $usedOnOtherPlaces = false;
 
-                            // is file used anywhere else?
-                            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-                                ->getQueryBuilderForTable('sys_file_reference');
-                            $query = $queryBuilder
-                                ->select('*')
-                                ->from('sys_file_reference')
-                                ->where(
-                                    $queryBuilder->expr()->eq(
-                                        'uid_local',
-                                        $queryBuilder->createNamedParameter($sysFileReference['uid_local'], Connection::PARAM_INT)
-                                    ),
-                                )
-                                ->execute();
-                            if ($query->rowCount() > 0) {
-                                $usedOnOtherPlaces = true;
-                            }
-
-                            $client = new CelumClient($file->getStorage()->getConfiguration(), $file->getStorage()->getStorageRecord()['uid']);
-                            $client->deletePublicUrl($file->getIdentifier(), $this->getTableName($tableName) . ' ' . $recordId, $usedOnOtherPlaces);
-                        } else {
-                            $backendUriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-                            $uriParameters = ['edit' => [$tableName => [$recordId => 'edit']]];
-                            $url = $backendUriBuilder->buildUriFromRoute('record_edit', $uriParameters, $backendUriBuilder::SHAREABLE_URL);
-
-                            $client = new CelumClient($file->getStorage()->getConfiguration(), $file->getStorage()->getStorageRecord()['uid']);
-                            $client->addPublicUrl($file->getIdentifier(), $url, $this->getTableName($tableName) . ' ' . $recordId);
+                        // is file used anywhere else?
+                        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+                            ->getQueryBuilderForTable('sys_file_reference');
+                        $query = $queryBuilder
+                            ->select('*')
+                            ->from('sys_file_reference')
+                            ->where(
+                                $queryBuilder->expr()->eq(
+                                    'uid_local',
+                                    $queryBuilder->createNamedParameter($sysFileReference['uid_local'], Connection::PARAM_INT)
+                                ),
+                            )
+                            ->execute();
+                        if ($query->rowCount() > 0) {
+                            $usedOnOtherPlaces = true;
                         }
+
+                        $client = new CelumClient($file->getStorage()->getConfiguration(), $file->getStorage()->getStorageRecord()['uid']);
+                        $client->deletePublicUrl($file->getIdentifier(), $this->getTableName($tableName) . ' ' . $recordId, $usedOnOtherPlaces);
+                    } else {
+                        $backendUriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+                        $uriParameters = ['edit' => [$tableName => [$recordId => 'edit']]];
+                        $url = $backendUriBuilder->buildUriFromRoute('record_edit', $uriParameters, $backendUriBuilder::SHAREABLE_URL);
+
+                        $client = new CelumClient($file->getStorage()->getConfiguration(), $file->getStorage()->getStorageRecord()['uid']);
+                        $client->addPublicUrl($file->getIdentifier(), $url, $this->getTableName($tableName) . ' ' . $recordId);
                     }
                 }
+            }
         }
     }
 

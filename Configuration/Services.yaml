@@ -16,3 +16,10 @@ services:
 
   Brix\CelumFal\Index\Extractor:
     public: true
+
+  Brix\CelumFal\Utility\HtmlResponse:
+    public: true
+
+  Brix\CelumFal\ToolbarItem\CumulusCacheCleanerItem:
+    tags:
+      - name: backend.toolbar.item

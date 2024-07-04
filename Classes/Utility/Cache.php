@@ -4,8 +4,11 @@ namespace Brix\CelumFal\Utility;
 use Brix\CelumFal\Driver\CelumDriver;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
+use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Http\HtmlResponse;
+use Psr\Http\Message\ResponseInterface;
 
 class Cache implements SingletonInterface
 {
@@ -50,5 +53,23 @@ class Cache implements SingletonInterface
         }
 
         return $this->cacheData[$entryIdentifier];
+    }
+
+
+
+    /**
+     * clear the celum cache
+     *
+     * @param ResponseInterface $response the current response
+     * @return ResponseInterface
+     */
+    public function clearCache(): ResponseInterface
+    {
+        if ($this->cache) {
+            $this->cache->flush();
+        }
+        $this->cacheData = [];
+        $result = ['success' => true, 'title' => 'Success', 'message' => 'Celum cache successfully cleared.'];
+        return new JsonResponse($result);
     }
 }

@@ -43,7 +43,7 @@ class ProcessDatamapHook
                         $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
                     ),
                 )
-            ->execute();
+            ->executeQuery();
             $references = $query->fetchAllAssociative();
         } else {
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
@@ -62,7 +62,7 @@ class ProcessDatamapHook
                         $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
                     ),
                 )
-                ->execute();
+                ->executeQuery();
 
             $references = $query->fetchAllAssociative();
         }
@@ -91,7 +91,7 @@ class ProcessDatamapHook
                                     $queryBuilder->createNamedParameter($sysFileReference['uid_local'], Connection::PARAM_INT)
                                 ),
                             )
-                            ->execute();
+                            ->executeQuery();
                         if ($query->rowCount() > 0) {
                             $usedOnOtherPlaces = true;
                         }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace Brix\CelumFal\Hooks;
 
 use Brix\CelumFal\Client\CelumClient;
@@ -13,7 +16,7 @@ class ProcessDatamapHook
 {
     private TranslationService $translationService;
 
-    public function processDatamap_afterDatabaseOperations(string $status, string $table, $id, array &$fieldArray, DataHandler $pObj): void
+    public function processDatamap_afterDatabaseOperations(string $status, string $table, string|int $id, array &$fieldArray, DataHandler $pObj): void
     {
         if ($status === 'new' && !is_int($id)) {
             $id = $pObj->substNEWwithIDs[$id];

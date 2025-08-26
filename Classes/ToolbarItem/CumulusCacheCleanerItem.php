@@ -107,7 +107,6 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
         return $view->render('ToolbarItems/ClearCumulusCacheToolbarItemSingle.html');
     }
 
-
     /**
      * Render drop-down.
      */

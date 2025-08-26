@@ -10,7 +10,6 @@ use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Imaging\Exception\ZeroImageDimensionException;
 use TYPO3\CMS\Core\Imaging\ImageDimension;
-
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\ProcessedFileRepository;
@@ -48,21 +47,21 @@ class CelumImageProcessor implements ProcessorInterface
             $info = CelumDriver::$client->getFileInfo($id);
             $width = $info['info']['width'];
             $height = $info['info']['height'];
-//            if ($width and $height) {
-//                $max = 250;
-//                if (($width > $max) or ($height > $max)) {
-//                    if ($width > $height) {
-//                        $height = intval($height * $max / $width);
-//                        $width = $max;
-//                    } else {
-//                        $width = intval($width * $max / $height);
-//                        $height = $max;
-//                    }
-//                }
-//            } else {
-//                $width = 0;
-//                $height = 0;
-//            }
+            //            if ($width and $height) {
+            //                $max = 250;
+            //                if (($width > $max) or ($height > $max)) {
+            //                    if ($width > $height) {
+            //                        $height = intval($height * $max / $width);
+            //                        $width = $max;
+            //                    } else {
+            //                        $width = intval($width * $max / $height);
+            //                        $height = $max;
+            //                    }
+            //                }
+            //            } else {
+            //                $width = 0;
+            //                $height = 0;
+            //            }
         }
 
         $processedFile = $task->getTargetFile();
@@ -146,4 +145,3 @@ class CelumImageProcessor implements ProcessorInterface
     }
 
 }
-

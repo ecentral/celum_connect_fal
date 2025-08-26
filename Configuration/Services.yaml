@@ -17,7 +17,7 @@ services:
   Brix\CelumFal\Index\Extractor:
     public: true
 
-  Brix\CelumFal\Utility\HtmlResponse:
+  Brix\CelumFal\Utility\Cache:
     public: true
 
   Brix\CelumFal\ToolbarItem\CumulusCacheCleanerItem:

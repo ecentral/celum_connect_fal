@@ -4,12 +4,12 @@ declare(strict_types = 1);
 
 namespace Brix\CelumFal\Command;
 
-use Brix\CelumFal\Driver\CelumDriver;
 use Brix\CelumFal\Index\Extractor;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ProcessedFileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -59,12 +59,16 @@ EOF
 
         /** @var ResourceStorage $storage */
         $storage = $factory->getStorageObject($storageUid);
-        if ($storage->getDriverType() !== CelumDriver::DRIVER_TYPE) {
+
+        $driverClass = (new Typo3Version())->getMajorVersion() < 13
+            ? \Brix\CelumFal\Driver\CelumDriverV12::class
+            : \Brix\CelumFal\Driver\CelumDriver::class;
+
+        if ($storage->getDriverType() !== $driverClass::DRIVER_TYPE) {
             throw new RuntimeException('Chosen storage is not a CelumFal storage');
         }
 
-        /** @var CelumDriver $celumDriver */
-        $celumDriver = GeneralUtility::makeInstance(CelumDriver::class, $storage->getConfiguration());
+        $celumDriver = GeneralUtility::makeInstance($driverClass, $storage->getConfiguration());
         $celumDriver->setStorageUid((int)$storageUid);
         $celumDriver->initialize();
 

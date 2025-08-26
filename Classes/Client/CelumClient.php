@@ -410,7 +410,7 @@ class CelumClient
 
     }
 
-    public function getFileInfo($identifier)
+    public function getFileInfo($identifier): array
     {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {

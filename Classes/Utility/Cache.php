@@ -1,11 +1,11 @@
 <?php
 namespace Brix\CelumFal\Utility;
 
-use Brix\CelumFal\Driver\CelumDriver;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -17,8 +17,13 @@ class Cache implements SingletonInterface
     public function __construct()
     {
         $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
-        if ($cacheManager->hasCache(CelumDriver::EXTENSION_KEY)) {
-            $this->cache = $cacheManager->getCache(CelumDriver::EXTENSION_KEY);
+
+        $driverExtensuionKey = (new Typo3Version())->getMajorVersion() < 13
+            ? \Brix\CelumFal\Driver\CelumDriverV12::EXTENSION_KEY
+            : \Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY;
+
+        if ($cacheManager->hasCache($driverExtensuionKey)) {
+            $this->cache = $cacheManager->getCache($driverExtensuionKey);
         }
     }
 

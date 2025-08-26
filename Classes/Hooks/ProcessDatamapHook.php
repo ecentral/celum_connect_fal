@@ -29,7 +29,7 @@ class ProcessDatamapHook
         $this->updateReference($table, $id, $command);
     }
 
-    protected function updateReference(string $table, int $id, string $status)
+    protected function updateReference(string $table, int $id, string $status): void
     {
         $references = [];
         if ($table === 'sys_file_reference') {
@@ -107,14 +107,14 @@ class ProcessDatamapHook
                         $url = $backendUriBuilder->buildUriFromRoute('record_edit', $uriParameters, $backendUriBuilder::SHAREABLE_URL);
 
                         $client = new CelumClient($file->getStorage()->getConfiguration(), $file->getStorage()->getStorageRecord()['uid']);
-                        $client->addPublicUrl($file->getIdentifier(), $url, $this->getTableName($tableName) . ' ' . $recordId);
+                        $client->addPublicUrl($file->getIdentifier(), (string) $url, $this->getTableName($tableName) . ' ' . $recordId);
                     }
                 }
             }
         }
     }
 
-    protected function getTableName(string $table)
+    protected function getTableName(string $table): string
     {
         $title = $GLOBALS['TCA'][$table]['ctrl']['title'];
         return GeneralUtility::makeInstance(TranslationService::class)->translate($title, null, null, null, $title);

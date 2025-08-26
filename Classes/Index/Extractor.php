@@ -8,7 +8,7 @@
 
 namespace Brix\CelumFal\Index;
 
-use Brix\CelumFal\Driver\CelumDriver;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\File;
@@ -32,7 +32,7 @@ class Extractor implements ExtractorInterface
      *
      * @return array
      */
-    public function getFileTypeRestrictions()
+    public function getFileTypeRestrictions(): array
     {
         return [];
     }
@@ -51,7 +51,11 @@ class Extractor implements ExtractorInterface
      */
     public function getDriverRestrictions()
     {
-        return [CelumDriver::DRIVER_TYPE];
+        $driverClass = (new Typo3Version())->getMajorVersion() < 13
+            ? \Brix\CelumFal\Driver\CelumDriverV12::DRIVER_TYPE
+            : \Brix\CelumFal\Driver\CelumDriver::DRIVER_TYPE;
+
+        return [$driverClass];
     }
 
     /**
@@ -61,7 +65,6 @@ class Extractor implements ExtractorInterface
      *
      * Should be between 1 and 100, 100 is more important than 1
      *
-     * @return int
      */
     public function getPriority()
     {
@@ -72,9 +75,8 @@ class Extractor implements ExtractorInterface
      * Returns the execution priority of the extraction Service
      * Should be between 1 and 100, 100 means runs as first service, 1 runs at last service
      *
-     * @return int
      */
-    public function getExecutionPriority()
+    public function getExecutionPriority(): int
     {
         return 50;
     }
@@ -82,12 +84,14 @@ class Extractor implements ExtractorInterface
     /**
      * Checks if the given file can be processed by this Extractor
      *
-     * @param File $file
-     * @return bool
      */
-    public function canProcess(File $file)
+    public function canProcess(File $file): bool
     {
-        return $file->getStorage()->getDriverType() === CelumDriver::DRIVER_TYPE;
+        $driverType = (new Typo3Version())->getMajorVersion() < 13
+            ? \Brix\CelumFal\Driver\CelumDriverV12::DRIVER_TYPE
+            : \Brix\CelumFal\Driver\CelumDriver::DRIVER_TYPE;
+
+        return $file->getStorage()->getDriverType() === $driverType;
     }
 
     /**
@@ -95,13 +99,14 @@ class Extractor implements ExtractorInterface
      *
      * Should return an array with database properties for sys_file_metadata to write
      *
-     * @param File $file
-     * @param array $previousExtractedData optional, contains the array of already extracted data
-     * @return array
      */
-    public function extractMetaData(File $file, array $previousExtractedData = [])
+    public function extractMetaData(File $file, array $previousExtractedData = []): array
     {
         $this->log->debug('extractMetaData(' . $file->getIdentifier() . ', ' . json_encode($previousExtractedData) . ')');
-        return CelumDriver::$client->getFileInfo($file->getIdentifier())['info'];
+        $client = (new Typo3Version())->getMajorVersion() < 13
+            ? \Brix\CelumFal\Driver\CelumDriverV12::$client
+            : \Brix\CelumFal\Driver\CelumDriver::$client;
+
+        return $client->getFileInfo($file->getIdentifier())['info'];
     }
 }

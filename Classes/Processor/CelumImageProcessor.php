@@ -2,7 +2,6 @@
 
 namespace Brix\CelumFal\Processor;
 
-use Brix\CelumFal\Driver\CelumDriver;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Context\Context;
@@ -10,6 +9,7 @@ use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Imaging\Exception\ZeroImageDimensionException;
 use TYPO3\CMS\Core\Imaging\ImageDimension;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\ProcessedFileRepository;
@@ -38,13 +38,16 @@ class CelumImageProcessor implements ProcessorInterface
     {
         $this->log->debug('processTask');
 
+        $driverClass = (new Typo3Version())->getMajorVersion() < 13
+            ? \Brix\CelumFal\Driver\CelumDriverV12::class
+            : \Brix\CelumFal\Driver\CelumDriver::class;
+
         try {
             $imageDimension = ImageDimension::fromProcessingTask($task);
         } catch (ZeroImageDimensionException $e) {
             $imageDimension = new ImageDimension(64, 64);
-
             $id = $task->getSourceFile()->getIdentifier();
-            $info = CelumDriver::$client->getFileInfo($id);
+            $info = $driverClass::$client->getFileInfo($id);
             $width = $info['info']['width'];
             $height = $info['info']['height'];
             //            if ($width and $height) {

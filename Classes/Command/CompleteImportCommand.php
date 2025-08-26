@@ -48,6 +48,7 @@ class CompleteImportCommand extends Command
 
         /** @var CelumDriver $celumDriver */
         $celumDriver = GeneralUtility::makeInstance(CelumDriver::class, $storage->getConfiguration());
+        $celumDriver->setStorageUid((int)$storageUid);
         $celumDriver->initialize();
 
         $output->writeln('Starting import  process');

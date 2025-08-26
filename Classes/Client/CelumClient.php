@@ -6,61 +6,56 @@
  * Time: 13:37
  */
 
+declare(strict_types = 1);
+
 namespace Brix\CelumFal\Client;
 
-use Brix\CelumFal\Driver\CelumDriver;
 use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use Brix\CelumFal\Utility\Cache;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use TYPO3\CMS\Core\Cache\CacheManager;
-use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
-use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 class CelumClient
 {
 
-
     const API_MAX_ASSET_CHUNK = 200; // API defined maximum of child assets per request (max api page size)
 
-    protected $celumUrl;
-    protected $cora;
-    protected $locale;
-    protected $defaultLocale;
-    /** @var FrontendInterface */
-    protected $cache;
-    /** @var Logger */
-    protected $log;
-    protected $storage;
-    protected $directDownload;
-    private $provider;
-    private $description;
-    private $secret;
-    private $client;
-    private $options;
-    private $postOptions;
-    private $imageFormat;
-    private $videoFormat;
-    private $othersFormat;
-    private $lifetime;
-    private $token;
-    private $writePublicUrls;
-    private $infoFieldId;
-    private $nodeId;
-    private $descriptionFieldName;
-    private $alternativeFieldName;
-    private $fieldSelect = '';
-    private $roots;
+    protected string $celumUrl;
+    protected string $cora;
+    protected string $locale;
+    protected string $defaultLocale;
+    protected Cache $cache;
+    protected Logger $log;
+    protected int $storage;
+    protected string $directDownload;
+    private array $provider;
+    private array $description;
+    private string $secret;
+    private Client $client;
+    private array $options;
+    private array $postOptions;
+    private string $imageFormat;
+    private string $videoFormat;
+    private string $othersFormat;
+    private int $cacheLifetime;
+    private string $token;
+    private string $writePublicUrls;
+    private string $infoFieldId;
+    private string $nodeId;
+    private string $descriptionFieldName;
+    private string $alternativeFieldName;
+    private string $fieldSelect = '';
+    private array $roots;
 
     /**
      * @throws InvalidConfigurationException
      */
-    public function __construct(array $config, $storage)
+    public function __construct(array $config, int $storage)
     {
         // The following leads to being unable to configure a driver, because T3 makes an instance before it is configured
         /*
@@ -74,7 +69,7 @@ class CelumClient
         */
         try {
             $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-            $this->log->debug("__construct(" . json_encode($config) . ")");
+            $this->log->debug('__construct(' . json_encode($config) . ')');
             $res = $this->decrypt($config['licenseKey']);
 
             if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
@@ -82,6 +77,7 @@ class CelumClient
             } else {
                 throw new InvalidConfigurationException('No valid license');
             }
+
             $this->cora = $this->celumUrl . '/cora/';
             $this->imageFormat = $config['imageDownloadFormat'];
             $this->videoFormat = $config['videoDownloadFormat'];
@@ -97,11 +93,11 @@ class CelumClient
             $this->client = new Client(['base_uri' => $this->cora]);
             $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
             $this->postOptions = ['verify' => false];
-            $this->lifetime = intval($config['cacheLifetimeInMinutes']);
-            if (($this->lifetime <= 0) || ($this->lifetime >= 30)) {
-                $this->lifetime = 29;
+            $this->cacheLifetime = intval($config['cacheLifetimeInMinutes']);
+            if (($this->cacheLifetime <= 0) || ($this->cacheLifetime >= 30)) {
+                $this->cacheLifetime = 29;
             }
-            $this->lifetime *= 60;
+            $this->cacheLifetime *= 60;
             $this->token = $config['infoFieldSetterToken'];
             $this->writePublicUrls = $config['writePublicUrls'];
             $this->infoFieldId = $config['informationFieldId'];
@@ -127,16 +123,16 @@ class CelumClient
      * @param $identifier
      * @return string
      */
-    public function extractId($identifier)
+    public function extractId($identifier): string
     {
         return basename(rtrim($identifier, '/'));
     }
 
     /**
-     * @param $names
-     * @return mixed|null
+     * @param array<int, array{locale: string, value: string}> $names
+     * @return string|null
      */
-    public function extractName(&$names)
+    public function extractName(array &$names): ?string
     {
         $default = null;
         foreach ($names as $name) {
@@ -149,9 +145,7 @@ class CelumClient
         return $default;
     }
 
-    /**
-     */
-    protected function initCacheRoot()
+    protected function initCacheRoot(): void
     {
         $key = '_';
         $rootFolderInfo = [
@@ -163,9 +157,9 @@ class CelumClient
             'assets' => [],
             'children' => $this->roots
         ];
-        $this->cache->set($key, $rootFolderInfo, [], $this->lifetime);
-        $this->cache->set($key . 'file', [], [], $this->lifetime);          // no files in storage root
-        $this->cache->set($key . 'filename', [], [], $this->lifetime);      // no files in storage root
+        $this->cache->set($key, $rootFolderInfo, [], $this->cacheLifetime);
+        $this->cache->set($key . 'file', [], [], $this->cacheLifetime);          // no files in storage root
+        $this->cache->set($key . 'filename', [], [], $this->cacheLifetime);      // no files in storage root
 
         // add DAM nodes as root folders
         $folders = [];
@@ -175,17 +169,17 @@ class CelumClient
             $folders[] = ['identifier' => $root, 'name' => $f['info']['name']];
             $foldernames[$f['info']['name']] = $root;
         }
-        $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
-        $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
-        $this->cache->set($key . 'children', $rootFolderInfo['children'], [], $this->lifetime);
-        $this->cache->set($key . 'assets', $rootFolderInfo['assets'], [], $this->lifetime);
+        $this->cache->set($key . 'folder', $folders, [], $this->cacheLifetime);
+        $this->cache->set($key . 'foldername', $foldernames, [], $this->cacheLifetime);
+        $this->cache->set($key . 'children', $rootFolderInfo['children'], [], $this->cacheLifetime);
+        $this->cache->set($key . 'assets', $rootFolderInfo['assets'], [], $this->cacheLifetime);
     }
 
     /**
      * @param $identifier
      * @return array
      */
-    private function queryBasicFolderInformation($identifier): array
+    private function queryBasicFolderInformation(string $identifier): array
     {
         $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
 
@@ -200,7 +194,7 @@ class CelumClient
         try {
             $response = $this->client->request('GET', $request, $this->options)->getBody();
             if ($response) {
-                $response = json_decode($response, true);
+                $response = json_decode((string)$response, true);
 
                 $folderInfoReturnValue = [
                     'info' => [
@@ -223,7 +217,7 @@ class CelumClient
      * @param $identifier
      * @return array
      */
-    private function querySubfolder($identifier)
+    private function querySubfolder(string $identifier): array
     {
         $foldernames = [];
         $folders = [];
@@ -241,7 +235,7 @@ class CelumClient
 
                 $response = $this->client->request('GET', $request, $this->options)->getBody();
                 if ($response) {
-                    $response = json_decode($response, true);
+                    $response = json_decode((string)$response, true);
                     if ($skip == 0) {
                         $folderInfoReturnValue = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage, 'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime'])], 'children' => [], 'assets' => []];
                     }
@@ -280,7 +274,7 @@ class CelumClient
      * @param $identifier
      * @return array
      */
-    private function querySubfolderAndAssets($identifier)
+    private function querySubfolderAndAssets(string $identifier): array
     {
         $filenames = [];
         $foldernames = [];
@@ -299,7 +293,7 @@ class CelumClient
                 $this->log->debug('request: GET:' . $request);
                 $response = $this->client->request('GET', $request, $this->options)->getBody();
                 if ($response) {
-                    $response = json_decode($response, true);
+                    $response = json_decode((string)$response, true);
                     if ($skip == 0) {
                         $folderInfoReturnValue = [
                             'info' => [
@@ -360,7 +354,7 @@ class CelumClient
      * @param $extract     string 'filename', 'foldername', 'file', 'folder' or ''
      * @return array|mixed
      */
-    public function getFolderInfo($identifier, string $extract = '')
+    public function getFolderInfo(string $identifier, string $extract = ''): array
     {
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key . $extract)) {
@@ -381,9 +375,9 @@ class CelumClient
                         return $folderInfo;
                     }
 
-                    $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
-                    $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
-                    $this->cache->set($key . 'children', $folderInfo['children'], [], $this->lifetime);
+                    $this->cache->set($key . 'folder', $folders, [], $this->cacheLifetime);
+                    $this->cache->set($key . 'foldername', $foldernames, [], $this->cacheLifetime);
+                    $this->cache->set($key . 'children', $folderInfo['children'], [], $this->cacheLifetime);
 
                 } else {
                     list($folderInfo, $foldernames, $folders, $filenames, $files) = $this->querySubfolderAndAssets($identifier);
@@ -393,22 +387,22 @@ class CelumClient
                     }
 
                     // add additional Cache values for further processing
-                    $this->cache->set($key . 'file', $files, [], $this->lifetime);
-                    $this->cache->set($key . 'filename', $filenames, [], $this->lifetime);
-                    $this->cache->set($key . 'folder', $folders, [], $this->lifetime);
-                    $this->cache->set($key . 'foldername', $foldernames, [], $this->lifetime);
+                    $this->cache->set($key . 'file', $files, [], $this->cacheLifetime);
+                    $this->cache->set($key . 'filename', $filenames, [], $this->cacheLifetime);
+                    $this->cache->set($key . 'folder', $folders, [], $this->cacheLifetime);
+                    $this->cache->set($key . 'foldername', $foldernames, [], $this->cacheLifetime);
 
                     // fill up cache with asset information
                     foreach ($files as $asset) {
                         $assetKey = str_replace('/', '_', $asset['info']['identifier']);
-                        $this->cache->set($assetKey, $asset, [], $this->lifetime);
+                        $this->cache->set($assetKey, $asset, [], $this->cacheLifetime);
                     }
 
-                    $this->cache->set($key . 'assets', $folderInfo['assets'], [], $this->lifetime);
-                    $this->cache->set($key . 'children', $folderInfo['children'], [], $this->lifetime);
+                    $this->cache->set($key . 'assets', $folderInfo['assets'], [], $this->cacheLifetime);
+                    $this->cache->set($key . 'children', $folderInfo['children'], [], $this->cacheLifetime);
 
                 }
-                $this->cache->set($key, $folderInfo, [], $this->lifetime);
+                $this->cache->set($key, $folderInfo, [], $this->cacheLifetime);
             }
         }
         $this->log->debug("getFolderInfo($identifier, $extract): " . json_encode($this->cache->get($key . $extract)));
@@ -424,8 +418,8 @@ class CelumClient
             $this->log->debug('request: GET:' . $request);
             $response = $this->client->request('GET', $request, $this->options)->getBody();
             if ($response) {
-                $response = json_decode($response, true);
-                $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->lifetime);
+                $response = json_decode((string)$response, true);
+                $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->cacheLifetime);
             } else {
                 $this->cache->set($key, ['info' => null], [], 60); // short cache on error
             }
@@ -434,7 +428,7 @@ class CelumClient
         return $this->cache->get($key);
     }
 
-    private function toAsset(&$arr, $identifier)
+    private function toAsset(array &$arr, string $identifier)
     {
         $type = $arr['fileCategory'];
         $format = (($type == 'image') ? $this->imageFormat : (($type == 'video') ? $this->videoFormat : $this->othersFormat));
@@ -520,7 +514,7 @@ class CelumClient
         ];
     }
 
-    private function getInfoFieldValue($name, $arr)
+    private function getInfoFieldValue(string $name, array $arr): string
     {
         if (!isset($arr['informationFieldValues']) || !$arr['informationFieldValues']) {
             return '';
@@ -542,7 +536,7 @@ class CelumClient
      * @param $description
      * @throws GuzzleException
      */
-    public function addPublicUrl($identifier, $url, $description)
+    public function addPublicUrl(string $identifier, string $url, $description): void
     {
         if (!$this->token) {
             return;
@@ -562,12 +556,9 @@ class CelumClient
     }
 
     /**
-     * @param $identifier
-     * @param $description
-     * @param $stillUsed
      * @throws GuzzleException
      */
-    public function deletePublicUrl($identifier, $description, $stillUsed)
+    public function deletePublicUrl(string $identifier, string $description, bool $stillUsed): void
     {
         if (!$this->token) {
             return;
@@ -591,7 +582,7 @@ class CelumClient
      * @param $type
      * @return mixed
      */
-    public function getUrl($identifier, $type = 'publicUrl')
+    public function getUrl(string $identifier, string $type = 'publicUrl'): mixed
     {
         if (substr($identifier, 0, 5) === 'thumb') {
             $type = 'thumbnail';
@@ -602,23 +593,24 @@ class CelumClient
         return $ret;
     }
 
-    private function decode_base64($sData)
+    private function decode_base64(string $sData): string
     {
         $sBase64 = strtr($sData, '-_', '+/');
         return base64_decode($sBase64 . '==');
     }
 
-    private function decrypt($sData)
+    private function decrypt(string $sData): string
     {
         $secretKey = 'ZbMchtd9DivzjPDi5QIio1iVERFnNZiSE33QKY3Gw9rYfCNLFiKloJQt3zi4';
         $sResult = '';
-        $sData = $this->decode_base64($sData);
-        for ($i = 0; $i < strlen($sData); $i++) {
-            $sChar = substr($sData, $i, 1);
+        $sData   = $this->decode_base64($sData);
+        for ($i=0;$i<strlen($sData);$i++) {
+            $sChar    = substr($sData, $i, 1);
             $sKeyChar = substr($secretKey, ($i % strlen($secretKey)) - 1, 1);
-            $sChar = chr(ord($sChar) - ord($sKeyChar));
+            $sChar    = chr(ord($sChar) - ord($sKeyChar));
             $sResult .= $sChar;
         }
         return $sResult;
     }
+
 }

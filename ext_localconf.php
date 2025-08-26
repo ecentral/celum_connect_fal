@@ -1,15 +1,27 @@
 <?php
 defined('TYPO3') || die('Access denied.');
+use TYPO3\CMS\Core\Information\Typo3Version;
 
-// Driver
-/** @var \TYPO3\CMS\Core\Resource\Driver\DriverRegistry $driverRegistry */
-$driverRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Driver\DriverRegistry::class);
-$driverRegistry->registerDriverClass(
-    \Brix\CelumFal\Driver\CelumDriver::class,
-    \Brix\CelumFal\Driver\CelumDriver::DRIVER_TYPE,
-    'celum:connect (FAL)',
-    'FILE:EXT:' . \Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY . '/Configuration/FlexForm/CelumDriverFlexForm.xml'
-);
+if ((new Typo3Version())->getMajorVersion() > 12) {
+    // Driver
+    /** @var \TYPO3\CMS\Core\Resource\Driver\DriverRegistry $driverRegistry */
+    $driverRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Driver\DriverRegistry::class);
+    $driverRegistry->registerDriverClass(
+        \Brix\CelumFal\Driver\CelumDriver::class,
+        \Brix\CelumFal\Driver\CelumDriver::DRIVER_TYPE,
+        'celum:connect (FAL)',
+        'FILE:EXT:' . \Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY . '/Configuration/FlexForm/CelumDriverFlexForm.xml'
+    );
+} else {
+    /** @var \TYPO3\CMS\Core\Resource\Driver\DriverRegistry $driverRegistry */
+    $driverRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Driver\DriverRegistry::class);
+    $driverRegistry->registerDriverClass(
+        \Brix\CelumFal\Driver\CelumDriverV12::class,
+        \Brix\CelumFal\Driver\CelumDriverV12::DRIVER_TYPE,
+        'celum:connect (FAL)',
+        'FILE:EXT:' . \Brix\CelumFal\Driver\CelumDriverV12::EXTENSION_KEY . '/Configuration/FlexForm/CelumDriverFlexForm.xml'
+    );
+}
 
 // Extractor
 $extractorRegistry = new \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry();

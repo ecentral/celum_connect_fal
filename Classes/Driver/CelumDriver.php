@@ -136,7 +136,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
 
     /**
      * Checks if a file exists.
-     *
      */
     public function fileExists(string $fileIdentifier): bool
     {
@@ -158,7 +157,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
 
     /**
      * Checks if a folder contains files and (if supported) other folders.
-     *
      */
     public function isFolderEmpty(string $folderIdentifier): bool
     {
@@ -255,7 +253,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
      *
      * @throws Exception
      */
-    public function moveFileWithinStorage(string $fileIdentifier, string $targetFolderIdentifier, string$newFileName): string
+    public function moveFileWithinStorage(string $fileIdentifier, string $targetFolderIdentifier, string $newFileName): string
     {
         throw new Exception('Storage is read-only.');
     }
@@ -289,7 +287,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
      * complete file into memory and also may require fetching the file from an
      * external location. So this might be an expensive operation (both in terms
      * of processing resources and money) for large files.
-     *
      */
     public function getFileContents(string $fileIdentifier): string
     {
@@ -352,7 +349,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
      * Directly output the contents of the file to the output
      * buffer. Should not take care of header files or flushing
      * buffer before. Will be taken care of by the Storage.
-     *
      */
     public function dumpFileContents(string $identifier): void
     {
@@ -369,7 +365,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
      * Hint: this also needs to return TRUE if the given identifier
      * matches the container identifier to allow access to the root
      * folder of a filemount.
-     *
      */
     public function isWithin(string $folderIdentifier, string $identifier): bool
     {
@@ -423,8 +418,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
         array $filenameFilterCallbacks = [],
         string $sort = '',
         bool $sortRev = false
-    ): array
-    {
+    ): array {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         if ($recursive or (($sort != 'name') and ($sort != 'fileext') and ($sort != 'size') and ($sort != 'tstamp'))) {
             $ret = self::$client->getFolderInfo($folderIdentifier, 'assets');
@@ -483,7 +477,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
 
     /**
      * Returns a list of folders inside the specified path
-     *
      */
     public function getFoldersInFolder(
         string $folderIdentifier,
@@ -493,8 +486,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
         array $folderNameFilterCallbacks = [],
         string $sort = '',
         bool $sortRev = false
-    ): array
-    {
+    ): array {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         if ($recursive) {
             $ret = self::$client->getFolderInfo($folderIdentifier, 'children');
@@ -618,7 +610,6 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
 
     /**
      * Returns the identifier of the folder the file resides in
-     *
      */
     public function getParentFolderIdentifierOfIdentifier(string $fileIdentifier): string
     {

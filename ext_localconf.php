@@ -1,8 +1,8 @@
 <?php
 defined('TYPO3') || die('Access denied.');
 use TYPO3\CMS\Core\Information\Typo3Version;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Resource\Driver\DriverRegistry;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 // Driver
 $driverClass = (new Typo3Version())->getMajorVersion() < 13
@@ -29,7 +29,6 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations'][$driverClas
 // Extractor
 $extractorRegistry = new \TYPO3\CMS\Core\Resource\Index\ExtractorRegistry();
 $extractorRegistry->registerExtractionService(\Brix\CelumFal\Index\Extractor::class);
-
 
 // Processor
 if (!isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['processors']['CelumImageProcessor'])) {

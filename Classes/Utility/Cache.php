@@ -5,7 +5,6 @@ use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -18,12 +17,9 @@ class Cache implements SingletonInterface
     {
         $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
 
-        $driverExtensuionKey = (new Typo3Version())->getMajorVersion() < 13
-            ? \Brix\CelumFal\Driver\CelumDriverV12::EXTENSION_KEY
-            : \Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY;
-
-        if ($cacheManager->hasCache($driverExtensuionKey)) {
-            $this->cache = $cacheManager->getCache($driverExtensuionKey);
+        $driverClass = DriverUtility::getDriver();
+        if ($cacheManager->hasCache($driverClass::EXTENSION_KEY)) {
+            $this->cache = $cacheManager->getCache($driverClass::EXTENSION_KEY);
         }
     }
 
@@ -46,11 +42,7 @@ class Cache implements SingletonInterface
         $this->cacheData[$entryIdentifier] = $data;
     }
 
-    /**
-     * @param string $entryIdentifier
-     * @return mixed
-     */
-    public function get(string $entryIdentifier)
+    public function get(string $entryIdentifier): mixed
     {
         if ($this->cache) {
             return $this->cache->get($entryIdentifier);
@@ -61,9 +53,6 @@ class Cache implements SingletonInterface
 
     /**
      * clear the celum cache
-     *
-     * @param ResponseInterface $response the current response
-     * @return ResponseInterface
      */
     public function clearCache(): ResponseInterface
     {

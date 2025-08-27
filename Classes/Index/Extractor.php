@@ -8,7 +8,7 @@
 
 namespace Brix\CelumFal\Index;
 
-use TYPO3\CMS\Core\Information\Typo3Version;
+use Brix\CelumFal\Utility\DriverUtility;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\File;
@@ -18,8 +18,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class Extractor implements ExtractorInterface
 {
 
-    /** @var Logger */
-    protected $log;
+    protected Logger $log;
 
     public function __construct()
     {
@@ -29,8 +28,6 @@ class Extractor implements ExtractorInterface
     /**
      * Returns an array of supported file types;
      * An empty array indicates all filetypes
-     *
-     * @return array
      */
     public function getFileTypeRestrictions(): array
     {
@@ -46,16 +43,11 @@ class Extractor implements ExtractorInterface
      * Returns array of string with driver names of Drivers which are supported,
      * If the driver did not register a name, it's the classname.
      * empty array indicates no restrictions
-     *
-     * @return array
      */
-    public function getDriverRestrictions()
+    public function getDriverRestrictions(): array
     {
-        $driverClass = (new Typo3Version())->getMajorVersion() < 13
-            ? \Brix\CelumFal\Driver\CelumDriverV12::DRIVER_TYPE
-            : \Brix\CelumFal\Driver\CelumDriver::DRIVER_TYPE;
-
-        return [$driverClass];
+        $driverClass = DriverUtility::getDriver();
+        return [$driverClass::DRIVER_TYPE];
     }
 
     /**
@@ -64,9 +56,8 @@ class Extractor implements ExtractorInterface
      * extracted the same property.
      *
      * Should be between 1 and 100, 100 is more important than 1
-     *
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return 50;
     }
@@ -74,7 +65,6 @@ class Extractor implements ExtractorInterface
     /**
      * Returns the execution priority of the extraction Service
      * Should be between 1 and 100, 100 means runs as first service, 1 runs at last service
-     *
      */
     public function getExecutionPriority(): int
     {
@@ -83,29 +73,23 @@ class Extractor implements ExtractorInterface
 
     /**
      * Checks if the given file can be processed by this Extractor
-     *
      */
     public function canProcess(File $file): bool
     {
-        $driverType = (new Typo3Version())->getMajorVersion() < 13
-            ? \Brix\CelumFal\Driver\CelumDriverV12::DRIVER_TYPE
-            : \Brix\CelumFal\Driver\CelumDriver::DRIVER_TYPE;
+        $driverType = DriverUtility::getDriver();
 
-        return $file->getStorage()->getDriverType() === $driverType;
+        return $file->getStorage()->getDriverType() === $driverType::DRIVER_TYPE;
     }
 
     /**
      * The actual processing TASK
      *
      * Should return an array with database properties for sys_file_metadata to write
-     *
      */
     public function extractMetaData(File $file, array $previousExtractedData = []): array
     {
         $this->log->debug('extractMetaData(' . $file->getIdentifier() . ', ' . json_encode($previousExtractedData) . ')');
-        $client = (new Typo3Version())->getMajorVersion() < 13
-            ? \Brix\CelumFal\Driver\CelumDriverV12::$client
-            : \Brix\CelumFal\Driver\CelumDriver::$client;
+        $client = DriverUtility::getClient();
 
         return $client->getFileInfo($file->getIdentifier())['info'];
     }

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: CMA
- * Date: 05/11/2018
- * Time: 13:37
- */
 
 declare(strict_types = 1);
 
@@ -57,16 +51,6 @@ class CelumClient
      */
     public function __construct(array $config, int $storage)
     {
-        // The following leads to being unable to configure a driver, because T3 makes an instance before it is configured
-        /*
-        if (empty($config['licenseKey'])) {
-            throw new InvalidConfigurationException('No licenseKey given');
-        }
-
-        if (empty($config['celumApiKey'])) {
-            throw new InvalidConfigurationException('No celumApiKey given');
-        }
-        */
         try {
             $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
             $this->log->debug('__construct(' . json_encode($config) . ')');
@@ -119,10 +103,6 @@ class CelumClient
         }
     }
 
-    /**
-     * @param $identifier
-     * @return string
-     */
     public function extractId($identifier): string
     {
         return basename(rtrim($identifier, '/'));
@@ -130,7 +110,6 @@ class CelumClient
 
     /**
      * @param array<int, array{locale: string, value: string}> $names
-     * @return string|null
      */
     public function extractName(array &$names): ?string
     {
@@ -175,10 +154,6 @@ class CelumClient
         $this->cache->set($key . 'assets', $rootFolderInfo['assets'], [], $this->cacheLifetime);
     }
 
-    /**
-     * @param $identifier
-     * @return array
-     */
     private function queryBasicFolderInformation(string $identifier): array
     {
         $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
@@ -213,10 +188,6 @@ class CelumClient
         return $folderInfoReturnValue;
     }
 
-    /**
-     * @param $identifier
-     * @return array
-     */
     private function querySubfolder(string $identifier): array
     {
         $foldernames = [];
@@ -270,10 +241,6 @@ class CelumClient
         return [$folderInfoReturnValue, $foldernames, $folders];
     }
 
-    /**
-     * @param $identifier
-     * @return array
-     */
     private function querySubfolderAndAssets(string $identifier): array
     {
         $filenames = [];
@@ -463,7 +430,6 @@ class CelumClient
         }
         $publicUrl = false;
         if (($type == 'image') or ($type == 'video')) {
-            // echo $this->description . " " . $this->provider . " " . json_encode($response['publicUrls']) . "; ";
             foreach ($arr['publicUrls'] as $purl) {
                 if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type])) {
                     $publicUrl = $purl['url'];
@@ -530,13 +496,7 @@ class CelumClient
         return $val;
     }
 
-    /**
-     * @param $identifier
-     * @param $url
-     * @param $description
-     * @throws GuzzleException
-     */
-    public function addPublicUrl(string $identifier, string $url, $description): void
+    public function addPublicUrl(string $identifier, string $url, string $description): void
     {
         if (!$this->token) {
             return;
@@ -577,11 +537,6 @@ class CelumClient
         $this->client->request('POST', $url, $this->postOptions);
     }
 
-    /**
-     * @param $identifier
-     * @param $type
-     * @return mixed
-     */
     public function getUrl(string $identifier, string $type = 'publicUrl'): mixed
     {
         if (substr($identifier, 0, 5) === 'thumb') {

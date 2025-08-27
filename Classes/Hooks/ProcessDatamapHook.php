@@ -107,7 +107,7 @@ class ProcessDatamapHook
                         $url = $backendUriBuilder->buildUriFromRoute('record_edit', $uriParameters, $backendUriBuilder::SHAREABLE_URL);
 
                         $client = new CelumClient($file->getStorage()->getConfiguration(), $file->getStorage()->getStorageRecord()['uid']);
-                        $client->addPublicUrl($file->getIdentifier(), (string) $url, $this->getTableName($tableName) . ' ' . $recordId);
+                        $client->addPublicUrl($file->getIdentifier(), (string)$url, $this->getTableName($tableName) . ' ' . $recordId);
                     }
                 }
             }

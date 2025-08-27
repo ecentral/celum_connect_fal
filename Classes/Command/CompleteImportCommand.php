@@ -4,11 +4,11 @@ declare(strict_types = 1);
 
 namespace Brix\CelumFal\Command;
 
+use Brix\CelumFal\Utility\DriverUtility;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -43,9 +43,7 @@ class CompleteImportCommand extends Command
         /** @var ResourceStorage $storage */
         $storage = $factory->getStorageObject($storageUid);
 
-        $driverClass = (new Typo3Version())->getMajorVersion() < 13
-            ? \Brix\CelumFal\Driver\CelumDriverV12::class
-            : \Brix\CelumFal\Driver\CelumDriver::class;
+        $driverClass = DriverUtility::getDriver();
 
         if ($storage->getDriverType() !== $driverClass::DRIVER_TYPE) {
             throw new RuntimeException('Chosen storage is not a CelumFal storage');

@@ -56,7 +56,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
         ];
         $this->optionValues[] = 'celum';
 
-        if((new Typo3Version())->getMajorVersion() > 12) {
+        if ((new Typo3Version())->getMajorVersion() > 12) {
             $this->viewFactory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\View\ViewFactoryInterface::class);
         }
         $event = new ModifyClearCacheActionsEvent($cacheActions, $this->optionValues);
@@ -92,7 +92,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
      */
     public function getItem(): string
     {
-        if((new Typo3Version())->getMajorVersion() < 13) {
+        if ((new Typo3Version())->getMajorVersion() < 13) {
             /** @var \TYPO3\CMS\Fluid\View\StandaloneView $view */
             $view = GeneralUtility::makeInstance(\TYPO3\CMS\Fluid\View\StandaloneView::class);
             $view->setTemplateRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Templates/')]);

@@ -2,14 +2,14 @@
 
 namespace Brix\CelumFal\Processor;
 
-use Brix\CelumFal\Driver\CelumDriver;
+use Brix\CelumFal\Utility\DriverUtility;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Imaging\Exception\ZeroImageDimensionException;
 use TYPO3\CMS\Core\Imaging\ImageDimension;
-
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\ProcessedFileRepository;
@@ -20,8 +20,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class CelumImageProcessor implements ProcessorInterface
 {
 
-    /** @var Logger */
-    protected $log;
+    protected Logger $log;
 
     public function canProcessTask(TaskInterface $task): bool
     {
@@ -39,30 +38,31 @@ class CelumImageProcessor implements ProcessorInterface
     {
         $this->log->debug('processTask');
 
+        $driverClient = DriverUtility::getClient();
+
         try {
             $imageDimension = ImageDimension::fromProcessingTask($task);
         } catch (ZeroImageDimensionException $e) {
             $imageDimension = new ImageDimension(64, 64);
-
             $id = $task->getSourceFile()->getIdentifier();
-            $info = CelumDriver::$client->getFileInfo($id);
+            $info = $driverClient->getFileInfo($id);
             $width = $info['info']['width'];
             $height = $info['info']['height'];
-            /*if ($width and $height) {
-                $max = 250;
-                if (($width > $max) or ($height > $max)) {
-                    if ($width > $height) {
-                        $height = intval($height * $max / $width);
-                        $width = $max;
-                    } else {
-                        $width = intval($width * $max / $height);
-                        $height = $max;
-                    }
-                }
-            } else {
-                $width = 0;
-                $height = 0;
-            }*/
+            //            if ($width and $height) {
+            //                $max = 250;
+            //                if (($width > $max) or ($height > $max)) {
+            //                    if ($width > $height) {
+            //                        $height = intval($height * $max / $width);
+            //                        $width = $max;
+            //                    } else {
+            //                        $width = intval($width * $max / $height);
+            //                        $height = $max;
+            //                    }
+            //                }
+            //            } else {
+            //                $width = 0;
+            //                $height = 0;
+            //            }
         }
 
         $processedFile = $task->getTargetFile();
@@ -109,7 +109,7 @@ class CelumImageProcessor implements ProcessorInterface
                 $queryBuilder
                     ->update('sys_file_metadata')
                     ->where(
-                        $queryBuilder->expr()->eq('file', $queryBuilder->createNamedParameter($originalFileUid, \PDO::PARAM_INT))
+                        $queryBuilder->expr()->eq('file', $queryBuilder->createNamedParameter($originalFileUid, Connection::PARAM_INT))
                     )
                     ->set('width', $width)
                     ->set('height', $height)
@@ -135,7 +135,7 @@ class CelumImageProcessor implements ProcessorInterface
             ->select('original')
             ->from('sys_file_processedfile')
             ->where(
-                $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($processedFileUid, \PDO::PARAM_INT))
+                $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($processedFileUid, Connection::PARAM_INT))
             );
 
         // execute query
@@ -146,4 +146,3 @@ class CelumImageProcessor implements ProcessorInterface
     }
 
 }
-

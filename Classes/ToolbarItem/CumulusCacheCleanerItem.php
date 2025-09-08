@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 /*
  * This file is part of the TYPO3 CMS project.
@@ -17,21 +17,23 @@ declare(strict_types=1);
 
 namespace Brix\CelumFal\ToolbarItem;
 
+use AllowDynamicProperties;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Backend\Event\ModifyClearCacheActionsEvent;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Toolbar\RequestAwareToolbarItemInterface;
 use TYPO3\CMS\Backend\Toolbar\ToolbarItemInterface;
-use TYPO3\CMS\Backend\View\BackendViewFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;use TYPO3\CMS\Core\Utility\DebugUtility;
+
 /**
  * Render cache clearing toolbar item.
  * Adds a dropdown if there are more than one item to clear (usually for admins to render the flush all caches).
  * The dropdown items can be manipulated using ModifyClearCacheActionsEvent.
  */
+#[AllowDynamicProperties]
 class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolbarItemInterface
 {
     protected array $cacheActions = [];
@@ -40,11 +42,11 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
 
     public function __construct(
         UriBuilder $uriBuilder,
-        EventDispatcherInterface $eventDispatcher,
-        private readonly BackendViewFactory $backendViewFactory
+        EventDispatcherInterface $eventDispatcher
     ) {
         $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
         $clearCacheUri = (string)$uriBuilder->buildUriFromRoute('ajax_celum_cache');
+
         $cacheActions[] = [
             'id' => 'celum_cache_action',
             'title' => 'LLL:EXT:celum_connect_fal/Resources/Private/Language/locallang.xlf:be_clear_cache_title',
@@ -54,8 +56,9 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
         ];
         $this->optionValues[] = 'celum';
 
-
-
+        if ((new Typo3Version())->getMajorVersion() > 12) {
+            $this->viewFactory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\View\ViewFactoryInterface::class);
+        }
         $event = new ModifyClearCacheActionsEvent($cacheActions, $this->optionValues);
         $event = $eventDispatcher->dispatch($event);
         $this->cacheActions = $event->getCacheActions();
@@ -89,19 +92,22 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
      */
     public function getItem(): string
     {
-        // Fluid Template laden
-        /** @var StandaloneView $view */
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-
-        // Setze den Template Root Pfad und den Partial Pfad
-        $view->setTemplateRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Templates/')]);
-        $view->setPartialRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Partials/')]);
-        $view->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Layouts/')]);
-
-
-
-        // Setze die Template-Datei
-        $view->setTemplate('ToolbarItems/ClearCumulusCacheToolbarItemSingle.html');
+        if ((new Typo3Version())->getMajorVersion() < 13) {
+            /** @var \TYPO3\CMS\Fluid\View\StandaloneView $view */
+            $view = GeneralUtility::makeInstance(\TYPO3\CMS\Fluid\View\StandaloneView::class);
+            $view->setTemplateRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Templates/')]);
+            $view->setPartialRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Partials/')]);
+            $view->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Layouts/')]);
+            $view->setTemplate('ToolbarItems/ClearCumulusCacheToolbarItemSingle.html');
+        } else {
+            $viewFactoryData = new \TYPO3\CMS\Core\View\ViewFactoryData(
+                templateRootPaths: ['EXT:celum_connect_fal/Resources/Private/Templates/'],
+                partialRootPaths: ['EXT:celum_connect_fal/Resources/Private/Partials/'],
+                layoutRootPaths: ['EXT:celum_connect_fal/Resources/Private/Layouts/'],
+                request: $this->request,
+            );
+            $view = $this->viewFactory->create($viewFactoryData);
+        }
 
         $cacheAction = end($this->cacheActions);
         $view->assignMultiple([
@@ -109,7 +115,8 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
             'title' => $cacheAction['title'],
             'iconIdentifier'  => $cacheAction['iconIdentifier'],
         ]);
-        return $view->render();
+
+        return $view->render('ToolbarItems/ClearCumulusCacheToolbarItemSingle.html');
     }
 
     /**
@@ -117,9 +124,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
      */
     public function getDropDown(): string
     {
-        $view = $this->backendViewFactory->create($this->request);
-        $view->assign('cacheActions', $this->cacheActions);
-        return $view->render('ToolbarItems/ClearCacheToolbarItemDropDown');
+        return '';
     }
 
     /**

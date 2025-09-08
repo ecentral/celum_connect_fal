@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace Brix\CelumFal\Hooks;
 
 use Brix\CelumFal\Client\CelumClient;
@@ -13,7 +16,7 @@ class ProcessDatamapHook
 {
     private TranslationService $translationService;
 
-    public function processDatamap_afterDatabaseOperations(string $status, string $table, $id, array &$fieldArray, DataHandler $pObj): void
+    public function processDatamap_afterDatabaseOperations(string $status, string $table, string|int $id, array &$fieldArray, DataHandler $pObj): void
     {
         if ($status === 'new' && !is_int($id)) {
             $id = $pObj->substNEWwithIDs[$id];
@@ -26,7 +29,7 @@ class ProcessDatamapHook
         $this->updateReference($table, $id, $command);
     }
 
-    protected function updateReference(string $table, int $id, string $status)
+    protected function updateReference(string $table, int $id, string $status): void
     {
         $references = [];
         if ($table === 'sys_file_reference') {
@@ -43,7 +46,7 @@ class ProcessDatamapHook
                         $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
                     ),
                 )
-            ->execute();
+            ->executeQuery();
             $references = $query->fetchAllAssociative();
         } else {
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
@@ -62,7 +65,7 @@ class ProcessDatamapHook
                         $queryBuilder->createNamedParameter($id, Connection::PARAM_INT)
                     ),
                 )
-                ->execute();
+                ->executeQuery();
 
             $references = $query->fetchAllAssociative();
         }
@@ -91,7 +94,7 @@ class ProcessDatamapHook
                                     $queryBuilder->createNamedParameter($sysFileReference['uid_local'], Connection::PARAM_INT)
                                 ),
                             )
-                            ->execute();
+                            ->executeQuery();
                         if ($query->rowCount() > 0) {
                             $usedOnOtherPlaces = true;
                         }
@@ -104,14 +107,14 @@ class ProcessDatamapHook
                         $url = $backendUriBuilder->buildUriFromRoute('record_edit', $uriParameters, $backendUriBuilder::SHAREABLE_URL);
 
                         $client = new CelumClient($file->getStorage()->getConfiguration(), $file->getStorage()->getStorageRecord()['uid']);
-                        $client->addPublicUrl($file->getIdentifier(), $url, $this->getTableName($tableName) . ' ' . $recordId);
+                        $client->addPublicUrl($file->getIdentifier(), (string)$url, $this->getTableName($tableName) . ' ' . $recordId);
                     }
                 }
             }
         }
     }
 
-    protected function getTableName(string $table)
+    protected function getTableName(string $table): string
     {
         $title = $GLOBALS['TCA'][$table]['ctrl']['title'];
         return GeneralUtility::makeInstance(TranslationService::class)->translate($title, null, null, null, $title);

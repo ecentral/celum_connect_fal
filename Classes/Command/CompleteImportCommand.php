@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace Brix\CelumFal\Command;
 
-use Brix\CelumFal\Driver\CelumDriver;
+use Brix\CelumFal\Utility\DriverUtility;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,12 +42,15 @@ class CompleteImportCommand extends Command
 
         /** @var ResourceStorage $storage */
         $storage = $factory->getStorageObject($storageUid);
-        if ($storage->getDriverType() !== CelumDriver::DRIVER_TYPE) {
+
+        $driverClass = DriverUtility::getDriver();
+
+        if ($storage->getDriverType() !== $driverClass::DRIVER_TYPE) {
             throw new RuntimeException('Chosen storage is not a CelumFal storage');
         }
 
-        /** @var CelumDriver $celumDriver */
-        $celumDriver = GeneralUtility::makeInstance(CelumDriver::class, $storage->getConfiguration());
+        $celumDriver = GeneralUtility::makeInstance($driverClass, $storage->getConfiguration());
+        $celumDriver->setStorageUid((int)$storageUid);
         $celumDriver->initialize();
 
         $output->writeln('Starting import  process');

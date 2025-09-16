@@ -100,7 +100,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
     {
         $ret = self::$client->getUrl($identifier, 'publicUrl');
         $this->log->debug("$this->instance: getPublicURL($identifier): $ret");
-        return $ret;
+        return null;
     }
 
     /**
@@ -331,8 +331,8 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
      */
     public function getFileForLocalProcessing(string $fileIdentifier, bool $writable = true): string
     {
-        $tmp = GeneralUtility::tempnam('fal-tempfile-', '.' . self::$client->getFileInfo($fileIdentifier)['extension']);
-        file_put_contents($tmp, fopen(self::$client->getUrl($fileIdentifier), 'r'));
+        $tmp = GeneralUtility::tempnam('fal-tempfile-', '.' . self::$client->getFileInfo($fileIdentifier)['info']['extension']);
+        $status = file_put_contents($tmp, fopen(self::$client->getUrl($fileIdentifier), 'r'));
         return $tmp;
     }
 

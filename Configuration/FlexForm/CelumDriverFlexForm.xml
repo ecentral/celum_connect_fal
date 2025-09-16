@@ -4,36 +4,93 @@
         <type>array</type>
         <el>
             <licenseKey>
-                <label>License Key</label>
-                <config>
-                    <type>input</type>
-                    <eval>trim</eval>
-                    <size>256</size>
-                </config>
+
+                    <label>License Key</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim,required</eval>
+                        <size>256</size>
+                    </config>
+
             </licenseKey>
+            <celumHost>
+
+                    <label>Celum Host</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim,required</eval>
+                        <size>256</size>
+                    </config>
+
+            </celumHost>
             <celumApiKey>
-                <label>Celum API key</label>
-                <config>
-                    <type>input</type>
-                    <eval>trim</eval>
-                    <size>256</size>
-                </config>
+
+                    <label>Celum API key</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim,required</eval>
+                        <size>256</size>
+                    </config>
+
             </celumApiKey>
+            <celumUser>
+
+                    <label>Celum User</label>
+                    <config>
+                        <type>input</type>
+                        <eval>trim,required</eval>
+                        <size>256</size>
+                    </config>
+
+            </celumUser>
+            <celumPassword>
+
+                    <label>Celum Password</label>
+                    <config>
+                        <type>input</type>
+                        <renderType>password</renderType>
+                        <eval>trim,required</eval>
+                        <size>256</size>
+                    </config>
+
+            </celumPassword>
             <locale>
-                <label>Locale</label>
-                <config>
-                    <type>input</type>
-                    <eval>trim</eval>
-                    <size>2</size>
-                </config>
+
+                    <label>Locale</label>
+                    <config>
+                        <type>select</type>
+                        <renderType>selectSingle</renderType>
+                        <items>
+                            <numIndex index="0">
+                                <numIndex index="0">Deutsch</numIndex>
+                                <numIndex index="1">de</numIndex>
+                            </numIndex>
+                            <numIndex index="1">
+                                <numIndex index="0">English</numIndex>
+                                <numIndex index="1">en</numIndex>
+                            </numIndex>
+                        </items>
+                    </config>
+
             </locale>
             <defaultLocale>
-                <label>Default locale</label>
-                <config>
-                    <type>input</type>
-                    <eval>trim</eval>
-                    <size>2</size>
-                </config>
+
+                    <label>Default locale</label>
+                    <config>
+                        <type>select</type>
+                        <renderType>selectSingle</renderType>
+                        <items>
+                            <numIndex index="0">
+                                <numIndex index="0">Deutsch</numIndex>
+                                <numIndex index="1">de</numIndex>
+                            </numIndex>
+                            <numIndex index="1">
+                                <numIndex index="0">English</numIndex>
+                                <numIndex index="1">en</numIndex>
+                            </numIndex>
+                        </items>
+                    </config>
+
             </defaultLocale>
             <roots>
                 <label>Root nodes (comma separated list of ids)</label>

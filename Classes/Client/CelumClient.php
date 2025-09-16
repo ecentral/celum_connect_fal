@@ -6,36 +6,67 @@ namespace Brix\CelumFal\Client;
 
 use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use Brix\CelumFal\Utility\Cache;
+use Brix\CelumFal\Utility\FileInfo;
+use Brix\CelumFal\Utility\FileInfo\Format;
+use Brix\CelumFal\Utility\RestClientFolderUtility;
+use Celum\Client\Api\AboutApi;
+use Celum\Client\Api\AssetsApi;
+use Celum\Client\Api\CollectionsApi;
+use Celum\Client\Api\DownloadApi;
+use Celum\Client\Api\DownloadFormatsApi;
+use Celum\Client\Configuration;
+use Celum\Client\Model\Asset;
+use Celum\Client\Model\FileCategory;
 use Exception;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\ClientInterface;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\PathUtility;
 
 class CelumClient
 {
+    /*NEW*/
+    const X_API_KEY_IDENTIFIER = 'X-API-KEY';
+    const X_API_KEY_PREFIX = 'Bearer';
 
+    protected string $host;
+    protected string $locale;
+    protected string $defaultLocale;
+    protected string $username;
+    protected string $password;
+    protected string $apiKey;
+
+    protected int $storage;
+    protected Cache $cache;
+
+    private Format $imageFormat;
+    private Format $videoFormat;
+    private Format $othersFormat;
+    private Format $documentFormat;
+
+    protected $client;
+
+    protected Configuration $clientConfiguration;
+
+    /*TODO OLD REMOVE*/
     const API_MAX_ASSET_CHUNK = 200; // API defined maximum of child assets per request (max api page size)
 
     protected string $celumUrl;
     protected string $cora;
-    protected string $locale;
-    protected string $defaultLocale;
-    protected Cache $cache;
+    //protected string $locale;
+    //protected string $defaultLocale;
+    //protected Cache $cache;
     protected Logger $log;
-    protected int $storage;
+    //protected int $storage;
     protected string $directDownload;
     private array $provider;
     private array $description;
     private string $secret;
-    private Client $client;
+    //private Client $client;
     private array $options;
     private array $postOptions;
-    private string $imageFormat;
-    private string $videoFormat;
-    private string $othersFormat;
+
     private int $cacheLifetime;
     private string $token;
     private string $writePublicUrls;
@@ -54,6 +85,29 @@ class CelumClient
         try {
             $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
             $this->log->debug('__construct(' . json_encode($config) . ')');
+
+            $this->initConfiguration($config);
+
+            $this->storage = $storage;
+
+            $this->cache = GeneralUtility::makeInstance(Cache::class);
+
+            //Create celum client config
+            $this->clientConfiguration = Configuration::getDefaultConfiguration()
+                ->setHost($this->host)
+                ->setApiKeyPrefix(self::X_API_KEY_IDENTIFIER, self::X_API_KEY_PREFIX)
+                ->setApiKey(self::X_API_KEY_IDENTIFIER, $this->apiKey)
+                ->setUsername($this->username)
+                ->setPassword($this->password);
+
+            return;
+
+            $this->getDownloadFormats();
+            //$this->test($configuration);
+
+            /*TODO OLD REMOVE*/
+            $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+            $this->log->debug('__construct(' . json_encode($config) . ')');
             $res = $this->decrypt($config['licenseKey']);
 
             if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
@@ -61,27 +115,16 @@ class CelumClient
             } else {
                 throw new InvalidConfigurationException('No valid license');
             }
-
-            $this->cora = $this->celumUrl . '/cora/';
-            $this->imageFormat = $config['imageDownloadFormat'];
-            $this->videoFormat = $config['videoDownloadFormat'];
-            $this->othersFormat = $config['othersDownloadFormat'];
+            //$this->imageFormat = $config['imageDownloadFormat'];
+            //$this->videoFormat = $config['videoDownloadFormat'];
+            //$this->othersFormat = $config['othersDownloadFormat'];
             $this->directDownload = $this->celumUrl . '/direct/download?';
             $this->provider = ['video' => $config['publicURLsProviderVideo'], 'image' => $config['publicURLsProviderImage']];
             $this->description = ['video' => $config['publicURLsDescriptionVideo'], 'image' => $config['publicURLsDescriptionImage']];
             $this->locale = $config['locale'];
             $this->defaultLocale = $config['defaultLocale'];
             $this->secret = $config['directDownloadSecret'];
-            $this->storage = $storage;
-            $this->cache = GeneralUtility::makeInstance(Cache::class);
-            $this->client = new Client(['base_uri' => $this->cora]);
-            $this->options = ['headers' => ['Authorization' => 'celumApiKey ' . $config['celumApiKey']], 'verify' => false];
-            $this->postOptions = ['verify' => false];
-            $this->cacheLifetime = intval($config['cacheLifetimeInMinutes']);
-            if (($this->cacheLifetime <= 0) || ($this->cacheLifetime >= 30)) {
-                $this->cacheLifetime = 29;
-            }
-            $this->cacheLifetime *= 60;
+
             $this->token = $config['infoFieldSetterToken'];
             $this->writePublicUrls = $config['writePublicUrls'];
             $this->infoFieldId = $config['informationFieldId'];
@@ -94,12 +137,77 @@ class CelumClient
             if ($this->alternativeFieldName) {
                 $this->fieldSelect .= ',informationFieldValues/' . $this->alternativeFieldName;
             }
-            $this->roots = preg_split('/\\s*,\\s*/', trim($config['roots']));
-            foreach ($this->roots as $key => $val) {
-                $this->roots[$key] = "/$val/";
-            }
         } catch (Exception $exception) {
             $this->log->error($exception->getMessage());
+        }
+    }
+
+    public function initConfiguration(array $configuration)
+    {
+        //TODO check work with licenseKey in new version
+        /*
+            $res = $this->decrypt($configuration['licenseKey']);
+            if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) and ($matches[2] > time())) {
+                $this->host = rtrim($matches[1]);
+            } else {
+                throw new InvalidConfigurationException('No valid license');
+            }
+         */
+        $this->host = $configuration['celumHost'] ?? '';
+
+        $this->apiKey = $configuration['celumApiKey'] ?? '';
+
+        $this->username = $configuration['celumUser'] ?? '';
+        $this->password = $configuration['celumPassword'] ?? '';
+
+        $this->locale = $configuration['locale'] ?? 'en';
+        $this->defaultLocale = $configuration['defaultLocale'] ?? 'en';
+
+
+        $this->imageFormat = Format::PREVIEW;
+        //TODO append format for video and other
+        $this->videoFormat = Format::VIDEO;
+        $this->othersFormat = Format::OTHER;
+        $this->documentFormat = Format::PDF;
+
+
+        $this->cacheLifetime = intval($configuration['cacheLifetimeInMinutes']);
+        if (($this->cacheLifetime <= 0) || ($this->cacheLifetime >= 30)) {
+            $this->cacheLifetime = 29;
+        }
+        $this->cacheLifetime *= 60;
+
+        $this->roots = preg_split('/\\s*,\\s*/', trim($configuration['roots']??''));
+        foreach ($this->roots as $key => $val) {
+            $this->roots[$key] = "/$val/";
+        }
+    }
+
+    public function getClient(): ClientInterface
+    {
+        if($this->client == null) {
+            try {
+                $this->client = new Client();
+            } catch (Exception $exception) {
+                $this->log->error($exception->getMessage());
+            }
+        }
+        return $this->client;
+    }
+
+    public function test(){
+
+        $apiInstance = new AboutApi(
+            $this->getClient(),
+            $this->clientConfiguration
+        );
+        $x_celum_username = 'x_celum_username_example'; // string | Provide the username of the user that you want to impersonate
+
+        try {
+            $result = $apiInstance->getVersion();
+            print_r($result);
+        } catch (Exception $e) {
+            echo 'Exception when calling AboutApi->getVersion: '. $e->getMessage();
         }
     }
 
@@ -154,165 +262,81 @@ class CelumClient
         $this->cache->set($key . 'assets', $rootFolderInfo['assets'], [], $this->cacheLifetime);
     }
 
+
     private function queryBasicFolderInformation(string $identifier): array
     {
         $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
 
         // node id missing, return empty set
-        if ($identifier === '//') {
+        if ($identifier === '//' || $identifier === './') {
             return $folderInfoReturnValue;
         }
 
-        $id = $this->extractId($identifier);
-        $request = 'Nodes(' . $id . ')?$select=id,name,children,assets,modificationInformation';
-        $this->log->debug('request: GET:' . $request);
-        try {
-            $response = $this->client->request('GET', $request, $this->options)->getBody();
-            if ($response) {
-                $response = json_decode((string)$response, true);
+        $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
 
-                $folderInfoReturnValue = [
-                    'info' => [
-                        'identifier' => $identifier,
-                        'name' => $this->extractName($response['name']),
-                        'storage' => $this->storage,
-                        'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime']),
-                    ],
-                    'children' => [],
-                    'assets' => []
-                ];
-            }
-        } catch (GuzzleException $exception) {
-            $this->log->error($exception->getMessage());
-        }
-        return $folderInfoReturnValue;
+        $collectionId = $this->extractId($identifier);
+
+        $collection = $collectionApi->getCollection($collectionId, $this->locale);
+
+        $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
+
+        return $folderInfo;
     }
 
     private function querySubfolder(string $identifier): array
     {
+        $typeId = 101;
+        $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
+
+        $collection = $collectionApi->getCollection($this->extractId($identifier), $this->locale);
+        $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
+
         $foldernames = [];
         $folders = [];
+        if ($collection->getHasChildren()) {
+            $childCollections = $collectionApi->getCollections($this->locale, $collection->getId(), $typeId);
+            foreach ($childCollections->getContent() as $childCollection) {
 
-        $id = $this->extractId($identifier);
-        $continue = true;
-        $top = CelumClient::API_MAX_ASSET_CHUNK;
-
-        $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
-        try {
-            for ($skip = 0; $continue; $skip += $top) {
-                $continue = false;
-                $request = 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets,modificationInformation';
-                $this->log->debug('request: GET:' . $request);
-
-                $response = $this->client->request('GET', $request, $this->options)->getBody();
-                if ($response) {
-                    $response = json_decode((string)$response, true);
-                    if ($skip == 0) {
-                        $folderInfoReturnValue = ['info' => ['identifier' => $identifier, 'name' => $this->extractName($response['name']), 'storage' => $this->storage, 'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime'])], 'children' => [], 'assets' => []];
-                    }
-                    if (isset($response['children'])) {
-                        $c = count($response['children']);
-                        if ($c > 0) {
-                            foreach ($response['children'] as $child) {
-                                $fi = $identifier . $child['id'] . '/';
-                                $folderInfoReturnValue['children'][] = $fi;
-
-                                $n = $this->extractName($child['name']);
-                                $foldernames[$n] = $fi;
-                                $folders[] = ['name' => $n, 'identifier' => $fi];
-                            }
-                            if ($c == $top) {
-                                $continue = true;
-                            }
-                        }
-                    }
-                } elseif ($skip == 0) {
-                    // no response on first request, exit without data
-                    return ['info' => null, 'children' => [], 'assets' => []];
-                }
+                $folderInfo['children'][] = $childCollection->getId();
+                $foldernames[RestClientFolderUtility::getFolderName($childCollection->getName(), $this->locale)] = $childCollection->getId();
+                $folders[] = ['name' => RestClientFolderUtility::getFolderName($childCollection->getName(), $this->locale), 'identifier' => $childCollection->getId()];
             }
-
-            // pass additional information in reurnvalue // ToDo: Refactor
-            $folderInfoReturnValue['xfoldernames'] = $foldernames;
-            $folderInfoReturnValue['xfolders'] = $folders;
-        } catch (GuzzleException $exception) {
-            $this->log->error($exception->getMessage());
         }
-        return [$folderInfoReturnValue, $foldernames, $folders];
+
+        return [$folderInfo, $foldernames, $folders];
     }
 
-    private function querySubfolderAndAssets(string $identifier): array
-    {
-        $filenames = [];
+    private function querySubfolderAndAssets(string $identifier): array{
+
+        $typeId = 101;
+        $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
+        $collection = $collectionApi->getCollection($this->extractId($identifier), $this->locale);
+        $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
+
         $foldernames = [];
-        $files = [];
         $folders = [];
-
-        $id = $this->extractId($identifier);
-        $continue = true;
-        $top = CelumClient::API_MAX_ASSET_CHUNK;
-
-        $folderInfoReturnValue = ['info' => null, 'children' => [], 'assets' => []];
-        try {
-            for ($skip = 0; $continue; $skip += $top) {
-                $continue = false;
-                $request = 'Nodes(' . $id . ')?$expand=children($select=id,name%3B$top=' . $top . '%3B$skip=' . $skip . '),assets($select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '%3B$expand=publicUrls%3B$top=' . $top . '%3B$skip=' . $skip . ')&$select=id,name,children,assets,modificationInformation';
-                $this->log->debug('request: GET:' . $request);
-                $response = $this->client->request('GET', $request, $this->options)->getBody();
-                if ($response) {
-                    $response = json_decode((string)$response, true);
-                    if ($skip == 0) {
-                        $folderInfoReturnValue = [
-                            'info' => [
-                                'identifier' => $identifier,
-                                'name' => $this->extractName($response['name']),
-                                'storage' => $this->storage,
-                                'mtime' => strtotime($response['modificationInformation']['lastModificationDateTime'])
-                            ],
-                            'children' => [],
-                            'assets' => []
-                        ];
-                    }
-                    if (isset($response['children'])) {
-                        $c = count($response['children']);
-                        if ($c > 0) {
-                            foreach ($response['children'] as $child) {
-                                $fi = $identifier . $child['id'] . '/';
-                                $folderInfoReturnValue['children'][] = $fi;
-
-                                $n = $this->extractName($child['name']);
-                                $foldernames[$n] = $fi;
-                                $folders[] = ['name' => $n, 'identifier' => $fi];
-                            }
-                            if ($c == $top) {
-                                $continue = true;
-                            }
-                        }
-                    }
-                    if (isset($response['assets'])) {
-                        $c = count($response['assets']);
-                        if ($c > 0) {
-                            foreach ($response['assets'] as $asset) {
-                                $fi = $identifier . $asset['id'];
-                                $folderInfoReturnValue['assets'][] = $fi;
-                                $a = $this->toAsset($asset, $fi);
-                                $files[] = $a;
-                                $filenames[$a['info']['name']] = $fi;
-                            }
-                            if ($c == $top) {
-                                $continue = true;
-                            }
-                        }
-                    }
-                } elseif ($skip == 0) {
-                    // no response on first request, exit without data
-                    return [['info' => null, 'children' => [], 'assets' => []], null, null, null, null];
-                }
+        $filenames = [];
+        $files = [];
+        if ($collection->getHasChildren()) {
+            $childCollections = $collectionApi->getCollections($this->locale, $collection->getId(), $typeId);
+            foreach ($childCollections->getContent() as $childCollection) {
+                $folderInfo['children'][] = $childCollection->getId();
+                $foldernames[RestClientFolderUtility::getFolderName($childCollection->getName(), $this->locale)] = $childCollection->getId();
+                $folders[] = ['name' => RestClientFolderUtility::getFolderName($childCollection->getName(), $this->locale), 'identifier' => $childCollection->getId()];
             }
-        } catch (GuzzleException $exception) {
-            $this->log->error($exception->getMessage());
+
         }
-        return [$folderInfoReturnValue, $foldernames, $folders, $filenames, $files];
+        $assetsApi = new AssetsApi($this->getClient(), $this->clientConfiguration);
+        $coll_id = $collection->getId();
+        $assetsByCollection = $assetsApi->getAssets($this->locale, $coll_id, null, null, null, false, 1, null, null, null, ['informationFields', 'fileProperties']);
+        foreach ($assetsByCollection->getContent() as $asset) {
+            //if($asset->getCurrentVersion()->getFileCategory() != FileCategory::UNKNOWN) {
+                $folderInfo['assets'][] = $asset->getId();
+                $files[] = $this->toAsset($asset, (string)$asset->getId());
+                $filenames[$asset->getName()] = $asset->getId();
+            //}
+        }
+        return [$folderInfo, $foldernames, $folders, $filenames, $files];
     }
 
     /**
@@ -323,9 +347,9 @@ class CelumClient
      */
     public function getFolderInfo(string $identifier, string $extract = ''): array
     {
-        $key = str_replace('/', '_', $identifier);
-        if (!$this->cache->has($key . $extract)) {
-            if ($identifier == '/') {
+        $key = str_replace(['/','.'], ['_',''], $identifier);
+        if (true) {
+            if ($identifier == '/' || $identifier == './') {
                 $this->initCacheRoot();
             } else {
                 if ($extract === '') {
@@ -337,6 +361,7 @@ class CelumClient
                     }
                 } elseif ($extract === 'folder' || $extract === 'children') {
                     list($folderInfo, $foldernames, $folders) = $this->querySubfolder($identifier);
+
                     if (!isset($folderInfo['info'])) {
                         $this->cache->set($key, $folderInfo, [], 60);  // set cache with short ttl to revisit shortly
                         return $folderInfo;
@@ -373,111 +398,54 @@ class CelumClient
             }
         }
         $this->log->debug("getFolderInfo($identifier, $extract): " . json_encode($this->cache->get($key . $extract)));
+
         return $this->cache->get($key . $extract);
 
     }
 
     public function getFileInfo($identifier): array
     {
+        $fileId = $this->getFileIdByFileIdentifier($identifier);
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
-            $request = 'Assets(' . $this->extractId($identifier) . ')?$select=id,name,fileInformation,fileProperties,modificationInformation,previewInformation,fileCategory' . $this->fieldSelect . '&$expand=publicUrls';
-            $this->log->debug('request: GET:' . $request);
-            $response = $this->client->request('GET', $request, $this->options)->getBody();
-            if ($response) {
-                $response = json_decode((string)$response, true);
-                $this->cache->set($key, $this->toAsset($response, $identifier), [], $this->cacheLifetime);
-            } else {
+            $assetsApi = new AssetsApi($this->getClient(), $this->clientConfiguration);
+            try {
+                $asset = $assetsApi->getAsset($fileId, $this->locale, null, ['informationFields', 'fileProperties']);
+                $this->cache->set($key, $this->toAsset($asset, $identifier), [], $this->cacheLifetime);
+            } catch (Exception $exception){
+                $this->log->error("getFileInfo($fileId)" . json_encode($this->cache->get($key)) . ':' . $exception->getMessage());
                 $this->cache->set($key, ['info' => null], [], 60); // short cache on error
             }
         }
-        $this->log->debug("getFileInfo($identifier)" . json_encode($this->cache->get($key)));
+        $this->log->debug("getFileInfo($fileId)" . json_encode($this->cache->get($key)));
         return $this->cache->get($key);
     }
 
-    private function toAsset(array &$arr, string $identifier)
+    private function toAsset(Asset $asset, string $identifier): array
     {
-        $type = $arr['fileCategory'];
-        $format = (($type == 'image') ? $this->imageFormat : (($type == 'video') ? $this->videoFormat : $this->othersFormat));
-        foreach ($arr['fileProperties'] as $prop) {
-            if ($prop['name'] === 'width') {
-                $width = $prop['value'];
-            } elseif ($prop['name'] === 'height') {
-                $height = $prop['value'];
-            }
+        $fileCategory = $asset->getCurrentVersion()->getFileCategory();
+        //get download url from original for docuemnts, unknown,
+        $originalDownloadUrl = null;
+        if($fileCategory == FileCategory::DOCUMENT ||
+            $fileCategory == FileCategory::UNKNOWN ||
+            $fileCategory == FileCategory::MODEL3_D ||
+            $fileCategory == FileCategory::TEXT ||
+            $fileCategory == FileCategory::VIDEO ||
+            $fileCategory == FileCategory::PLACEHOLDER) {
+            $downloadApi = new DownloadApi($this->getClient(), $this->clientConfiguration);
+            $download = $downloadApi->requestDownload($identifier, 1);
+            $originalDownloadUrl = $download->getUrl();
         }
-        if ($width and $height) {
-            $max = 0;
-            if ($format === 'thmb') {
-                $max = 250;
-            } elseif ($format === 'prvw') {
-                $max = 1024;
-            } elseif ($format === 'largeprvw') {
-                $max = 3000;
-            }
-            if (($max > 0) and (($width > $max) or ($height > $max))) {
-                if ($width > $height) {
-                    $height = intval($height * $max / $width);
-                    $width = $max;
-                } else {
-                    $width = intval($width * $max / $height);
-                    $height = $max;
-                }
-            }
-        } else {
-            $width = 0;
-            $height = 0;
-        }
-        $publicUrl = false;
-        if (($type == 'image') or ($type == 'video')) {
-            foreach ($arr['publicUrls'] as $purl) {
-                if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type])) {
-                    $publicUrl = $purl['url'];
-                }
-            }
-        }
-        if (!$publicUrl) {
-            $id = $this->extractId($identifier);
-            $publicUrl = $this->directDownload . 'format=' . $format . '&id=' . $id;
-            if ($this->secret) {
-                $publicUrl .= '&token=' . hash('sha256', $id . $this->secret);
-            }
-        }
-        $name = $arr['name'];
-        if ($format === 'prvw' or $format === 'largeprvw' or $format === 'thumb') {
-            $ext = '.jpg';
-        } else {
-            $ext = '.' . $arr['fileInformation']['fileExtension'];
-        }
-        if (substr($name, -strlen($ext)) !== $ext) {
-            if (substr($name, -1) === '.') {
-                $name .= substr($ext, 1);
-            } else {
-                $name .= $ext;
-            }
-        }
-        return [
-            'info' => [
-                'identifier' => $identifier,
-                'identifier_hash' => sha1($identifier),
-                'folder_hash' => sha1(PathUtility::dirname($identifier)),
-                'name' => $name,
-                'title' => $name,
-                'storage' => $this->storage,
-                'size' => $arr['fileInformation']['originalFileSize'],
-                'width' => $width,
-                'height' => $height,
-                'description' => $this->getInfoFieldValue($this->descriptionFieldName, $arr),
-                'alternative' => $this->getInfoFieldValue($this->alternativeFieldName, $arr),
-                'mimetype' => $type . '/' . $arr['fileInformation']['fileExtension'],
-                'ctime' => strtotime($arr['modificationInformation']['creationDateTime']),
-                'mtime' => strtotime($arr['modificationInformation']['lastModificationDateTime']),
-            ],
-            'preview' => $arr['previewInformation']['previewUrl'],
-            'thumbnail' => $arr['previewInformation']['thumbUrl'],
-            'publicUrl' => $publicUrl,
-            'extension' => $arr['fileInformation']['fileExtension']
-        ];
+
+        $fileInfo = new FileInfo($asset, $originalDownloadUrl, $this->storage, $this->imageFormat, $this->videoFormat, $this->documentFormat, $this->othersFormat);
+
+        return $fileInfo->toArray();
+    }
+
+    private function getFileIdByFileIdentifier(string $fileIdentifier): int
+    {
+        $fileArray = explode('/',$fileIdentifier);
+        return (int)$fileArray[count($fileArray)-1];
     }
 
     private function getInfoFieldValue(string $name, array $arr): string
@@ -496,56 +464,16 @@ class CelumClient
         return $val;
     }
 
-    public function addPublicUrl(string $identifier, string $url, string $description): void
-    {
-        if (!$this->token) {
-            return;
-        }
-        $clientUrl = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
-        if ($this->writePublicUrls) {
-            $clientUrl .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=' . urlencode($url);
-        }
-        if ($this->infoFieldId) {
-            if ($this->nodeId) {
-                $clientUrl .= '&noderef-' . $this->infoFieldId . '=' . $this->nodeId;
-            } else {
-                $clientUrl .= '&info-' . $this->infoFieldId . '=true';
-            }
-        }
-        $this->client->request('POST', $clientUrl, $this->postOptions);
-    }
-
-    /**
-     * @throws GuzzleException
-     */
-    public function deletePublicUrl(string $identifier, string $description, bool $stillUsed): void
-    {
-        if (!$this->token) {
-            return;
-        }
-        $url = $this->celumUrl . '/infofield/setter?token=' . urlencode($this->token) . '&asset=' . $this->extractId($identifier) . '&instance=' . str_replace(' ', '_', $description);
-        if ($this->writePublicUrls) {
-            $url .= '&provider=TYPO3&description=' . urldecode($description) . '&publicurl=delete';
-        }
-        if ($this->infoFieldId and !$stillUsed) {
-            if ($this->nodeId) {
-                $url .= '&noderef-' . $this->infoFieldId . '-remove=' . $this->nodeId;
-            } else {
-                $url .= '&info-' . $this->infoFieldId . '=false';
-            }
-        }
-        $this->client->request('POST', $url, $this->postOptions);
-    }
-
-    public function getUrl(string $identifier, string $type = 'publicUrl'): mixed
+    public function getUrl(string $identifier, string $type = 'publicUrl')
     {
         if (substr($identifier, 0, 5) === 'thumb') {
             $type = 'thumbnail';
             $identifier = substr($identifier, 5);
         }
-        $ret = $this->getFileInfo($identifier)[$type];
-        $this->log->debug("getUrl($identifier, $type): $ret");
-        return $ret;
+        $fileInfo = $this->getFileInfo($identifier);
+        $url = $fileInfo[$type];
+        $this->log->debug("getUrl($identifier, $type): $url");
+        return $url;
     }
 
     private function decode_base64(string $sData): string

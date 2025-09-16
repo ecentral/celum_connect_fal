@@ -4,207 +4,173 @@
         <type>array</type>
         <el>
             <licenseKey>
-                <TCEforms>
-                    <label>License Key</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>License Key</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </licenseKey>
             <celumApiKey>
-                <TCEforms>
-                    <label>Celum API key</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Celum API key</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </celumApiKey>
             <locale>
-                <TCEforms>
-                    <label>Locale</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>2</size>
-                    </config>
-                </TCEforms>
+                <label>Locale</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>2</size>
+                </config>
             </locale>
             <defaultLocale>
-                <TCEforms>
-                    <label>Default locale</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>2</size>
-                    </config>
-                </TCEforms>
+                <label>Default locale</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>2</size>
+                </config>
             </defaultLocale>
             <roots>
-                <TCEforms>
-                    <label>Root nodes (comma separated list of ids)</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Root nodes (comma separated list of ids)</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </roots>
             <imageDownloadFormat>
-                <TCEforms>
-                    <label>Download format for images (download format ID, prvw, thumb, largeprvw (recommended, optimized), thumb or orig)</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                        <default>largeprvw</default>
-                    </config>
-                </TCEforms>
+                <label>Download format for images (download format ID, prvw, thumb, largeprvw (recommended, optimized),
+                    thumb or orig)
+                </label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                    <default>largeprvw</default>
+                </config>
             </imageDownloadFormat>
             <videoDownloadFormat>
-                <TCEforms>
-                    <label>Download format for videos (download format ID, prvw, thumb, largeprvw, thumb or orig (recommended))</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                        <default>orig</default>
-                    </config>
-                </TCEforms>
+                <label>Download format for videos (download format ID, prvw, thumb, largeprvw, thumb or orig
+                    (recommended))
+                </label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                    <default>orig</default>
+                </config>
             </videoDownloadFormat>
             <othersDownloadFormat>
-                <TCEforms>
-                    <label>Download format for other file categories (download format ID, prvw, thumb, largeprvw, thumb or orig (recommended))</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                        <default>orig</default>
-                    </config>
-                </TCEforms>
+                <label>Download format for other file categories (download format ID, prvw, thumb, largeprvw, thumb or
+                    orig (recommended))
+                </label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                    <default>orig</default>
+                </config>
             </othersDownloadFormat>
             <directDownloadSecret>
-                <TCEforms>
-                    <label>Direct Download secret</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Direct Download secret</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </directDownloadSecret>
             <descriptionFieldName>
-                <TCEforms>
-                    <label>Description field name ([localized] text [area])</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Description field name ([localized] text [area])</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </descriptionFieldName>
             <alternativeTextFieldName>
-                <TCEforms>
-                    <label>Alternative text field name ([localized] text [area])</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Alternative text field name ([localized] text [area])</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </alternativeTextFieldName>
             <infoFieldSetterToken>
-                <TCEforms>
-                    <label>Token for the infoFieldSetter (required to write public URLs and for bullets)</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Token for the infoFieldSetter (required to write public URLs and for bullets)</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </infoFieldSetterToken>
             <writePublicUrls>
-                <TCEforms>
-                    <label>Write public URLs (uncheck to only use bullets)</label>
-                    <config>
-                        <type>check</type>
-                        <default>1</default>
-                    </config>
-                </TCEforms>
+                <label>Write public URLs (uncheck to only use bullets)</label>
+                <config>
+                    <type>check</type>
+                    <default>1</default>
+                </config>
             </writePublicUrls>
             <informationFieldId>
-                <TCEforms>
-                    <label>Information field ID (checkbox or noderef, required for bullets)</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Information field ID (checkbox or noderef, required for bullets)</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </informationFieldId>
             <nodeId>
-                <TCEforms>
-                    <label>Node ID (node id to add to nodeRef field, if empty checkbox assumed)</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>Node ID (node id to add to nodeRef field, if empty checkbox assumed)</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </nodeId>
             <publicURLsProviderImage>
-                <TCEforms>
-                    <label>PublicUrls Provider for Images</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>PublicUrls Provider for Images</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </publicURLsProviderImage>
             <publicURLsDescriptionImage>
-                <TCEforms>
-                    <label>PublicUrls Description for Images</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>PublicUrls Description for Images</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </publicURLsDescriptionImage>
             <publicURLsProviderVideo>
-                <TCEforms>
-                    <label>PublicUrls Provider for Videos</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>PublicUrls Provider for Videos</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </publicURLsProviderVideo>
             <publicURLsDescriptionVideo>
-                <TCEforms>
-                    <label>PublicUrls Description for Videos</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>256</size>
-                    </config>
-                </TCEforms>
+                <label>PublicUrls Description for Videos</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>256</size>
+                </config>
             </publicURLsDescriptionVideo>
             <cacheLifetimeInMinutes>
-                <TCEforms>
-                    <label>Cache lifetime in minutes (0 &lt; lifetime &lt; 30)</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim</eval>
-                        <size>4</size>
-                        <default>29</default>
-                    </config>
-                </TCEforms>
+                <label>Cache lifetime in minutes (0 &lt; lifetime &lt; 30)</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim</eval>
+                    <size>4</size>
+                    <default>29</default>
+                </config>
             </cacheLifetimeInMinutes>
         </el>
     </ROOT>

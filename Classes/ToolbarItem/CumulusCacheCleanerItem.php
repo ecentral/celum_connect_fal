@@ -1,0 +1,158 @@
+<?php
+
+declare(strict_types = 1);
+
+/*
+ * This file is part of the TYPO3 CMS project.
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
+namespace Brix\CelumFal\ToolbarItem;
+
+use AllowDynamicProperties;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Backend\Event\ModifyClearCacheActionsEvent;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Backend\Toolbar\RequestAwareToolbarItemInterface;
+use TYPO3\CMS\Backend\Toolbar\ToolbarItemInterface;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
+/**
+ * Render cache clearing toolbar item.
+ * Adds a dropdown if there are more than one item to clear (usually for admins to render the flush all caches).
+ * The dropdown items can be manipulated using ModifyClearCacheActionsEvent.
+ */
+#[AllowDynamicProperties]
+class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolbarItemInterface
+{
+    protected array $cacheActions = [];
+    protected array $optionValues = [];
+    private ServerRequestInterface $request;
+
+    public function __construct(
+        UriBuilder $uriBuilder,
+        EventDispatcherInterface $eventDispatcher
+    ) {
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        $clearCacheUri = (string)$uriBuilder->buildUriFromRoute('ajax_celum_cache');
+
+        $cacheActions[] = [
+            'id' => 'celum_cache_action',
+            'title' => 'LLL:EXT:celum_connect_fal/Resources/Private/Language/locallang.xlf:be_clear_cache_title',
+            'description' => 'LLL:EXT:celum_connect_fal/Resources/Private/Language/locallang.xlf:be_clear_cache_description',
+            'href' => $clearCacheUri,
+            'iconIdentifier' => 'actions-synchronize',
+        ];
+        $this->optionValues[] = 'celum';
+
+        if ((new Typo3Version())->getMajorVersion() > 12) {
+            $this->viewFactory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\View\ViewFactoryInterface::class);
+        }
+        $event = new ModifyClearCacheActionsEvent($cacheActions, $this->optionValues);
+        $event = $eventDispatcher->dispatch($event);
+        $this->cacheActions = $event->getCacheActions();
+        $this->optionValues = $event->getCacheActionIdentifiers();
+    }
+
+    public function setRequest(ServerRequestInterface $request): void
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * Checks whether the user has access to this toolbar item.
+     */
+    public function checkAccess(): bool
+    {
+        $backendUser = $this->getBackendUser();
+        if ($backendUser->isAdmin()) {
+            return true;
+        }
+        foreach ($this->optionValues as $value) {
+            if ($backendUser->getTSConfig()['options.']['clearCache.'][$value] ?? false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Render clear cache icon, based on the option if there is more than one icon or just one.
+     */
+    public function getItem(): string
+    {
+        if ((new Typo3Version())->getMajorVersion() < 13) {
+            /** @var \TYPO3\CMS\Fluid\View\StandaloneView $view */
+            $view = GeneralUtility::makeInstance(\TYPO3\CMS\Fluid\View\StandaloneView::class);
+            $view->setTemplateRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Templates/')]);
+            $view->setPartialRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Partials/')]);
+            $view->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Layouts/')]);
+            $view->setTemplate('ToolbarItems/ClearCumulusCacheToolbarItemSingle.html');
+        } else {
+            $viewFactoryData = new \TYPO3\CMS\Core\View\ViewFactoryData(
+                templateRootPaths: ['EXT:celum_connect_fal/Resources/Private/Templates/'],
+                partialRootPaths: ['EXT:celum_connect_fal/Resources/Private/Partials/'],
+                layoutRootPaths: ['EXT:celum_connect_fal/Resources/Private/Layouts/'],
+                request: $this->request,
+            );
+            $view = $this->viewFactory->create($viewFactoryData);
+        }
+
+        $cacheAction = end($this->cacheActions);
+        $view->assignMultiple([
+            'link'  => $cacheAction['href'],
+            'title' => $cacheAction['title'],
+            'iconIdentifier'  => $cacheAction['iconIdentifier'],
+        ]);
+
+        return $view->render('ToolbarItems/ClearCumulusCacheToolbarItemSingle.html');
+    }
+
+    /**
+     * Render drop-down.
+     */
+    public function getDropDown(): string
+    {
+        return '';
+    }
+
+    /**
+     * No additional attributes needed.
+     */
+    public function getAdditionalAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * This item has a drop-down, if there is more than one cache action available for the current Backend user.
+     */
+    public function hasDropDown(): bool
+    {
+        return count($this->cacheActions) > 1;
+    }
+
+    /**
+     * Position relative to others
+     */
+    public function getIndex(): int
+    {
+        return 25;
+    }
+
+    protected function getBackendUser(): BackendUserAuthentication
+    {
+        return $GLOBALS['BE_USER'];
+    }
+}

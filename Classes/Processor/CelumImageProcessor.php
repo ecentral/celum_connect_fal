@@ -46,23 +46,25 @@ class CelumImageProcessor implements ProcessorInterface
             $imageDimension = new ImageDimension(64, 64);
             $id = $task->getSourceFile()->getIdentifier();
             $info = $driverClient->getFileInfo($id);
-            $width = $info['info']['width'];
-            $height = $info['info']['height'];
-            //            if ($width and $height) {
-            //                $max = 250;
-            //                if (($width > $max) or ($height > $max)) {
-            //                    if ($width > $height) {
-            //                        $height = intval($height * $max / $width);
-            //                        $width = $max;
-            //                    } else {
-            //                        $width = intval($width * $max / $height);
-            //                        $height = $max;
-            //                    }
-            //                }
-            //            } else {
-            //                $width = 0;
-            //                $height = 0;
-            //            }
+            if($info) {
+                $width = $info['info']['width'];
+                $height = $info['info']['height'];
+                //            if ($width and $height) {
+                //                $max = 250;
+                //                if (($width > $max) or ($height > $max)) {
+                //                    if ($width > $height) {
+                //                        $height = intval($height * $max / $width);
+                //                        $width = $max;
+                //                    } else {
+                //                        $width = intval($width * $max / $height);
+                //                        $height = $max;
+                //                    }
+                //                }
+                //            } else {
+                //                $width = 0;
+                //                $height = 0;
+                //            }
+            }
         }
 
         $processedFile = $task->getTargetFile();

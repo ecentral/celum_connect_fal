@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brix\CelumFal\Utility\FileInfo;
 
 enum Format

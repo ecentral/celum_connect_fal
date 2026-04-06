@@ -34,7 +34,7 @@ class FileInfo
     public function __construct(Asset $asset, ?string $originalDownloadUrl, int $storage, $imageFormat, $videoFormat, $documentFormat, $othersFormat)
     {
 
-        $this->identifier = $asset->getId();
+        $this->identifier = (string)$asset->getId();
         $this->identifierHash = sha1($this->identifier);
         $this->folderHash = sha1(PathUtility::dirname($this->identifier));
         $this->mimetype = strtolower($asset->getCurrentVersion()->getFileCategory()) . '/' . $asset->getCurrentVersion()->getFileExtension();

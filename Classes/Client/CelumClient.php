@@ -73,26 +73,18 @@ class CelumClient
         }
     }
 
-    public function initConfiguration(array $configuration): void
+    private function initConfiguration(array $configuration): void
     {
         $this->host = $configuration['celumHost'] ?? '';
-
         $this->apiKey = $configuration['celumApiKey'] ?? '';
-
         $this->username = $configuration['celumUser'] ?? '';
         $this->password = $configuration['celumPassword'] ?? '';
-
         $this->locale = $configuration['locale'] ?? 'en';
         $this->defaultLocale = $configuration['defaultLocale'] ?? 'en';
-
-
         $this->imageFormat = Format::PREVIEW;
-        //TODO append format for video and other
         $this->videoFormat = Format::VIDEO;
         $this->othersFormat = Format::OTHER;
         $this->documentFormat = Format::PDF;
-
-
         $this->cacheLifetime = (int)($configuration['cacheLifetimeInMinutes'] ?? 0);
         if ($this->cacheLifetime <= 0 || $this->cacheLifetime >= 30) {
             $this->cacheLifetime = 29;
@@ -114,11 +106,7 @@ class CelumClient
     public function getClient(): ClientInterface
     {
         if ($this->client === null) {
-            try {
-                $this->client = new Client();
-            } catch (Exception $exception) {
-                $this->log->error($exception->getMessage());
-            }
+            $this->client = new Client();
         }
         return $this->client;
     }
@@ -185,19 +173,22 @@ class CelumClient
         }
 
         $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
-
         $collectionId = $this->extractId($identifier);
 
-        $collection = $collectionApi->getCollection($collectionId, $this->locale);
-
-        $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
+        try {
+            $collection = $collectionApi->getCollection($collectionId, $this->locale);
+            $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
+        } catch (Exception $exception) {
+            $this->log->error($exception->getMessage());
+            return $folderInfoReturnValue;
+        }
 
         return $folderInfo;
     }
 
     private function querySubfolder(string $identifier): array
     {
-        $typeId = 101;
+        $typeId = 101; // CELUM collection type ID for sub-collections
         $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
 
         $collection = $collectionApi->getCollection($this->extractId($identifier), $this->locale);
@@ -220,8 +211,7 @@ class CelumClient
 
     private function querySubfolderAndAssets(string $identifier): array
     {
-
-        $typeId = 101;
+        $typeId = 101; // CELUM collection type ID for sub-collections
         $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
         $collection = $collectionApi->getCollection($this->extractId($identifier), $this->locale);
         $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
@@ -243,11 +233,9 @@ class CelumClient
         $coll_id = $collection->getId();
         $assetsByCollection = $assetsApi->getAssets($this->locale, $coll_id, null, null, null, false, 1, null, null, null, ['informationFields', 'fileProperties']);
         foreach ($assetsByCollection->getContent() as $asset) {
-            //if($asset->getCurrentVersion()->getFileCategory() != FileCategory::UNKNOWN) {
-                $folderInfo['assets'][] = $asset->getId();
-                $files[] = $this->toAsset($asset);
-                $filenames[$asset->getName()] = $asset->getId();
-            //}
+            $folderInfo['assets'][] = $asset->getId();
+            $files[] = $this->toAsset($asset);
+            $filenames[$asset->getName()] = $asset->getId();
         }
         return [$folderInfo, $foldernames, $folders, $filenames, $files];
     }
@@ -359,23 +347,7 @@ class CelumClient
         return (int)$fileArray[count($fileArray) - 1];
     }
 
-    private function getInfoFieldValue(string $name, array $arr): string
-    {
-        if (!isset($arr['informationFieldValues']) || !$arr['informationFieldValues']) {
-            return '';
-        }
-        $val = $arr['informationFieldValues'][$name];
-        if (!$val) {
-            return '';
-        }
-        if (is_array($val)) {
-            $v = $this->extractName($val);
-            return $v === null ? '' : $v;
-        }
-        return $val;
-    }
-
-    public function getUrl(string $identifier, string $type = 'publicUrl')
+    public function getUrl(string $identifier, string $type = 'publicUrl'): mixed
     {
         if (substr($identifier, 0, 5) === 'thumb') {
             $type = 'thumbnail';

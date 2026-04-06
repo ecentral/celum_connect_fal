@@ -10,10 +10,20 @@ services:
 image: typo3/core-testing-docker:latest
 
 stages:
+  - test
   - composer
   - unit
   - functional
   - acceptance
+
+test_documentation:
+  stage: test
+  image:
+    name: ghcr.io/typo3-documentation/render-guides:latest
+    entrypoint: [""]
+  script:
+    - mkdir -p Documentation-GENERATED-temp
+    - /opt/guides/entrypoint.sh --config=Documentation --no-progress --minimal-test
 
 composer:
   stage: composer

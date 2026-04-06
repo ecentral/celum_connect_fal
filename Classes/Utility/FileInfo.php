@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brix\CelumFal\Utility;
 
 use Brix\CelumFal\Utility\FileInfo\Format;
@@ -14,7 +16,7 @@ class FileInfo
     private string $identifierHash;
     private string $folderHash;
     private string $name;
-    private string $storage;
+    private int $storage;
     private int $fileSize;
     private int $width;
     private int $height;
@@ -47,8 +49,6 @@ class FileInfo
         $this->initImagesSize($format, $asset);
         $this->initPublicUrl($format, $asset, $originalDownloadUrl);
         $this->initNameAndExtension($format, $asset);
-        //TODO append description and alternate
-        //$this->initDecriptions($asset);
     }
 
     public function toArray(): array
@@ -78,21 +78,16 @@ class FileInfo
         ];
     }
 
-    public function initDecriptions(Asset $asset)
+    public function initImagesSize(Format $format, Asset $asset): void
     {
-        foreach($asset->getInformationFieldValueSets() as $key => $value) {
-
-        }
-    }
-
-    public function initImagesSize(Format $format, Asset $asset)
-    {
-        foreach($asset->getFileProperties() as $property) {
-            if($property->getName() === 'width'){
-                $width = $property->getValue();
+        $width = 0;
+        $height = 0;
+        foreach ($asset->getFileProperties() as $property) {
+            if ($property->getName() === 'width') {
+                $width = (int)$property->getValue();
             }
-            if($property->getName() === 'height'){
-                $height = $property->getValue();
+            if ($property->getName() === 'height') {
+                $height = (int)$property->getValue();
             }
         }
         if ($width && $height) {
@@ -112,11 +107,10 @@ class FileInfo
         }
     }
 
-    private function initPublicUrl(Format $format, Asset $asset, string $originalDownloadUrl = null)
+    private function initPublicUrl(Format $format, Asset $asset, ?string $originalDownloadUrl = null): void
     {
         $currentVersion = $asset->getCurrentVersion();
         $this->publicUrl = false;
-        $test = $currentVersion->getFileCategory();
         if ($currentVersion->getFileCategory() == FileCategory::IMAGE) {
             foreach ($currentVersion->getPreviewUrls() as $formatKey => $previewUrl) {
                 //TODO Check video, archives and documents
@@ -169,7 +163,8 @@ class FileInfo
         }
     }
 
-    public function initNameAndExtension(Format $format, Asset $asset){
+    public function initNameAndExtension(Format $format, Asset $asset): void
+    {
 
         $this->name = $asset->getName();
         if ($format === Format::THUMBNAIL ||
@@ -208,7 +203,7 @@ class FileInfo
         return $this->name;
     }
 
-    public function getStorage(): string
+    public function getStorage(): int
     {
         return $this->storage;
     }

@@ -1,6 +1,6 @@
-# Readme
+# CELUM Connect FAL
 
-## Activate Celum-Cache Button
+A TYPO3 FAL (File Abstraction Layer) driver that exposes assets and collections from a [CELUM](https://www.celum.com/) DAM system as a read-only TYPO3 file storage. Uses the CELUM REST API to fetch and cache asset metadata, preview URLs, and download links.
 
 - **Extension key:** `celum_connect_fal`
 - **Package:** `brix/celum-connect-fal`
@@ -33,8 +33,8 @@ The driver is configured per FAL storage in the TYPO3 backend under **File > Fil
 |---|---|---|---|-----------------------------------------------------------------------------------------------------------------------------------------------|
 | `celumHost` | string | yes | — | Base URL of the CELUM REST API, e.g. `https://your-celum-instance.celum.com`                                                                  |
 | `celumApiKey` | string | yes | — | API key for authentication with the CELUM REST API (see [Finding your API Key](#finding-your-api-key))                                        |
-| `celumUser` | string | no | — | Optional username for HTTP basic authentication                                                                                               |
-| `celumPassword` | string | no | — | Optional password for HTTP basic authentication                                                                                               |
+| `celumUser` | string | yes | — | Optional username for HTTP basic authentication                                                                                               |
+| `celumPassword` | string | yes | — | Optional password for HTTP basic authentication                                                                                               |
 | `roots` | string | yes | — | Comma-separated list of CELUM collection IDs to expose as root folders, e.g. `12,34,56` (see [Finding Root Node IDs](#finding-root-node-ids)) |
 | `locale` | `en` \| `de` | no | `en` | Language used for asset names returned by the API                                                                                             |
 | `defaultLocale` | `en` \| `de` | no | `en` | Fallback language when the primary locale is unavailable                                                                                      |
@@ -62,12 +62,11 @@ The root node ID is the numerical ID of the CELUM folder that will serve as the 
 
 Multiple root node IDs can be entered as a comma-separated list — all configured nodes and their sub-nodes will be available recursively in TYPO3.
 
-
 ## Usage
 
 ### Creating a FAL Storage
 
-1. Go to **List  > Page Pid=0**.
+1. Go to **Web > List  > Page Pid=0**.
 2. Create a new file storage record.
 3. Set **Driver** to **BrixCelumDriver**.
 4. Fill in the connection settings under the **Configuration** tab (see [Configuration](#configuration)).
@@ -75,7 +74,7 @@ Multiple root node IDs can be entered as a comma-separated list — all configur
 
 ### Read-Only Storage
 
-The CELUM driver is **read-only**. No write operations (upload, rename, move, delete) are available. Assets must be managed inside CELUM and will be reflected automatically after the cache TTL expires.
+The CELUM driver is **read-only**. All write operations (upload, rename, move, delete) will throw an exception. Assets must be managed inside CELUM and will be reflected automatically after the cache TTL expires.
 
 ### Clearing the Cache
 

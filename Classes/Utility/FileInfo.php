@@ -82,7 +82,7 @@ class FileInfo
     {
         $width = 0;
         $height = 0;
-        foreach ($asset->getFileProperties() as $property) {
+        foreach ($asset->getFileProperties() ?? [] as $property) {
             if ($property->getName() === 'width') {
                 $width = (int)$property->getValue();
             }

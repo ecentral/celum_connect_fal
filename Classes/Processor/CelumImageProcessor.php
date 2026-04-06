@@ -40,6 +40,9 @@ class CelumImageProcessor implements ProcessorInterface
 
         $driverClient = DriverUtility::getClient();
 
+        $width = 0;
+        $height = 0;
+
         try {
             $imageDimension = ImageDimension::fromProcessingTask($task);
         } catch (ZeroImageDimensionException $e) {

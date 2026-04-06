@@ -108,7 +108,7 @@ class CelumDriverV12 extends AbstractHierarchicalFilesystemDriver
     {
         $ret = self::$client->getUrl($identifier);
         $this->log->debug("$this->instance: getPublicURL($identifier): $ret");
-        return $ret;
+        return null;
     }
 
     /**

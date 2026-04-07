@@ -18,7 +18,7 @@ FlexForm fields described below.
     :required: true
 
     Base URL of the CELUM REST API,
-    e.g. ``https://your-celum-instance.example.com``.
+    e.g. ``https://your-celum-instance.celum.cloud``.
 
 ..  confval:: celumApiKey
     :name: celumApiKey
@@ -26,20 +26,21 @@ FlexForm fields described below.
     :required: true
 
     API key for authentication with the CELUM REST API.
+    See :ref:`api-key` for instructions on how to obtain it.
 
 ..  confval:: celumUser
     :name: celumUser
     :type: string
-    :required: false
+    :required: true
 
-    Optional username for HTTP basic authentication.
+    Username for HTTP basic authentication.
 
 ..  confval:: celumPassword
     :name: celumPassword
     :type: string
-    :required: false
+    :required: true
 
-    Optional password for HTTP basic authentication.
+    Password for HTTP basic authentication.
 
 ..  confval:: roots
     :name: roots
@@ -48,6 +49,7 @@ FlexForm fields described below.
 
     Comma-separated list of CELUM collection IDs to expose as root folders,
     e.g. ``12,34,56``.
+    See :ref:`root-node-ids` for instructions on how to find the IDs.
 
 ..  confval:: locale
     :name: locale

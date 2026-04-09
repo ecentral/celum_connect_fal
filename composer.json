@@ -34,7 +34,7 @@
 	"require": {
 		"typo3/cms-core": "^12 || ^13",
 		"guzzlehttp/psr7": "*",
-		"brix/celum-connect-fal-rest-client": "*"
+		"ecentral/celum-connect-fal-rest-client": "^1.0"
 	},
 	"require-dev": {
 		"codeception/codeception": "^4.1",

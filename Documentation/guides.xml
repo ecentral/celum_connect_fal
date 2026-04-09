@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- See https://docs.typo3.org/permalink/h2document:guides-xml for documentation on this file -->
+<guides
+    xmlns="https://www.phpdoc.org/guides"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://www.phpdoc.org/guides vendor/phpdocumentor/guides-cli/resources/schema/guides.xsd"
+    input-format="rst"
+    >
+    <project
+        title="CELUM Connect FAL"
+        copyright="since 2024 by brix IT solutions"
+    />
+    <extension
+        class="\T3Docs\Typo3DocsTheme\DependencyInjection\Typo3DocsThemeExtension"
+        interlink-shortcode="brix/celum-connect-fal"
+        project-home="https://www.brix.ch"
+        project-issues="https://www.brix.ch/issues"
+        project-repository="https://www.brix.ch"
+        typo3-core-preferred="stable"
+    />
+</guides>

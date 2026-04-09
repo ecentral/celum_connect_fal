@@ -1,0 +1,4 @@
+.. This file is included at the top of every RST file in this project.
+   Add shared substitutions or settings here.
+
+.. |release| replace:: 3.0.1

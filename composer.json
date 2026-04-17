@@ -1,6 +1,5 @@
 {
-	"name": "brix/celum-connect-fal",
-	"version": "3.1.0",
+	"name": "ecentral/celum-connect-fal",
 	"authors": [
 		{
 			"name": "brix IT solutions",
@@ -10,13 +9,17 @@
 		}
 	],
 	"type": "typo3-cms-extension",
-	"description": "",
-	"homepage": "https://www.brix.ch",
+	"description": "TYPO3 FAL driver for the CELUM DAM system",
+	"homepage": "https://github.com/ecentral/celum_connect_fal",
 	"license": "GPL-2.0-or-later",
 	"keywords": [
 		"typo3",
 		"typo3 backend",
-		"celum"
+		"celum",
+		"fal",
+		"dam",
+		"digital asset management",
+		"file abstraction layer"
 	],
 	"autoload": {
 		"psr-4": {

@@ -3,7 +3,7 @@
 A TYPO3 FAL (File Abstraction Layer) driver that exposes assets and collections from a [CELUM](https://www.celum.com/) DAM system as a read-only TYPO3 file storage. Uses the CELUM REST API to fetch and cache asset metadata, preview URLs, and download links.
 
 - **Extension key:** `celum_connect_fal`
-- **Package:** `brix/celum-connect-fal`
+- **Package:** `ecentral/celum-connect-fal`
 - **Driver identifier:** `BrixCelumDriver`
 - **TYPO3 compatibility:** 12.4 LTS, 13.4 LTS
 
@@ -16,7 +16,7 @@ A TYPO3 FAL (File Abstraction Layer) driver that exposes assets and collections 
 ## Installation
 
 ```bash
-composer require brix/celum-connect-fal
+composer require ecentral/celum-connect-fal
 ```
 
 Then activate the extension via the TYPO3 backend under **Admin Tools > Extensions**, or via CLI:

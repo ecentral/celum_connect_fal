@@ -23,6 +23,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CelumClient
 {
+    private const API_PATH = '/content-api/v1';
     private const X_API_KEY_IDENTIFIER = 'X-API-KEY';
     private const X_API_KEY_PREFIX = 'Bearer';
 
@@ -75,7 +76,7 @@ class CelumClient
 
     private function initConfiguration(array $configuration): void
     {
-        $this->host = $configuration['celumHost'] ?? '';
+        $this->host = $this->appendApiPathIfMissing($configuration['celumHost'] ?? '');
         $this->apiKey = $configuration['celumApiKey'] ?? '';
         $this->username = $configuration['celumUser'] ?? '';
         $this->password = $configuration['celumPassword'] ?? '';
@@ -101,6 +102,27 @@ class CelumClient
             static fn(string $value): string => '/' . trim($value, '/') . '/',
             array_filter(array_map('trim', explode(',', $roots)), static fn(string $value): bool => $value !== '')
         );
+    }
+
+    private function appendApiPathIfMissing(string $host): string
+    {
+        if ($host === '' || !$this->hasNoPath($host)) {
+            return $host;
+        }
+
+        return rtrim($host, '/') . self::API_PATH;
+    }
+
+    private function hasNoPath(string $host): bool
+    {
+        $hostForParsing = $host;
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $host) !== 1 && strpos($host, '//') !== 0 && strpos($host, '/') !== 0) {
+            $hostForParsing = '//' . $host;
+        }
+
+        $path = parse_url($hostForParsing, PHP_URL_PATH);
+
+        return $path === null || $path === '' || $path === '/';
     }
 
     public function getClient(): ClientInterface

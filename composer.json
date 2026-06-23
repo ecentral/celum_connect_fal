@@ -32,7 +32,11 @@
 		"preferred-install": {
 			"typo3/cms-core": "source"
 		},
-		"sort-packages": true
+		"sort-packages": true,
+		"allow-plugins": {
+			"typo3/class-alias-loader": true,
+			"typo3/cms-composer-installers": true
+		}
 	},
 	"require": {
 		"typo3/cms-core": "^12 || ^13",
@@ -40,17 +44,17 @@
 		"ecentral/celum-connect-fal-rest-client": "^1.0"
 	},
 	"require-dev": {
-		"codeception/codeception": "^4.1",
-		"codeception/module-asserts": "^1.2",
-		"codeception/module-cli": "^1.1",
-		"codeception/module-webdriver": "^1.1",
+		"codeception/codeception": "^5.3",
+		"codeception/module-asserts": "^3.3",
+		"codeception/module-cli": "^2.0",
+		"codeception/module-webdriver": "^4.0",
 		"phpstan/phpstan": "^1.2.0",
 		"typo3/cms-frontend": "^12 || ^13",
 		"typo3/cms-install": "^12 || ^13",
 		"typo3/cms-filelist": "^12 || ^13",
-		"typo3/coding-standards": "^0.3.0",
+		"typo3/coding-standards": "^0.8.0",
 		"typo3/tailor": "^1.2",
-		"typo3/testing-framework": "^6.14.0"
+		"typo3/testing-framework": "^8.0.6"
 	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,

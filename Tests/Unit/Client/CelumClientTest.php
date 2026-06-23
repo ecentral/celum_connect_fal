@@ -2,7 +2,6 @@
 namespace Brix\CelumFal\Tests\Unit\Client;
 
 use Brix\CelumFal\Client\CelumClient;
-use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -43,35 +42,22 @@ class CelumClientTest extends UnitTestCase
      *
      * @dataProvider configDataProvider()
      */
-    public function initializeClientWithDifferentConfigs(array $config, bool $shouldSucceed, string $exceptionMessage = ''): void
+    public function initializeClientWithDifferentConfigs(array $config): void
     {
-        if (!$shouldSucceed) {
-            $this->expectException(InvalidConfigurationException::class);
-            $this->expectExceptionMessage($exceptionMessage);
-        }
         $this->initializeClient($config);
+        $this->assertInstanceOf(CelumClient::class, $this->client);
     }
 
-    protected function initializeClient(?array $config = null, $storage = null): void
+    protected function initializeClient(?array $config = null, int $storage = 1): void
     {
         $clientConfig = [
-            'licenseKey' => getenv('celum_licenseKey') ?: '',
+            'celumHost' => getenv('celum_celumHost') ?: 'https://demo.celum.cloud/content-api/v1',
+            'celumApiKey' => getenv('celum_apiKey') ?: '',
+            'celumUser' => getenv('celum_user') ?: '',
+            'celumPassword' => getenv('celum_password') ?: '',
             'locale' => getenv('celum_locale') ?: 'de',
             'defaultLocale' => getenv('celum_defaultLocale') ?: 'en',
-            'downloadFormat' => getenv('celum_downloadFormat') ?: 'largeprvw',
-            'publicURLsProviderVideo' => getenv('celum_publicURLsProviderVideo') ?: '',
-            'publicURLsProviderImage' => getenv('celum_publicURLsProviderImage') ?: '',
-            'publicURLsDescriptionVideo' => getenv('celum_publicURLsDescriptionVideo') ?: '',
-            'publicURLsDescriptionImage' => getenv('celum_publicURLsDescriptionImage') ?: '',
-            'directDownloadSecret' => getenv('celum_directDownloadSecret') ?: '',
-            'celumApiKey' => getenv('celum_apiKey') ?: '',
             'cacheLifetimeInMinutes' => getenv('celum_cacheLifetimeInMinutes') ?: '',
-            'infoFieldSetterToken' => getenv('celum_infoFieldSetterToken') ?: '',
-            'writePublicUrls' => getenv('celum_writePublicUrls') ?: '',
-            'informationFieldId' => getenv('celum_informationFieldId') ?: '',
-            'nodeId' => getenv('celum_nodeId') ?: '',
-            'descriptionFieldName' => getenv('celum_descriptionFieldName') ?: '',
-            'alternativeTextFieldName' => getenv('celum_alternativeTextFieldName') ?: '',
             'roots' => getenv('celum_roots') ?: '',
         ];
 
@@ -85,7 +71,7 @@ class CelumClientTest extends UnitTestCase
     /**
      * @return \string[][]
      */
-    public function extractIdDataProvider(): array
+    public static function extractIdDataProvider(): array
     {
         return [
             'multiple nodes' => [
@@ -107,7 +93,7 @@ class CelumClientTest extends UnitTestCase
         ];
     }
 
-    public function extractNameDataProvider(): array
+    public static function extractNameDataProvider(): array
     {
         return [
             'empty array' => [
@@ -172,22 +158,17 @@ class CelumClientTest extends UnitTestCase
         ];
     }
 
-    public function configDataProvider(): array
+    public static function configDataProvider(): array
     {
         return [
             'default config' => [
                 [],
-                true
             ],
-            'missing licensekey' => [
-                ['licenseKey' => ''],
-                false,
-                'No licenseKey given'
+            'custom roots' => [
+                ['roots' => '6101,6102'],
             ],
-            'invalid licensekey' => [
-                ['licenseKey' => 'foobar'],
-                false,
-                'No valid license'
+            'custom cache lifetime' => [
+                ['cacheLifetimeInMinutes' => 15],
             ],
         ];
     }

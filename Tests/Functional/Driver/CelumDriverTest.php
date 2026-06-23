@@ -3,8 +3,8 @@ namespace Brix\CelumFal\Tests\Functional\Client;
 
 use Brix\CelumFal\Driver\CelumDriver;
 use GuzzleHttp\Exception\ClientException;
+use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Exception;
-use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
@@ -31,6 +31,7 @@ class CelumDriverTest extends FunctionalTestCase
      */
     public function checkGetUrlMethod(array $config, string $identifier, ?string $expectedResult, ?string $errorClass = null): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeDriver($config);
         if ($errorClass) {
             $this->expectException($errorClass);
@@ -204,6 +205,7 @@ class CelumDriverTest extends FunctionalTestCase
      */
     public function checkGetFilesInFolder(string $folderIdentifier, array $expectedFiles, bool $recursive = false, int $start = 0, int $numberOfItems = 0, string $sort = ''): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeDriver();
         $files = $this->driver->getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, [], $sort);
         $this->assertEquals($expectedFiles, $files);
@@ -215,6 +217,7 @@ class CelumDriverTest extends FunctionalTestCase
      */
     public function checkGetFoldersInFolder(string $folderIdentifier, array $expectedFiles, bool $recursive = false, int $start = 0, int $numberOfItems = 0, string $sort = ''): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeDriver();
         $files = $this->driver->getFoldersInFolder($folderIdentifier, $start, $numberOfItems, $recursive, [], $sort);
         $this->assertEquals($expectedFiles, $files);
@@ -234,6 +237,7 @@ class CelumDriverTest extends FunctionalTestCase
      */
     public function checkCountFilesInFolder(): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeDriver();
         $this->assertEquals(118, $this->driver->countFilesInFolder('/11084/11085'));
     }
@@ -243,6 +247,7 @@ class CelumDriverTest extends FunctionalTestCase
      */
     public function checkCountFoldersInFolder(): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeDriver();
         $this->assertEquals(6, $this->driver->countFoldersInFolder('/11084/'));
     }
@@ -271,34 +276,38 @@ class CelumDriverTest extends FunctionalTestCase
     public function checkMergeConfigurationCapabilities()
     {
         $this->initializeDriver();
-        $this->assertEquals(ResourceStorage::CAPABILITY_BROWSABLE | ResourceStorage::CAPABILITY_PUBLIC | ResourceStorage::CAPABILITY_HIERARCHICAL_IDENTIFIERS, $this->driver->getCapabilities());
+        $this->assertEquals(
+            new Capabilities(Capabilities::CAPABILITY_BROWSABLE | Capabilities::CAPABILITY_PUBLIC | Capabilities::CAPABILITY_HIERARCHICAL_IDENTIFIERS),
+            $this->driver->getCapabilities()
+        );
 
-        $this->assertTrue($this->driver->hasCapability(ResourceStorage::CAPABILITY_PUBLIC));
+        $this->assertTrue($this->driver->hasCapability(Capabilities::CAPABILITY_PUBLIC));
 
-        $capabilities = $this->driver->mergeConfigurationCapabilities(ResourceStorage::CAPABILITY_BROWSABLE);
-        $this->assertEquals(1, $capabilities);
+        $capabilities = $this->driver->mergeConfigurationCapabilities(new Capabilities(Capabilities::CAPABILITY_BROWSABLE));
+        $this->assertEquals(1, $capabilities->__toInt());
+    }
+
+    /**
+     * These tests hit a real CELUM instance and assert against its actual content,
+     * so they only run when live credentials are provided via environment variables.
+     */
+    protected function skipWithoutLiveCelumCredentials(): void
+    {
+        if (!getenv('celum_celumHost')) {
+            self::markTestSkipped('Requires a live CELUM instance (set celum_celumHost, celum_apiKey, celum_user, celum_password env vars).');
+        }
     }
 
     protected function initializeDriver(?array $config = null, $storage = null): void
     {
         $driverConfig = [
-            'licenseKey' => getenv('celum_licenseKey') ?: '',
+            'celumHost' => getenv('celum_celumHost') ?: '',
+            'celumApiKey' => getenv('celum_apiKey') ?: '',
+            'celumUser' => getenv('celum_user') ?: '',
+            'celumPassword' => getenv('celum_password') ?: '',
             'locale' => getenv('celum_locale') ?: 'de',
             'defaultLocale' => getenv('celum_defaultLocale') ?: 'en',
-            'downloadFormat' => getenv('celum_downloadFormat') ?: 'largeprvw',
-            'publicURLsProviderVideo' => getenv('celum_publicURLsProviderVideo') ?: '',
-            'publicURLsProviderImage' => getenv('celum_publicURLsProviderImage') ?: '',
-            'publicURLsDescriptionVideo' => getenv('celum_publicURLsDescriptionVideo') ?: '',
-            'publicURLsDescriptionImage' => getenv('celum_publicURLsDescriptionImage') ?: '',
-            'directDownloadSecret' => getenv('celum_directDownloadSecret') ?: '',
-            'celumApiKey' => getenv('celum_apiKey') ?: '',
             'cacheLifetimeInMinutes' => getenv('celum_cacheLifetimeInMinutes') ?: '',
-            'infoFieldSetterToken' => getenv('celum_infoFieldSetterToken') ?: '',
-            'writePublicUrls' => getenv('celum_writePublicUrls') ?: true,
-            'informationFieldId' => getenv('celum_informationFieldId') ?: '',
-            'nodeId' => getenv('celum_nodeId') ?: '',
-            'descriptionFieldName' => getenv('celum_descriptionFieldName') ?: '',
-            'alternativeTextFieldName' => getenv('celum_alternativeTextFieldName') ?: '',
             'roots' => getenv('celum_roots') ?: '',
         ];
 
@@ -311,7 +320,7 @@ class CelumDriverTest extends FunctionalTestCase
         $this->driver->initialize();
     }
 
-    public function checkGetUrlMethodDataProvider(): array
+    public static function checkGetUrlMethodDataProvider(): array
     {
         return [
             'default type' => [
@@ -333,7 +342,7 @@ class CelumDriverTest extends FunctionalTestCase
         ];
     }
 
-    public function checkGetFilesInFolderDataProvider(): array
+    public static function checkGetFilesInFolderDataProvider(): array
     {
         return [
             [
@@ -451,7 +460,7 @@ class CelumDriverTest extends FunctionalTestCase
         ];
     }
 
-    public function checkGetFoldersInFolderDataProvider(): array
+    public static function checkGetFoldersInFolderDataProvider(): array
     {
         return [
             [

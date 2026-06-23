@@ -14,6 +14,8 @@ use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\AbstractHierarchicalFilesystemDriver;
 use TYPO3\CMS\Core\Resource\Exception;
+use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
+use TYPO3\CMS\Core\Resource\Exception\FolderDoesNotExistException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CelumDriver extends AbstractHierarchicalFilesystemDriver
@@ -377,21 +379,31 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
 
     /**
      * Returns information about a file.
+     *
+     * @throws FileDoesNotExistException
      */
     public function getFileInfoByIdentifier(string $fileIdentifier, array $propertiesToExtract = []): array
     {
         $ret = self::$client->getFileInfo($fileIdentifier)['info'];
+        if ($ret === null) {
+            throw new FileDoesNotExistException('File "' . $fileIdentifier . '" does not exist.', 1750000001);
+        }
         $this->log->debug("$this->instance: getFileInfoByIdentifier($fileIdentifier, " . json_encode($propertiesToExtract) . '): ' . json_encode($ret));
         return $ret;
     }
 
     /**
      * Returns information about a file.
+     *
+     * @throws FolderDoesNotExistException
      */
     public function getFolderInfoByIdentifier(string $folderIdentifier): array
     {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $ret = self::$client->getFolderInfo($folderIdentifier)['info'];
+        if ($ret === null) {
+            throw new FolderDoesNotExistException('Folder "' . $folderIdentifier . '" does not exist.', 1750000002);
+        }
         //$this->log->debug("$this->instance: getFolderInfoByIdentifier($folderIdentifier): " . json_encode($ret));
         return $ret;
     }

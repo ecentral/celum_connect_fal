@@ -17,6 +17,7 @@ class CelumClientTest extends FunctionalTestCase
      */
     public function checkGetFolderInfoMethod(array $config, string $identifier, array $expectedResult, string $exceptionClassName = '', string $exceptionMessage = ''): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeClient($config);
         if ($exceptionClassName) {
             $this->expectException($exceptionClassName);
@@ -35,6 +36,7 @@ class CelumClientTest extends FunctionalTestCase
      */
     public function checkGetFileInfoMethod(array $config, string $identifier, array $expectedResult): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeClient($config);
         $fileInfo = $this->client->getFileInfo($identifier);
 
@@ -57,6 +59,7 @@ class CelumClientTest extends FunctionalTestCase
      */
     public function checkGetUrlMethod(array $config, string $identifier, string $type, ?string $expectedResult, ?string $errorClass = null): void
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeClient($config);
         if ($errorClass) {
             $this->expectException($errorClass);
@@ -85,30 +88,32 @@ class CelumClientTest extends FunctionalTestCase
      */
     public function checkAddPublicUrlMethod(array $config, string $identifier, string $url, string $description)
     {
+        $this->skipWithoutLiveCelumCredentials();
         $this->initializeClient($config);
         $this->client->addPublicUrl($identifier, $url, $description);
     }
 
-    protected function initializeClient(?array $config = null, $storage = null): void
+    /**
+     * These tests hit a real CELUM instance and assert against its actual content,
+     * so they only run when live credentials are provided via environment variables.
+     */
+    protected function skipWithoutLiveCelumCredentials(): void
+    {
+        if (!getenv('celum_celumHost')) {
+            self::markTestSkipped('Requires a live CELUM instance (set celum_celumHost, celum_apiKey, celum_user, celum_password env vars).');
+        }
+    }
+
+    protected function initializeClient(?array $config = null, int $storage = 1): void
     {
         $clientConfig = [
-            'licenseKey' => getenv('celum_licenseKey') ?: '',
+            'celumHost' => getenv('celum_celumHost') ?: '',
+            'celumApiKey' => getenv('celum_apiKey') ?: '',
+            'celumUser' => getenv('celum_user') ?: '',
+            'celumPassword' => getenv('celum_password') ?: '',
             'locale' => getenv('celum_locale') ?: 'de',
             'defaultLocale' => getenv('celum_defaultLocale') ?: 'en',
-            'downloadFormat' => getenv('celum_downloadFormat') ?: 'largeprvw',
-            'publicURLsProviderVideo' => getenv('celum_publicURLsProviderVideo') ?: '',
-            'publicURLsProviderImage' => getenv('celum_publicURLsProviderImage') ?: '',
-            'publicURLsDescriptionVideo' => getenv('celum_publicURLsDescriptionVideo') ?: '',
-            'publicURLsDescriptionImage' => getenv('celum_publicURLsDescriptionImage') ?: '',
-            'directDownloadSecret' => getenv('celum_directDownloadSecret') ?: '',
-            'celumApiKey' => getenv('celum_apiKey') ?: '',
             'cacheLifetimeInMinutes' => getenv('celum_cacheLifetimeInMinutes') ?: '',
-            'infoFieldSetterToken' => getenv('celum_infoFieldSetterToken') ?: '',
-            'writePublicUrls' => getenv('celum_writePublicUrls') ?: true,
-            'informationFieldId' => getenv('celum_informationFieldId') ?: '',
-            'nodeId' => getenv('celum_nodeId') ?: '',
-            'descriptionFieldName' => getenv('celum_descriptionFieldName') ?: '',
-            'alternativeTextFieldName' => getenv('celum_alternativeTextFieldName') ?: '',
             'roots' => getenv('celum_roots') ?: '',
         ];
 
@@ -118,7 +123,7 @@ class CelumClientTest extends FunctionalTestCase
         $this->client = new CelumClient($clientConfig, $storage);
     }
 
-    public function checkGetFolderInfoMethodDataProvider(): array
+    public static function checkGetFolderInfoMethodDataProvider(): array
     {
         return [
             'default config' => [
@@ -344,7 +349,7 @@ class CelumClientTest extends FunctionalTestCase
         ];
     }
 
-    public function checkGetFileInfoMethodDataProvider(): array
+    public static function checkGetFileInfoMethodDataProvider(): array
     {
         return [
             'default config' => [
@@ -402,7 +407,7 @@ class CelumClientTest extends FunctionalTestCase
         ];
     }
 
-    public function checkGetUrlMethodDataProvider(): array
+    public static function checkGetUrlMethodDataProvider(): array
     {
         return [
             'default type' => [
@@ -451,7 +456,7 @@ class CelumClientTest extends FunctionalTestCase
         ];
     }
 
-    public function checkAddPublicUrlMethodDataProvider(): array
+    public static function checkAddPublicUrlMethodDataProvider(): array
     {
         return [
             '' => [

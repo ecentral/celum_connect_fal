@@ -100,6 +100,9 @@ class FileInfo
                     $this->width = intval($width * $max / $height);
                     $this->height = $max;
                 }
+            } else {
+                $this->width = $width;
+                $this->height = $height;
             }
         } else {
             $this->height = 0;

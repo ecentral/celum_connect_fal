@@ -3,6 +3,14 @@
     <ROOT>
         <type>array</type>
         <el>
+            <licenseKey>
+                <label>License Key</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim,required</eval>
+                    <size>256</size>
+                </config>
+            </licenseKey>
             <celumHost>
 
                     <label>Celum Host</label>

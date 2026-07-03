@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Brix\CelumFal\Client;
 
+use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use Brix\CelumFal\Utility\Cache;
 use Brix\CelumFal\Utility\FileInfo;
 use Brix\CelumFal\Utility\FileInfo\Format;
@@ -26,6 +27,7 @@ class CelumClient
     private const API_PATH = '/content-api/v1';
     private const X_API_KEY_IDENTIFIER = 'X-API-KEY';
     private const X_API_KEY_PREFIX = 'Bearer';
+    private const LICENSE_SECRET_KEY = 'ZbMchtd9DivzjPDi5QIio1iVERFnNZiSE33QKY3Gw9rYfCNLFiKloJQt3zi4';
 
     protected string $host;
     protected string $locale;
@@ -76,7 +78,15 @@ class CelumClient
 
     private function initConfiguration(array $configuration): void
     {
-        $this->host = $this->appendApiPathIfMissing($configuration['celumHost'] ?? '');
+        //TODO check work with licenseKey in new version
+
+        $res = $this->decrypt((string)($configuration['licenseKey'] ?? ''));
+        if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) && ((int)$matches[2] > time())) {
+            $this->host = $this->appendApiPathIfMissing(rtrim($matches[1]));
+        } else {
+            throw new InvalidConfigurationException('No valid license');
+        }
+        //$this->host = $this->appendApiPathIfMissing($configuration['celumHost'] ?? '');
         $this->apiKey = $configuration['celumApiKey'] ?? '';
         $this->username = $configuration['celumUser'] ?? '';
         $this->password = $configuration['celumPassword'] ?? '';
@@ -379,6 +389,37 @@ class CelumClient
         $url = $fileInfo[$type];
         $this->log->debug("getUrl($identifier, $type): $url");
         return $url;
+    }
+
+    private function decode_base64(string $sData): string
+    {
+        $sBase64 = strtr($sData, '-_', '+/');
+        $remainder = strlen($sBase64) % 4;
+        if ($remainder > 0) {
+            $sBase64 .= str_repeat('=', 4 - $remainder);
+        }
+
+        $decoded = base64_decode($sBase64, true);
+        if ($decoded === false) {
+            throw new InvalidConfigurationException('Invalid license encoding');
+        }
+
+        return $decoded;
+    }
+
+    private function decrypt(string $sData): string
+    {
+        $sResult = '';
+        $sData   = $this->decode_base64($sData);
+        $keyLength = strlen(self::LICENSE_SECRET_KEY);
+
+        for ($i = 0, $length = strlen($sData); $i < $length; $i++) {
+            $sChar    = substr($sData, $i, 1);
+            $sKeyChar = substr(self::LICENSE_SECRET_KEY, ($i % $keyLength) - 1, 1);
+            $sChar    = chr((ord($sChar) - ord($sKeyChar) + 256) % 256);
+            $sResult .= $sChar;
+        }
+        return $sResult;
     }
 
 }

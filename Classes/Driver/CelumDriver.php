@@ -102,7 +102,13 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
     {
         $ret = self::$client->getUrl($identifier, 'publicUrl');
         $this->log->debug("$this->instance: getPublicURL($identifier): $ret");
-        return null;
+
+        // Returning null makes TYPO3 fall back to the eID=dumpFile route. That route is
+        // frontend-only, but in a backend request the fallback URL is built against the
+        // backend entry point (/typo3/index.php), which answers with HTML instead of the
+        // image - so thumbnails stay empty whenever a processed file "uses the original
+        // file" (source already smaller than the requested thumbnail box).
+        return is_string($ret) && $ret !== '' ? $ret : null;
     }
 
     /**

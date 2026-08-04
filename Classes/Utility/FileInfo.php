@@ -175,15 +175,23 @@ class FileInfo
             $format === Format::PREVIEW) {
             $this->extension = 'jpg';
         } else {
-            $this->extension = $asset->getCurrentVersion()->getFileExtension();
+            $this->extension = (string)$asset->getCurrentVersion()->getFileExtension();
         }
-        if (substr($this->name, -strlen($this->extension)) !== $this->extension) {
-            if (substr($this->name, -1) === '.') {
-                $this->name .= substr($this->extension, 1);
-            } else {
-                $this->name .= $this->extension;
-            }
+
+        if ($this->extension === '') {
+            return;
         }
+
+        // CELUM asset names may carry no extension at all ("_44A8196_02") or the
+        // extension of the original ("photo.tif") while a JPEG preview is delivered.
+        // TYPO3 derives the file extension from the name, so it has to end in
+        // ".<extension>" - otherwise no thumbnail can be generated.
+        $suffix = '.' . $this->extension;
+        if (str_ends_with(strtolower($this->name), strtolower($suffix))) {
+            return;
+        }
+
+        $this->name = rtrim($this->name, '.') . $suffix;
     }
     // -------- Getter-Methoden --------
     public function getIdentifier(): string

@@ -21,22 +21,28 @@ How do I activate the CELUM cache-clear button?
 Add ``options.clearCache.celum = 1`` to the TypoScript configuration
 under the user or group settings. See chapter :ref:`usage`.
 
-..  _api-key:
+..  _license-key:
 
-How do I find my API Key?
-==========================
+How do I get my license key?
+=============================
 
-The API key is generated in the CELUM Configuration Management Application (CMA):
+The license key is issued by brix IT solutions for one specific CELUM
+instance. It is not generated in CELUM itself — see :ref:`help` to request one.
 
-1. Log in to your CELUM backend (e.g. ``https://your-instance.celum.cloud``)
-2. Navigate to **Advanced UI** (older user interface)
-3. Go to **Administration > Configuration Management** and log in there
-4. Under the **Authentication** category, click **Profiles**, then click **+ ADD** to create a new authentication profile
-5. Select **Rest API** — a dialog will open where you can retrieve the API key
+The key encodes both the base URL of the CELUM REST API and an expiry date, so
+it pins the instance the driver talks to. A separate host setting is therefore
+neither needed nor available.
+
+..  note::
+
+    If the URL contained in the license key has no path, the driver appends
+    ``/content-api/v1`` automatically.
 
 ..  tip::
 
-    Create a dedicated API user for TYPO3 to control access rights precisely.
+    If the license key is invalid or expired, the storage stays empty instead of
+    raising an error in the backend. Check the TYPO3 log for
+    ``No valid license`` to confirm.
 
 ..  _root-node-ids:
 

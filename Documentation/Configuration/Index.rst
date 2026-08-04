@@ -20,6 +20,7 @@ FlexForm fields described below.
     License key issued for your CELUM instance. It also determines the base URL
     of the CELUM REST API, so the instance the driver talks to is pinned by the
     license.
+    See :ref:`license-key` for instructions on how to obtain it.
 
 ..  confval:: roots
     :name: roots

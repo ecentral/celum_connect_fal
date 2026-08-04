@@ -52,17 +52,18 @@ class CelumClient
     private int $cacheLifetime;
     private array $roots = [];
 
+    private bool $available = false;
+
     public function __construct(array $config, int $storage)
     {
+        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->log->debug('__construct(' . json_encode($config) . ')');
+
+        $this->storage = $storage;
+        $this->cache = GeneralUtility::makeInstance(Cache::class);
+
         try {
-            $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-            $this->log->debug('__construct(' . json_encode($config) . ')');
-
             $this->initConfiguration($config);
-
-            $this->storage = $storage;
-
-            $this->cache = GeneralUtility::makeInstance(Cache::class);
 
             // Create celum client config
             $this->clientConfiguration = Configuration::getDefaultConfiguration()
@@ -71,22 +72,31 @@ class CelumClient
                 ->setApiKey(self::X_API_KEY_IDENTIFIER, $this->apiKey)
                 ->setUsername($this->username)
                 ->setPassword($this->password);
+
+            $this->available = true;
         } catch (Exception $exception) {
             $this->log->error($exception->getMessage());
         }
     }
 
+    /**
+     * Whether the client was configured successfully and may talk to CELUM.
+     */
+    public function isAvailable(): bool
+    {
+        return $this->available;
+    }
+
     private function initConfiguration(array $configuration): void
     {
-        //TODO check work with licenseKey in new version
-
+        // The license pins the host: it is the only source for the CELUM base URL.
+        // The celumHost setting is deliberately not evaluated.
         $res = $this->decrypt((string)($configuration['licenseKey'] ?? ''));
         if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) && ((int)$matches[2] > time())) {
             $this->host = $this->appendApiPathIfMissing(rtrim($matches[1]));
         } else {
             throw new InvalidConfigurationException('No valid license');
         }
-        //$this->host = $this->appendApiPathIfMissing($configuration['celumHost'] ?? '');
         $this->apiKey = $configuration['celumApiKey'] ?? '';
         $this->username = $configuration['celumUser'] ?? '';
         $this->password = $configuration['celumPassword'] ?? '';
@@ -280,6 +290,10 @@ class CelumClient
      */
     public function getFolderInfo(string $identifier, string $extract = ''): array
     {
+        if (!$this->available) {
+            return $extract === '' ? ['info' => null, 'children' => [], 'assets' => []] : [];
+        }
+
         $key = str_replace(['/', '.'], ['_', ''], $identifier);
         if ($identifier === '/' || $identifier === './') {
             $this->initCacheRoot();
@@ -336,6 +350,10 @@ class CelumClient
 
     public function getFileInfo(string $identifier): bool|array
     {
+        if (!$this->available) {
+            return ['info' => null];
+        }
+
         $fileId = $this->getFileIdByFileIdentifier($identifier);
         $key = str_replace('/', '_', $identifier);
         if (!$this->cache->has($key)) {
@@ -386,7 +404,7 @@ class CelumClient
             $identifier = substr($identifier, 5);
         }
         $fileInfo = $this->getFileInfo($identifier);
-        $url = $fileInfo[$type];
+        $url = $fileInfo[$type] ?? null;
         $this->log->debug("getUrl($identifier, $type): $url");
         return $url;
     }

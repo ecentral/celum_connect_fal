@@ -31,14 +31,10 @@ The driver is configured per FAL storage in the TYPO3 backend under **File > Fil
 
 | Field | Type | Required | Default | Description                                                                                                                                   |
 |---|---|---|---|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| `celumHost` | string | yes | — | Base URL of the CELUM REST API, e.g. `https://your-celum-instance.celum.com`                                                                  |
-| `celumApiKey` | string | yes | — | API key for authentication with the CELUM REST API (see [Finding your API Key](#finding-your-api-key))                                        |
-| `celumUser` | string | yes | — | Optional username for HTTP basic authentication                                                                                               |
-| `celumPassword` | string | yes | — | Optional password for HTTP basic authentication                                                                                               |
+| `licenseKey` | string | yes | — | License key issued for your CELUM instance. It also determines the base URL of the CELUM REST API                                              |
 | `roots` | string | yes | — | Comma-separated list of CELUM collection IDs to expose as root folders, e.g. `12,34,56` (see [Finding Root Node IDs](#finding-root-node-ids)) |
 | `locale` | `en` \| `de` | no | `en` | Language used for asset names returned by the API                                                                                             |
 | `defaultLocale` | `en` \| `de` | no | `en` | Fallback language when the primary locale is unavailable                                                                                      |
-| `imageDownloadFormat` | string | no | `largeprvw` | CELUM format key used for image public URLs (e.g. `largeprvw`, `preview`, `thumbnail`)                                                        |
 | `cacheLifetimeInMinutes` | integer (1–29) | no | `29` | How long API responses are cached in the TYPO3 cache framework                                                                                |
 
 ### Finding your API Key

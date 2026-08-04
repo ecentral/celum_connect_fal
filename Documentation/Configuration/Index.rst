@@ -12,35 +12,14 @@ FlexForm fields described below.
 ..  confval-menu::
     :name: driver-config
 
-..  confval:: celumHost
-    :name: celumHost
+..  confval:: licenseKey
+    :name: licenseKey
     :type: string
     :required: true
 
-    Base URL of the CELUM REST API,
-    e.g. ``https://your-celum-instance.celum.cloud``.
-
-..  confval:: celumApiKey
-    :name: celumApiKey
-    :type: string
-    :required: true
-
-    API key for authentication with the CELUM REST API.
-    See :ref:`api-key` for instructions on how to obtain it.
-
-..  confval:: celumUser
-    :name: celumUser
-    :type: string
-    :required: true
-
-    Username for HTTP basic authentication.
-
-..  confval:: celumPassword
-    :name: celumPassword
-    :type: string
-    :required: true
-
-    Password for HTTP basic authentication.
+    License key issued for your CELUM instance. It also determines the base URL
+    of the CELUM REST API, so the instance the driver talks to is pinned by the
+    license.
 
 ..  confval:: roots
     :name: roots
@@ -64,14 +43,6 @@ FlexForm fields described below.
     :default: en
 
     Fallback language when the primary locale is unavailable.
-
-..  confval:: imageDownloadFormat
-    :name: imageDownloadFormat
-    :type: string
-    :default: largeprvw
-
-    CELUM format key used for image public URLs, e.g. ``largeprvw``,
-    ``preview``, or ``thumbnail``.
 
 ..  confval:: cacheLifetimeInMinutes
     :name: cacheLifetimeInMinutes

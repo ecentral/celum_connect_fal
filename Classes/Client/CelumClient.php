@@ -409,6 +409,10 @@ class CelumClient
         return $url;
     }
 
+    /**
+     * Decodes URL-safe base64 (RFC 4648 §5): swaps back the "-_" alphabet
+     * to "+/" and restores the "=" padding that URL-safe encoders strip.
+     */
     private function decode_base64(string $sData): string
     {
         $sBase64 = strtr($sData, '-_', '+/');
@@ -425,6 +429,13 @@ class CelumClient
         return $decoded;
     }
 
+    /**
+     * Decrypts a license key with a Vigenère cipher (mod 256, subtraction
+     * form) keyed by LICENSE_SECRET_KEY. See
+     * https://de.wikipedia.org/wiki/Vigen%C3%A8re-Chiffre. Not real
+     * cryptography - this only mirrors the format Brix's licensing defines
+     * (see CLAUDE.md "Bekannte Besonderheiten").
+     */
     private function decrypt(string $sData): string
     {
         $sResult = '';

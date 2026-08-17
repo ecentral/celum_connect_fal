@@ -3,47 +3,14 @@
     <ROOT>
         <type>array</type>
         <el>
-            <celumHost>
-
-                    <label>Celum Host</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim,required</eval>
-                        <size>256</size>
-                    </config>
-
-            </celumHost>
-            <celumApiKey>
-
-                    <label>Celum API key</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim,required</eval>
-                        <size>256</size>
-                    </config>
-
-            </celumApiKey>
-            <celumUser>
-
-                    <label>Celum User</label>
-                    <config>
-                        <type>input</type>
-                        <eval>trim,required</eval>
-                        <size>256</size>
-                    </config>
-
-            </celumUser>
-            <celumPassword>
-
-                    <label>Celum Password</label>
-                    <config>
-                        <type>input</type>
-                        <renderType>password</renderType>
-                        <eval>trim,required</eval>
-                        <size>256</size>
-                    </config>
-
-            </celumPassword>
+            <licenseKey>
+                <label>License Key</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim,required</eval>
+                    <size>256</size>
+                </config>
+            </licenseKey>
             <locale>
 
                     <label>Locale</label>

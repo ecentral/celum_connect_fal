@@ -8,6 +8,7 @@
 			"homepage": "https://www.brix.ch"
 		}
 	],
+	"prefer-stable": true,
 	"type": "typo3-cms-extension",
 	"description": "TYPO3 FAL driver for the CELUM DAM system",
 	"homepage": "https://github.com/ecentral/celum_connect_fal",

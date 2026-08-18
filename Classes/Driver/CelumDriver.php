@@ -158,7 +158,16 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
     public function folderExists(string $folderIdentifier): bool
     {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
-        $ret = (($folderIdentifier === '/') or ($this->getFolderInfoByIdentifier($folderIdentifier) !== null));
+        if ($folderIdentifier === '/') {
+            $ret = true;
+        } else {
+            try {
+                $this->getFolderInfoByIdentifier($folderIdentifier);
+                $ret = true;
+            } catch (FolderDoesNotExistException) {
+                $ret = false;
+            }
+        }
         $this->log->debug("$this->instance: folderExists($folderIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }
@@ -379,7 +388,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $id = rtrim($identifier, '/\\') . '/';
         $ret = ($identifier and (strpos($id, $folderIdentifier) === 0));
-        $this->log->debug("$this->instance: isWithin($folderIdentifier, $identifier): " . $ret ? 'true' : 'false');
+        $this->log->debug("$this->instance: isWithin($folderIdentifier, $identifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }
 
@@ -477,7 +486,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
             }
         }
         if (($start > 0) or ($numberOfItems > 0)) {
-            $ret = array_slice($ret, $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
+            $ret = array_slice($ret, $start, $numberOfItems <= 0 ? null : $numberOfItems);
         }
         //$this->log->debug("$this->instance: getFilesInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($filenameFilterCallbacks) . ", $sort, $sortRev): " . json_encode($ret));
         return $ret;
@@ -519,7 +528,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
             }
         } else {
             $data = self::$client->getFolderInfo($folderIdentifier, 'folder');
-            usort($data, function ($a, $b) use ($sortRev, $sort) {
+            usort($data, function ($a, $b) use ($sortRev) {
                 $a = $a['name'];
                 $b = $b['name'];
                 return $sortRev ? strnatcmp($b, $a) : strnatcmp($a, $b);
@@ -530,7 +539,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
             }
         }
         if (($start > 0) or ($numberOfItems > 0)) {
-            $ret = array_slice($ret, $start >= 0 ? $start : 0, $numberOfItems <= 0 ? null : $numberOfItems);
+            $ret = array_slice($ret, $start, $numberOfItems <= 0 ? null : $numberOfItems);
         }
         //$this->log->debug("$this->instance: getFoldersInFolder($folderIdentifier, $start, $numberOfItems, $recursive, " . json_encode($folderNameFilterCallbacks) . "$sort, $sortRev): " . json_encode($ret));
         return $ret;
@@ -584,6 +593,15 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
      */
     public function hasCapability(int $capability): bool
     {
+        if (!in_array($capability, [
+            Capabilities::CAPABILITY_BROWSABLE,
+            Capabilities::CAPABILITY_PUBLIC,
+            Capabilities::CAPABILITY_WRITABLE,
+            Capabilities::CAPABILITY_HIERARCHICAL_IDENTIFIERS,
+        ], true)) {
+            return false;
+        }
+
         return $this->capabilities->hasCapability($capability);
     }
 

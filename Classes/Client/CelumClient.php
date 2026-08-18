@@ -215,7 +215,7 @@ class CelumClient
         }
 
         $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
-        $collectionId = $this->extractId($identifier);
+        $collectionId = (int)$this->extractId($identifier);
 
         try {
             $collection = $collectionApi->getCollection($collectionId, $this->locale);
@@ -233,7 +233,7 @@ class CelumClient
         $typeId = 101; // CELUM collection type ID for sub-collections
         $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
 
-        $collection = $collectionApi->getCollection($this->extractId($identifier), $this->locale);
+        $collection = $collectionApi->getCollection((int)$this->extractId($identifier), $this->locale);
         $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
 
         $foldernames = [];
@@ -255,7 +255,7 @@ class CelumClient
     {
         $typeId = 101; // CELUM collection type ID for sub-collections
         $collectionApi = new CollectionsApi($this->getClient(), $this->clientConfiguration);
-        $collection = $collectionApi->getCollection($this->extractId($identifier), $this->locale);
+        $collection = $collectionApi->getCollection((int)$this->extractId($identifier), $this->locale);
         $folderInfo = RestClientFolderUtility::getFolderInfoByCollection($collection, $this->storage, $this->locale);
 
         $foldernames = [];
@@ -286,7 +286,7 @@ class CelumClient
      *  returns an array of the value selected for extraction or the folder info itself if nothing is specified
      * @param $identifier
      * @param $extract     string 'filename', 'foldername', 'file', 'folder' or ''
-     * @return array|mixed
+     * @return array
      */
     public function getFolderInfo(string $identifier, string $extract = ''): array
     {
@@ -382,7 +382,7 @@ class CelumClient
             $fileCategory == FileCategory::VIDEO ||
             $fileCategory == FileCategory::PLACEHOLDER) {
             $downloadApi = new DownloadApi($this->getClient(), $this->clientConfiguration);
-            $download = $downloadApi->requestDownload((string)$asset->getId(), 1);
+            $download = $downloadApi->requestDownload((int)$asset->getId(), 1);
             $originalDownloadUrl = $download->getUrl();
         }
 

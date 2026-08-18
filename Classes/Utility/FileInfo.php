@@ -31,20 +31,26 @@ class FileInfo
     private bool|string $publicUrl;
     private string $extension;
 
-    public function __construct(Asset $asset, ?string $originalDownloadUrl, int $storage, $imageFormat, $videoFormat, $documentFormat, $othersFormat)
+    public function __construct(Asset $asset, ?string $originalDownloadUrl, int $storage, Format $imageFormat, Format $videoFormat, Format $documentFormat, Format $othersFormat)
     {
 
         $this->identifier = (string)$asset->getId();
         $this->identifierHash = sha1($this->identifier);
         $this->folderHash = sha1(PathUtility::dirname($this->identifier));
-        $this->mimetype = strtolower($asset->getCurrentVersion()->getFileCategory()) . '/' . $asset->getCurrentVersion()->getFileExtension();
+        /** @var string $fileCategory */
+        $fileCategory = $asset->getCurrentVersion()->getFileCategory();
+        $this->mimetype = strtolower($fileCategory) . '/' . $asset->getCurrentVersion()->getFileExtension();
         $this->storage = $storage;
         $this->fileSize = $asset->getCurrentVersion()->getFilesize();
         $this->mtime = $asset->getModification()->getDate()->getTimestamp();
         $this->ctime = $asset->getCreation()->getDate()->getTimestamp();
 
-        $format = (($asset->getCurrentVersion()->getFileCategory() == 'IMAGE') ? $imageFormat :
-            (($asset->getCurrentVersion()->getFileCategory() == 'VIDEO') ? $videoFormat : $othersFormat));
+        $format = match ($fileCategory) {
+            FileCategory::IMAGE => $imageFormat,
+            FileCategory::VIDEO => $videoFormat,
+            FileCategory::DOCUMENT => $documentFormat,
+            default => $othersFormat,
+        };
 
         $this->initImagesSize($format, $asset);
         $this->initPublicUrl($format, $asset, $originalDownloadUrl);

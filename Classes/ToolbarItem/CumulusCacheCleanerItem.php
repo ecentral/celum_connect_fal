@@ -27,6 +27,7 @@ use TYPO3\CMS\Backend\Toolbar\ToolbarItemInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
 /**
  * Render cache clearing toolbar item.
@@ -39,6 +40,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
     protected array $cacheActions = [];
     protected array $optionValues = [];
     private ServerRequestInterface $request;
+    private ?ViewFactoryInterface $viewFactory = null;
 
     public function __construct(
         UriBuilder $uriBuilder,
@@ -57,7 +59,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
         $this->optionValues[] = 'celum';
 
         if ((new Typo3Version())->getMajorVersion() > 12) {
-            $this->viewFactory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\View\ViewFactoryInterface::class);
+            $this->viewFactory = GeneralUtility::makeInstance(ViewFactoryInterface::class);
         }
         $event = new ModifyClearCacheActionsEvent($cacheActions, $this->optionValues);
         $event = $eventDispatcher->dispatch($event);
@@ -106,7 +108,7 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
                 layoutRootPaths: ['EXT:celum_connect_fal/Resources/Private/Layouts/'],
                 request: $this->request,
             );
-            $view = $this->viewFactory->create($viewFactoryData);
+            $view = $this->viewFactory?->create($viewFactoryData);
         }
 
         $cacheAction = end($this->cacheActions);

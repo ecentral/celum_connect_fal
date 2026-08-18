@@ -1,5 +1,7 @@
 <?php
 
+$_EXTKEY = $_EXTKEY ?? 'celum_connect_fal';
+
 $EM_CONF[$_EXTKEY] = [
     'title' => 'celum:connect (FAL)',
     'description' => 'Provides a FAL driver for the CELUM DAM.',

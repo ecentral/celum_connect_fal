@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Resource\ProcessedFileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use RuntimeException;
 
 class RefreshMetaCommand extends Command
 {
@@ -115,7 +116,7 @@ EOF
                     }
                 }
             } catch (\Exception $e) {
-                $output->writeln('File ' . $file->getIdentifier() . ' failed: ' . $e->getMessage());
+                $output->writeln('File ' . $fileIdentifier . ' failed: ' . $e->getMessage());
                 continue;
             }
         }

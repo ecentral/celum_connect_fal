@@ -10,7 +10,7 @@ stages:
 .deploy-demo:
   stage: deploy-demo
   rules:
-    - if: '$CI_COMMIT_BRANCH == "base"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 validate-composer:
   stage: test

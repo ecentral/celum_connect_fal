@@ -11,6 +11,38 @@
                     <size>256</size>
                 </config>
             </licenseKey>
+
+            <celumApiKey>
+
+                <label>Celum API key</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim,required</eval>
+                    <size>256</size>
+                </config>
+
+            </celumApiKey>
+            <celumUser>
+
+                <label>Celum User</label>
+                <config>
+                    <type>input</type>
+                    <eval>trim,required</eval>
+                    <size>256</size>
+                </config>
+
+            </celumUser>
+            <celumPassword>
+
+                <label>Celum Password</label>
+                <config>
+                    <type>input</type>
+                    <renderType>password</renderType>
+                    <eval>trim,required</eval>
+                    <size>256</size>
+                </config>
+
+            </celumPassword>
             <locale>
 
                     <label>Locale</label>

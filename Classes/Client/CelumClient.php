@@ -1,6 +1,13 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
+
+/*
+ * This file is part of the "celum_connect_fal" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
 
 namespace Brix\CelumFal\Client;
 
@@ -119,8 +126,8 @@ class CelumClient
         }
 
         $this->roots = array_map(
-            static fn(string $value): string => '/' . trim($value, '/') . '/',
-            array_filter(array_map('trim', explode(',', $roots)), static fn(string $value): bool => $value !== '')
+            static fn (string $value): string => '/' . trim($value, '/') . '/',
+            array_filter(array_map('trim', explode(',', $roots)), static fn (string $value): bool => $value !== '')
         );
     }
 
@@ -361,7 +368,7 @@ class CelumClient
             try {
                 $asset = $assetsApi->getAsset($fileId, $this->locale, null, ['informationFields', 'fileProperties']);
                 $this->cache->set($key, $this->toAsset($asset), [], $this->cacheLifetime);
-            } catch (Exception $exception){
+            } catch (Exception $exception) {
                 $this->log->error("getFileInfo($fileId)" . json_encode($this->cache->get($key)) . ':' . $exception->getMessage());
                 $this->cache->set($key, ['info' => null], [], 60); // short cache on error
             }

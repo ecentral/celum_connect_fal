@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the "celum_connect_fal" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 namespace Brix\CelumFal\Utility\FileInfo;
 
 enum Format
@@ -15,8 +22,7 @@ enum Format
 
     public function formatToString(?Format $format = null): string
     {
-        return match($format ?? $this)
-        {
+        return match($format ?? $this) {
             self::THUMBNAIL => 'THUMB',
             self::PREVIEW => 'PREVIEW',
             self::LARGE_PREVIEW => 'LARGEPREVIEW',
@@ -28,8 +34,7 @@ enum Format
 
     public static function getFormatByString(string $stringFormat): Format
     {
-        return match($stringFormat)
-        {
+        return match($stringFormat) {
             'THUMB' => self::THUMBNAIL,
             'PREVIEW' => self::PREVIEW,
             'LARGEPREVIEW' => self::LARGE_PREVIEW,
@@ -41,8 +46,7 @@ enum Format
 
     public function getMaxSize(?Format $format = null): int
     {
-        return match($format ?? $this)
-        {
+        return match($format ?? $this) {
             self::THUMBNAIL => 250,
             self::PREVIEW,
             self::LARGE_PREVIEW => 3000,

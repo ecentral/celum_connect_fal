@@ -1,9 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: CMA
- * Date: 05/11/2018
- * Time: 11:18
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the "celum_connect_fal" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
  */
 
 namespace Brix\CelumFal\Driver;
@@ -18,9 +21,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CelumDriverV12 extends AbstractHierarchicalFilesystemDriver
 {
-
-    const EXTENSION_KEY = 'celum_connect_fal';
-    const DRIVER_TYPE = 'BrixCelumDriver';
+    public const EXTENSION_KEY = 'celum_connect_fal';
+    public const DRIVER_TYPE = 'BrixCelumDriver';
 
     /** @var $client CelumClient */
     public static $client;

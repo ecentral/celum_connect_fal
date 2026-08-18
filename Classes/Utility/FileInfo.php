@@ -2,11 +2,17 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the "celum_connect_fal" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 namespace Brix\CelumFal\Utility;
 
 use Brix\CelumFal\Utility\FileInfo\Format;
 use Celum\Client\Model\Asset;
-use Celum\Client\Model\Download;
 use Celum\Client\Model\FileCategory;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
@@ -123,49 +129,46 @@ class FileInfo
         if ($currentVersion->getFileCategory() == FileCategory::IMAGE) {
             foreach ($currentVersion->getPreviewUrls() as $formatKey => $previewUrl) {
                 //TODO Check video, archives and documents
-                if($format == Format::PREVIEW) {
+                if ($format == Format::PREVIEW) {
                     $this->publicUrl = $previewUrl;
                 }
-                if(Format::PREVIEW == Format::getFormatByString($formatKey)) {
+                if (Format::PREVIEW == Format::getFormatByString($formatKey)) {
                     $this->previewUrl = $previewUrl;
                 }
-                if(Format::THUMBNAIL == Format::getFormatByString($formatKey)) {
+                if (Format::THUMBNAIL == Format::getFormatByString($formatKey)) {
                     $this->thumbUrl = $previewUrl;
                 }
                 /*if (($purl['provider'] == $this->provider[$type]) and ($purl['description'] == $this->description[$type])) {
                     $this->publicUrl = $previewUrl;
                 }*/
             }
-        }
-        elseif ($currentVersion->getFileCategory() == FileCategory::DOCUMENT) {
+        } elseif ($currentVersion->getFileCategory() == FileCategory::DOCUMENT) {
             foreach ($currentVersion->getPreviewUrls() as $formatKey => $previewUrl) {
                 /*if($format == Format::PDF) {
                     $this->publicUrl = $previewUrl;
                 }*/
-                if(Format::PREVIEW == Format::getFormatByString($formatKey)) {
+                if (Format::PREVIEW == Format::getFormatByString($formatKey)) {
                     $this->previewUrl = $previewUrl;
                 }
-                if(Format::THUMBNAIL == Format::getFormatByString($formatKey)) {
+                if (Format::THUMBNAIL == Format::getFormatByString($formatKey)) {
                     $this->thumbUrl = $previewUrl;
                 }
             }
             $this->publicUrl = $originalDownloadUrl;
-        }
-        elseif ($currentVersion->getFileCategory() == FileCategory::VIDEO) {
+        } elseif ($currentVersion->getFileCategory() == FileCategory::VIDEO) {
             foreach ($currentVersion->getPreviewUrls() as $formatKey => $previewUrl) {
                 /*if($format == Format::VIDEO) {
                     $this->publicUrl = $previewUrl;
                 }*/
-                if(Format::PREVIEW == Format::getFormatByString($formatKey)) {
+                if (Format::PREVIEW == Format::getFormatByString($formatKey)) {
                     $this->previewUrl = $previewUrl;
                 }
-                if(Format::THUMBNAIL == Format::getFormatByString($formatKey)) {
+                if (Format::THUMBNAIL == Format::getFormatByString($formatKey)) {
                     $this->thumbUrl = $previewUrl;
                 }
             }
             $this->publicUrl = $originalDownloadUrl;
-        }
-        else {
+        } else {
             $this->previewUrl = '';
             $this->thumbUrl = '';
             $this->publicUrl = $originalDownloadUrl;

@@ -1,11 +1,19 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
+
+/*
+ * This file is part of the "celum_connect_fal" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
 
 namespace Brix\CelumFal\Command;
 
 use Brix\CelumFal\Index\Extractor;
 use Brix\CelumFal\Utility\DriverUtility;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,7 +23,6 @@ use TYPO3\CMS\Core\Resource\ProcessedFileRepository;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use RuntimeException;
 
 class RefreshMetaCommand extends Command
 {
@@ -29,8 +36,6 @@ class RefreshMetaCommand extends Command
         parent::__construct(self::$defaultName);
     }
 
-    /**
-     */
     public function configure(): void
     {
         $this->setDescription('Command to refresh meta stored in system_file_meta')

@@ -1,6 +1,13 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
+
+/*
+ * This file is part of the "celum_connect_fal" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
 
 namespace Brix\CelumFal\Command;
 
@@ -15,7 +22,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CompleteImportCommand extends Command
 {
-
     /**
      * Configure the command by defining the name, options and arguments
      */

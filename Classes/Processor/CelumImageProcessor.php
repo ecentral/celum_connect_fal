@@ -1,5 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the "celum_connect_fal" Extension for TYPO3 CMS.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
 namespace Brix\CelumFal\Processor;
 
 use Brix\CelumFal\Utility\DriverUtility;
@@ -19,7 +28,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class CelumImageProcessor implements ProcessorInterface
 {
-
     protected Logger $log;
 
     public function canProcessTask(TaskInterface $task): bool
@@ -49,7 +57,7 @@ class CelumImageProcessor implements ProcessorInterface
             $imageDimension = new ImageDimension(64, 64);
             $id = $task->getSourceFile()->getIdentifier();
             $info = $driverClient->getFileInfo($id);
-            if($info) {
+            if ($info) {
                 $width = $info['info']['width'];
                 $height = $info['info']['height'];
                 //            if ($width and $height) {

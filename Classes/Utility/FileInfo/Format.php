@@ -13,9 +13,9 @@ enum Format
     case PDF;
     case OTHER;
 
-    public function formatToString(Format $format = null): string
+    public function formatToString(?Format $format = null): string
     {
-        return match($format ?? $this ?? Format::OTHER)
+        return match($format ?? $this)
         {
             self::THUMBNAIL => 'THUMB',
             self::PREVIEW => 'PREVIEW',
@@ -39,9 +39,9 @@ enum Format
         };
     }
 
-    public function getMaxSize(Format $format = null): int
+    public function getMaxSize(?Format $format = null): int
     {
-        return match($format ?? $this ?? Format::OTHER)
+        return match($format ?? $this)
         {
             self::THUMBNAIL => 250,
             self::PREVIEW,

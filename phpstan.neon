@@ -1,0 +1,8 @@
+parameters:
+    level: 6
+    paths:
+        - Classes
+        - Configuration
+    excludePaths:
+        - Classes/Driver/CelumDriverV12.php
+    reportUnmatchedIgnoredErrors: false

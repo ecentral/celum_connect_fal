@@ -6,19 +6,19 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 // Driver
 $driverClass = (new Typo3Version())->getMajorVersion() < 13
-    ? \Brix\CelumFal\Driver\CelumDriverV12::class
+    ? 'Brix\\CelumFal\\Driver\\CelumDriverV12'
     : \Brix\CelumFal\Driver\CelumDriver::class;
 
 $driverRegistry = GeneralUtility::makeInstance(DriverRegistry::class);
 $driverRegistry->registerDriverClass(
     $driverClass,
-    $driverClass::DRIVER_TYPE,
+    \Brix\CelumFal\Driver\CelumDriver::DRIVER_TYPE,
     'celum:connect (FAL)',
-    'FILE:EXT:' . $driverClass::EXTENSION_KEY . '/Configuration/FlexForm/CelumDriverFlexForm.xml'
+    'FILE:EXT:' . \Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY . '/Configuration/FlexForm/CelumDriverFlexForm.xml'
 );
 
 // Caching
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations'][$driverClass::EXTENSION_KEY] = [
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] = [
     'frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class,
     'groups' => ['system', 'all'],
     'options' => [

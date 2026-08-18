@@ -64,6 +64,10 @@
 			"Brix\\CelumFal\\Tests\\": "Tests"
 		}
 	},
+	"scripts": {
+		"phpcsfixer": "php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.dist.php",
+		"phpstan": "phpstan analyse Classes Configuration ext_emconf.php ext_localconf.php --level=5"
+	},
 	"extra": {
 		"typo3/cms": {
 			"app-dir": ".Build",

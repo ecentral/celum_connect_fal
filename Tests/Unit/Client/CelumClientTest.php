@@ -12,6 +12,8 @@ declare(strict_types=1);
 namespace Brix\CelumFal\Tests\Unit\Client;
 
 use Brix\CelumFal\Client\CelumClient;
+use ReflectionClassConstant;
+use ReflectionProperty;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
@@ -63,8 +65,6 @@ class CelumClientTest extends UnitTestCase
         $clientConfig = [
             'celumHost' => getenv('celum_celumHost') ?: 'https://demo.celum.cloud/content-api/v1',
             'celumApiKey' => getenv('celum_apiKey') ?: '',
-            'celumUser' => getenv('celum_user') ?: '',
-            'celumPassword' => getenv('celum_password') ?: '',
             'locale' => getenv('celum_locale') ?: 'de',
             'defaultLocale' => getenv('celum_defaultLocale') ?: 'en',
             'cacheLifetimeInMinutes' => getenv('celum_cacheLifetimeInMinutes') ?: '',
@@ -76,6 +76,46 @@ class CelumClientTest extends UnitTestCase
         }
 
         $this->client = new CelumClient($clientConfig, $storage);
+    }
+
+    /**
+     * CELUM answers 401 "No authentication profile found for API key" when the
+     * key is sent with a prefix, so it has to go out verbatim.
+     *
+     * @test
+     */
+    public function apiKeyIsSentWithoutPrefix(): void
+    {
+        $this->initializeClient([
+            'licenseKey' => $this->createLicenseKey('https://demo.celum.cloud', time() + 3600),
+            'celumApiKey' => 'someApiKey',
+        ]);
+
+        self::assertTrue($this->client->isAvailable());
+
+        $clientConfiguration = (new ReflectionProperty(CelumClient::class, 'clientConfiguration'))
+            ->getValue($this->client);
+
+        self::assertSame('someApiKey', $clientConfiguration->getApiKeyWithPrefix('X-API-KEY'));
+    }
+
+    /**
+     * Inverse of CelumClient::decrypt(): Vigenere cipher (mod 256, addition
+     * form) keyed by LICENSE_SECRET_KEY, base64 encoded.
+     */
+    private function createLicenseKey(string $host, int $expiryTimestamp): string
+    {
+        $secret = (string)(new ReflectionClassConstant(CelumClient::class, 'LICENSE_SECRET_KEY'))->getValue();
+        $secretLength = strlen($secret);
+        $plain = $host . '_' . $expiryTimestamp;
+
+        $encrypted = '';
+        for ($i = 0, $length = strlen($plain); $i < $length; $i++) {
+            $secretChar = substr($secret, ($i % $secretLength) - 1, 1);
+            $encrypted .= chr((ord($plain[$i]) + ord($secretChar)) % 256);
+        }
+
+        return base64_encode($encrypted);
     }
 
     /**

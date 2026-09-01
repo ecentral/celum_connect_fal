@@ -119,8 +119,6 @@ class CelumClientTest extends FunctionalTestCase
         $clientConfig = [
             'celumHost' => getenv('celum_celumHost') ?: '',
             'celumApiKey' => getenv('celum_apiKey') ?: '',
-            'celumUser' => getenv('celum_user') ?: '',
-            'celumPassword' => getenv('celum_password') ?: '',
             'locale' => getenv('celum_locale') ?: 'de',
             'defaultLocale' => getenv('celum_defaultLocale') ?: 'en',
             'cacheLifetimeInMinutes' => getenv('celum_cacheLifetimeInMinutes') ?: '',

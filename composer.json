@@ -66,7 +66,8 @@
 	},
 	"scripts": {
 		"phpcsfixer": "php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.dist.php",
-		"phpstan": "phpstan analyse Classes Configuration ext_emconf.php ext_localconf.php --level=5"
+		"phpstan": "phpstan analyse Classes Configuration ext_emconf.php ext_localconf.php --level=5",
+		"test:unit": "phpunit -c Build/phpunit/UnitTests.xml"
 	},
 	"extra": {
 		"typo3/cms": {

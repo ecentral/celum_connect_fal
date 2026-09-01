@@ -38,8 +38,6 @@ class CelumClient
     protected string $host;
     protected string $locale;
     protected string $defaultLocale;
-    protected string $username;
-    protected string $password;
     protected string $apiKey;
 
     protected int $storage;
@@ -76,9 +74,7 @@ class CelumClient
                 ->setHost($this->host)
                 // No prefix: CELUM expects the raw key in X-API-KEY and answers
                 // 401 "No authentication profile found for API key" otherwise.
-                ->setApiKey(self::X_API_KEY_IDENTIFIER, $this->apiKey)
-                ->setUsername($this->username)
-                ->setPassword($this->password);
+                ->setApiKey(self::X_API_KEY_IDENTIFIER, $this->apiKey);
 
             $this->available = true;
         } catch (Exception $exception) {
@@ -105,8 +101,6 @@ class CelumClient
             throw new InvalidConfigurationException('No valid license');
         }
         $this->apiKey = $configuration['celumApiKey'] ?? '';
-        $this->username = $configuration['celumUser'] ?? '';
-        $this->password = $configuration['celumPassword'] ?? '';
         $this->locale = $configuration['locale'] ?? 'en';
         $this->defaultLocale = $configuration['defaultLocale'] ?? 'en';
         $this->imageFormat = Format::PREVIEW;

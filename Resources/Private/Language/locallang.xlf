@@ -9,6 +9,39 @@
 			<trans-unit id="be_clear_cache_description" resname="be_clear_cache_description">
 				<source>Clear the Celum Filestorage Cache.</source>
 			</trans-unit>
+			<trans-unit id="storageCheck.title" resname="storageCheck.title">
+				<source>CELUM storage configuration</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.ok" resname="storageCheck.ok">
+				<source>Connection to %s succeeded.</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.licenseEmpty" resname="storageCheck.licenseEmpty">
+				<source>No license key configured. The storage cannot connect to CELUM.</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.licenseUndecodable" resname="storageCheck.licenseUndecodable">
+				<source>The license key cannot be read. Please check it for typos or missing characters.</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.licenseMalformed" resname="storageCheck.licenseMalformed">
+				<source>The license key does not contain a CELUM host and an expiry date. It may belong to another product.</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.licenseExpired" resname="storageCheck.licenseExpired">
+				<source>The license key expired on %s. Please request a new key from CELUM.</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.licenseExpiresSoon" resname="storageCheck.licenseExpiresSoon">
+				<source>The license key expires on %s. Please request a new key in time.</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.noRoots" resname="storageCheck.noRoots">
+				<source>No root collections configured. The storage will stay empty.</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.apiKeyRejected" resname="storageCheck.apiKeyRejected">
+				<source>CELUM rejected the API key: %s</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.apiUnreachable" resname="storageCheck.apiUnreachable">
+				<source>CELUM could not be reached, so the API key is unverified: %s</source>
+			</trans-unit>
+			<trans-unit id="storageCheck.clientUnavailable" resname="storageCheck.clientUnavailable">
+				<source>The storage configuration is incomplete, so no connection could be attempted.</source>
+			</trans-unit>
 		</body>
 	</file>
 </xliff>

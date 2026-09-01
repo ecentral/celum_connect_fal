@@ -20,6 +20,7 @@ use Brix\CelumFal\Utility\RestClientFolderUtility;
 use Celum\Client\Api\AssetsApi;
 use Celum\Client\Api\CollectionsApi;
 use Celum\Client\Api\DownloadApi;
+use Celum\Client\ApiException;
 use Celum\Client\Configuration;
 use Celum\Client\Model\Asset;
 use Celum\Client\Model\FileCategory;
@@ -35,6 +36,13 @@ class CelumClient
 {
     private const API_PATH = '/content-api/v1';
     private const X_API_KEY_IDENTIFIER = 'X-API-KEY';
+
+    /**
+     * Timeouts for the configuration check, which runs while an editor waits
+     * for the storage record to be saved.
+     */
+    private const PROBE_CONNECT_TIMEOUT = 5;
+    private const PROBE_TIMEOUT = 10;
 
     protected string $host = '';
     protected string $locale = 'en';
@@ -123,6 +131,28 @@ class CelumClient
         }
 
         $this->host = $this->appendApiPathIfMissing($licenseKey->getHost());
+    }
+
+    /**
+     * Fires one cheap request to prove that host and API key actually work.
+     * Used by the storage configuration check, not during normal operation.
+     *
+     * @throws ApiException
+     */
+    public function verifyConnection(): void
+    {
+        $collectionApi = new CollectionsApi(
+            new Client(['connect_timeout' => self::PROBE_CONNECT_TIMEOUT, 'timeout' => self::PROBE_TIMEOUT]),
+            $this->clientConfiguration
+        );
+
+        $firstRoot = $this->roots[0] ?? null;
+        if ($firstRoot === null) {
+            $collectionApi->getCollections(locale: $this->locale, page: 1, size: 1);
+            return;
+        }
+
+        $collectionApi->getCollection(collection_id: (int)trim($firstRoot, '/'), locale: $this->locale);
     }
 
     private function appendApiPathIfMissing(string $host): string

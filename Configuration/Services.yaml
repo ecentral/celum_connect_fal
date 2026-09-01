@@ -20,6 +20,18 @@ services:
   Brix\CelumFal\Utility\Cache:
     public: true
 
+  # No resource auto-registration in this file, so every service is listed.
+  Brix\CelumFal\Service\StorageConfigurationValidator: ~
+
+  Brix\CelumFal\Service\CelumConnectionProbe: ~
+
+  Brix\CelumFal\Service\ConnectionProbeInterface:
+    alias: Brix\CelumFal\Service\CelumConnectionProbe
+
+  # Instantiated by the DataHandler via GeneralUtility::makeInstance()
+  Brix\CelumFal\Hooks\StorageConfigurationCheck:
+    public: true
+
   Brix\CelumFal\ToolbarItem\CumulusCacheCleanerItem:
     tags:
       - name: backend.toolbar.item

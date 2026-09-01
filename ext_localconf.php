@@ -27,6 +27,10 @@ $driverRegistry->registerDriverClass(
     'FILE:EXT:' . \Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY . '/Configuration/FlexForm/CelumDriverFlexForm.xml'
 );
 
+// Storage configuration check: warn when license or API key do not work
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][]
+    = \Brix\CelumFal\Hooks\StorageConfigurationCheck::class;
+
 // Caching
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations'][\Brix\CelumFal\Driver\CelumDriver::EXTENSION_KEY] = [
     'frontend' => \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class,

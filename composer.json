@@ -1,78 +1,99 @@
 {
-	"name": "ecentral/celum-connect-fal",
-	"authors": [
-		{
-			"name": "brix IT solutions",
-			"role": "Project Owner",
-			"email": "support@brix.ch",
-			"homepage": "https://www.brix.ch"
-		}
-	],
-	"prefer-stable": true,
-	"type": "typo3-cms-extension",
-	"description": "TYPO3 FAL driver for the CELUM DAM system",
-	"homepage": "https://github.com/ecentral/celum_connect_fal",
-	"license": "GPL-2.0-or-later",
-	"keywords": [
-		"typo3",
-		"typo3 backend",
-		"celum",
-		"fal",
-		"dam",
-		"digital asset management",
-		"file abstraction layer"
-	],
-	"autoload": {
-		"psr-4": {
-			"Brix\\CelumFal\\": "Classes/"
-		}
-	},
-	"config": {
-		"vendor-dir": ".Build/vendor",
-		"bin-dir": ".Build/bin",
-		"preferred-install": {
-			"typo3/cms-core": "source"
-		},
-		"sort-packages": true,
-		"allow-plugins": {
-			"typo3/class-alias-loader": true,
-			"typo3/cms-composer-installers": true
-		}
-	},
-	"require": {
-		"typo3/cms-core": "^12 || ^13",
-		"guzzlehttp/psr7": "*",
-		"ecentral/celum-connect-fal-rest-client": "^1.0"
-	},
-	"require-dev": {
-		"codeception/codeception": "^5.3",
-		"codeception/module-asserts": "^3.3",
-		"codeception/module-cli": "^2.0",
-		"codeception/module-webdriver": "^4.0",
-		"phpstan/phpstan": "^1.2.0",
-		"typo3/cms-frontend": "^12 || ^13",
-		"typo3/cms-install": "^12 || ^13",
-		"typo3/cms-filelist": "^12 || ^13",
-		"typo3/coding-standards": "^0.8.0",
-		"typo3/tailor": "^1.2",
-		"typo3/testing-framework": "^8.0.6"
-	},
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-	"autoload-dev": {
-		"psr-4": {
-			"Brix\\CelumFal\\Tests\\": "Tests"
-		}
-	},
-	"scripts": {
-		"phpcsfixer": "php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.dist.php",
-		"phpstan": "phpstan analyse Classes Configuration ext_emconf.php ext_localconf.php --level=5"
-	},
-	"extra": {
-		"typo3/cms": {
-			"app-dir": ".Build",
-			"web-dir": ".Build/Web",
-			"extension-key": "celum_connect_fal"
-		}
-	}
+  "name": "ecentral/celum-connect-fal",
+  "authors": [
+    {
+      "name": "brix IT solutions",
+      "role": "Project Owner",
+      "email": "support@brix.ch",
+      "homepage": "https://www.brix.ch"
+    },
+    {
+      "name": "Denis Doerner",
+      "role": "Developer",
+      "email": "d.doerner@ecentral.de",
+      "homepage": "https://www.ecentral.de"
+    },
+    {
+      "name": "Alex Hamann",
+      "role": "Developer",
+      "email": "a.hamann@ecentral.de",
+      "homepage": "https://www.ecentral.de"
+    },
+    {
+      "name": "Mohamad Omeirat",
+      "role": "Developer",
+      "email": "m.omeirat@ecentral.de",
+      "homepage": "https://www.ecentral.de"
+    }
+  ],
+  "prefer-stable": true,
+  "type": "typo3-cms-extension",
+  "description": "Integrates Celum Digital Asset Management with TYPO3 and provides direct access to centrally managed assets within the TYPO3 backend.",
+  "homepage": "https://ecentral.de/fairway-dam-typo3",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "TYPO3",
+    "File Abstraction Layer",
+    "Images",
+    "Assets",
+    "NetX",
+    "FAL",
+    "DAM",
+    "Digital Asset Management",
+    "File Storage",
+    "Asset Browser",
+    "Fairway"
+  ],
+  "autoload": {
+    "psr-4": {
+      "Brix\\CelumFal\\": "Classes/"
+    }
+  },
+  "config": {
+    "vendor-dir": ".Build/vendor",
+    "bin-dir": ".Build/bin",
+    "preferred-install": {
+      "typo3/cms-core": "source"
+    },
+    "sort-packages": true,
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
+    }
+  },
+  "require": {
+    "typo3/cms-core": "^12 || ^13",
+    "guzzlehttp/psr7": "*",
+    "ecentral/celum-connect-fal-rest-client": "^1.0"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.2",
+    "saschaegerer/phpstan-typo3": "^3.0",
+    "friendsofphp/php-cs-fixer": "^3.95",
+    "rector/rector": "^2.5",
+    "ssch/typo3-rector": "^3.15",
+    "typo3/cms-backend": "^12 || ^13",
+    "typo3/cms-fluid": "^12 || ^13",
+    "typo3/coding-standards": "^0.9"
+  },
+  "minimum-stability": "dev",
+  "autoload-dev": {
+    "psr-4": {
+      "Brix\\CelumFal\\Tests\\": "Tests"
+    }
+  },
+  "scripts": {
+    "cs:check": "php-cs-fixer fix --dry-run --diff --using-cache=no --config=.php-cs-fixer.dist.php",
+    "cs:fix": "php-cs-fixer fix --diff --using-cache=no --config=.php-cs-fixer.dist.php",
+    "analyze:php": "phpstan analyse --ansi --no-progress --memory-limit=768M -c phpstan.neon",
+    "rector:check": "rector process --dry-run --no-progress-bar --memory-limit=768M",
+    "rector:fix": "rector process --no-progress-bar --memory-limit=768M"
+  },
+  "extra": {
+    "typo3/cms": {
+      "app-dir": ".Build",
+      "web-dir": ".Build/Web",
+      "extension-key": "celum_connect_fal"
+    }
+  }
 }

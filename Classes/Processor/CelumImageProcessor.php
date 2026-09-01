@@ -12,10 +12,12 @@ declare(strict_types=1);
 namespace Brix\CelumFal\Processor;
 
 use Brix\CelumFal\Utility\DriverUtility;
+use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Imaging\Exception\ZeroImageDimensionException;
 use TYPO3\CMS\Core\Imaging\ImageDimension;
@@ -32,7 +34,7 @@ class CelumImageProcessor implements ProcessorInterface
 
     public function canProcessTask(TaskInterface $task): bool
     {
-        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $context = GeneralUtility::makeInstance(Context::class);
         return ($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
             && ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isBackend()
@@ -53,7 +55,7 @@ class CelumImageProcessor implements ProcessorInterface
 
         try {
             $imageDimension = ImageDimension::fromProcessingTask($task);
-        } catch (ZeroImageDimensionException $e) {
+        } catch (ZeroImageDimensionException) {
             $imageDimension = new ImageDimension(64, 64);
             $id = $task->getSourceFile()->getIdentifier();
             $info = $driverClient->getFileInfo($id);
@@ -115,7 +117,7 @@ class CelumImageProcessor implements ProcessorInterface
         if ($originalFileUid !== null) {
             try {
                 // database connection
-                $queryBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Database\ConnectionPool::class)
+                $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
                     ->getQueryBuilderForTable('sys_file_metadata');
 
                 // execute query to update the metadata
@@ -129,7 +131,7 @@ class CelumImageProcessor implements ProcessorInterface
                     ->executeStatement();
 
                 $this->log->debug("Update succesfully: width: $width and height: $height");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->log->error('Update failed: Error: ' . $e->getMessage());
             }
         } else {
@@ -140,7 +142,7 @@ class CelumImageProcessor implements ProcessorInterface
     protected function getOriginalFileUid($processedFileUid)
     {
         // database connection
-        $queryBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Database\ConnectionPool::class)
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getQueryBuilderForTable('sys_file_processedfile');
 
         // execute query to select original uid

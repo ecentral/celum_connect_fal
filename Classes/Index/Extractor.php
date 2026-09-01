@@ -24,7 +24,7 @@ class Extractor implements ExtractorInterface
 
     public function __construct()
     {
-        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
     }
 
     /**

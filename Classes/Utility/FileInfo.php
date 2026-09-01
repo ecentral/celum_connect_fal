@@ -18,26 +18,25 @@ use TYPO3\CMS\Core\Utility\PathUtility;
 
 class FileInfo
 {
-    private string $identifier;
-    private string $identifierHash;
-    private string $folderHash;
+    private readonly string $identifier;
+    private readonly string $identifierHash;
+    private readonly string $folderHash;
     private string $name;
-    private int $storage;
-    private int $fileSize;
+    private readonly int $fileSize;
     private int $width;
     private int $height;
-    private ?string $description = '';
-    private ?string $alternative = '';
-    private string $mimetype;
-    private int $ctime;
-    private int $mtime;
+    private string $description = '';
+    private string $alternative = '';
+    private readonly string $mimetype;
+    private readonly int $ctime;
+    private readonly int $mtime;
 
     private string $previewUrl;
     private string $thumbUrl;
     private bool|string $publicUrl;
     private string $extension;
 
-    public function __construct(Asset $asset, ?string $originalDownloadUrl, int $storage, Format $imageFormat, Format $videoFormat, Format $documentFormat, Format $othersFormat)
+    public function __construct(Asset $asset, ?string $originalDownloadUrl, private readonly int $storage, Format $imageFormat, Format $videoFormat, Format $documentFormat, Format $othersFormat)
     {
 
         $this->identifier = (string)$asset->getId();
@@ -46,7 +45,6 @@ class FileInfo
         /** @var string $fileCategory */
         $fileCategory = $asset->getCurrentVersion()->getFileCategory();
         $this->mimetype = strtolower($fileCategory) . '/' . $asset->getCurrentVersion()->getFileExtension();
-        $this->storage = $storage;
         $this->fileSize = $asset->getCurrentVersion()->getFilesize();
         $this->mtime = $asset->getModification()->getDate()->getTimestamp();
         $this->ctime = $asset->getCreation()->getDate()->getTimestamp();

@@ -15,6 +15,7 @@ use Brix\CelumFal\Exceptions\InvalidConfigurationException;
 use Brix\CelumFal\Utility\Cache;
 use Brix\CelumFal\Utility\FileInfo;
 use Brix\CelumFal\Utility\FileInfo\Format;
+use Brix\CelumFal\Utility\LicenseKey;
 use Brix\CelumFal\Utility\RestClientFolderUtility;
 use Celum\Client\Api\AssetsApi;
 use Celum\Client\Api\CollectionsApi;
@@ -22,6 +23,7 @@ use Celum\Client\Api\DownloadApi;
 use Celum\Client\Configuration;
 use Celum\Client\Model\Asset;
 use Celum\Client\Model\FileCategory;
+use DateTimeImmutable;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -33,12 +35,11 @@ class CelumClient
 {
     private const API_PATH = '/content-api/v1';
     private const X_API_KEY_IDENTIFIER = 'X-API-KEY';
-    private const LICENSE_SECRET_KEY = 'ZbMchtd9DivzjPDi5QIio1iVERFnNZiSE33QKY3Gw9rYfCNLFiKloJQt3zi4';
 
-    protected string $host;
-    protected string $locale;
-    protected string $defaultLocale;
-    protected string $apiKey;
+    protected string $host = '';
+    protected string $locale = 'en';
+    protected string $defaultLocale = 'en';
+    protected string $apiKey = '';
 
     protected int $storage;
     protected Cache $cache;
@@ -92,14 +93,9 @@ class CelumClient
 
     private function initConfiguration(array $configuration): void
     {
-        // The license pins the host: it is the only source for the CELUM base URL.
-        // The celumHost setting is deliberately not evaluated.
-        $res = $this->decrypt((string)($configuration['licenseKey'] ?? ''));
-        if (preg_match('/^(.*)_([^_]+)$/', $res, $matches) && ((int)$matches[2] > time())) {
-            $this->host = $this->appendApiPathIfMissing(rtrim($matches[1]));
-        } else {
-            throw new InvalidConfigurationException('No valid license');
-        }
+        // Plain settings first: resolving the license may throw, and the object
+        // must stay usable enough afterwards to answer with empty results
+        // instead of running into uninitialized typed properties.
         $this->apiKey = $configuration['celumApiKey'] ?? '';
         $this->locale = $configuration['locale'] ?? 'en';
         $this->defaultLocale = $configuration['defaultLocale'] ?? 'en';
@@ -114,15 +110,19 @@ class CelumClient
         $this->cacheLifetime *= 60;
 
         $roots = trim((string)($configuration['roots'] ?? ''));
-        if ($roots === '') {
-            $this->roots = [];
-            return;
-        }
-
-        $this->roots = array_map(
+        $this->roots = $roots === '' ? [] : array_map(
             static fn (string $value): string => '/' . trim($value, '/') . '/',
             array_filter(array_map('trim', explode(',', $roots)), static fn (string $value): bool => $value !== '')
         );
+
+        // The license pins the host: it is the only source for the CELUM base URL.
+        // The celumHost setting is deliberately not evaluated.
+        $licenseKey = LicenseKey::fromEncoded((string)($configuration['licenseKey'] ?? ''));
+        if ($licenseKey->isExpired(new DateTimeImmutable())) {
+            throw new InvalidConfigurationException('License expired on ' . $licenseKey->getExpiresAt()->format('Y-m-d'));
+        }
+
+        $this->host = $this->appendApiPathIfMissing($licenseKey->getHost());
     }
 
     private function appendApiPathIfMissing(string $host): string
@@ -410,46 +410,5 @@ class CelumClient
         return $url;
     }
 
-    /**
-     * Decodes URL-safe base64 (RFC 4648 §5): swaps back the "-_" alphabet
-     * to "+/" and restores the "=" padding that URL-safe encoders strip.
-     */
-    private function decode_base64(string $sData): string
-    {
-        $sBase64 = strtr($sData, '-_', '+/');
-        $remainder = strlen($sBase64) % 4;
-        if ($remainder > 0) {
-            $sBase64 .= str_repeat('=', 4 - $remainder);
-        }
-
-        $decoded = base64_decode($sBase64, true);
-        if ($decoded === false) {
-            throw new InvalidConfigurationException('Invalid license encoding');
-        }
-
-        return $decoded;
-    }
-
-    /**
-     * Decrypts a license key with a Vigenère cipher (mod 256, subtraction
-     * form) keyed by LICENSE_SECRET_KEY. See
-     * https://de.wikipedia.org/wiki/Vigen%C3%A8re-Chiffre. Not real
-     * cryptography - this only mirrors the format Brix's licensing defines
-     * (see CLAUDE.md "Bekannte Besonderheiten").
-     */
-    private function decrypt(string $sData): string
-    {
-        $sResult = '';
-        $sData   = $this->decode_base64($sData);
-        $keyLength = strlen(self::LICENSE_SECRET_KEY);
-
-        for ($i = 0, $length = strlen($sData); $i < $length; $i++) {
-            $sChar    = substr($sData, $i, 1);
-            $sKeyChar = substr(self::LICENSE_SECRET_KEY, ($i % $keyLength) - 1, 1);
-            $sChar    = chr((ord($sChar) - ord($sKeyChar) + 256) % 256);
-            $sResult .= $sChar;
-        }
-        return $sResult;
-    }
 
 }

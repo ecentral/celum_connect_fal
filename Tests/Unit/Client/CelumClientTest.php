@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Brix\CelumFal\Tests\Unit\Client;
 
 use Brix\CelumFal\Client\CelumClient;
-use ReflectionClassConstant;
+use Brix\CelumFal\Tests\Unit\Fixtures\LicenseKeyFixture;
 use ReflectionProperty;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
@@ -87,7 +87,7 @@ class CelumClientTest extends UnitTestCase
     public function apiKeyIsSentWithoutPrefix(): void
     {
         $this->initializeClient([
-            'licenseKey' => $this->createLicenseKey('https://demo.celum.cloud', time() + 3600),
+            'licenseKey' => LicenseKeyFixture::encode('https://demo.celum.cloud', time() + 3600),
             'celumApiKey' => 'someApiKey',
         ]);
 
@@ -99,24 +99,6 @@ class CelumClientTest extends UnitTestCase
         self::assertSame('someApiKey', $clientConfiguration->getApiKeyWithPrefix('X-API-KEY'));
     }
 
-    /**
-     * Inverse of CelumClient::decrypt(): Vigenere cipher (mod 256, addition
-     * form) keyed by LICENSE_SECRET_KEY, base64 encoded.
-     */
-    private function createLicenseKey(string $host, int $expiryTimestamp): string
-    {
-        $secret = (string)(new ReflectionClassConstant(CelumClient::class, 'LICENSE_SECRET_KEY'))->getValue();
-        $secretLength = strlen($secret);
-        $plain = $host . '_' . $expiryTimestamp;
-
-        $encrypted = '';
-        for ($i = 0, $length = strlen($plain); $i < $length; $i++) {
-            $secretChar = substr($secret, ($i % $secretLength) - 1, 1);
-            $encrypted .= chr((ord($plain[$i]) + ord($secretChar)) % 256);
-        }
-
-        return base64_encode($encrypted);
-    }
 
     /**
      * @return \string[][]

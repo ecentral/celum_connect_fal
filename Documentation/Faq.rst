@@ -50,6 +50,15 @@ The root node ID is the numerical ID of the CELUM folder that will serve as the 
 
 Multiple root node IDs can be entered as a comma-separated list — all configured nodes and their sub-nodes will be available recursively in TYPO3.
 
+..  _faq-storage-error:
+
+Why does the file list show an error instead of my CELUM folders?
+==================================================================
+
+The most common cause is a license key that has expired or an API key that
+CELUM no longer accepts. Open the file storage record and save it again: the
+configuration check reports what is wrong. See :ref:`configuration-check`.
+
 ..  _faq-help:
 
 Where to get help?

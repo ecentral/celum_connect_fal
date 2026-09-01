@@ -32,10 +32,21 @@ The driver is configured per FAL storage in the TYPO3 backend under **File > Fil
 | Field | Type | Required | Default | Description                                                                                                                                   |
 |---|---|---|---|-----------------------------------------------------------------------------------------------------------------------------------------------|
 | `licenseKey` | string | yes | — | License key issued for your CELUM instance. It also determines the base URL of the CELUM REST API                                              |
+| `celumApiKey` | string | yes | — | API key of the authentication profile, sent verbatim in the `X-API-KEY` header (see [Finding your API Key](#finding-your-api-key)) |
 | `roots` | string | yes | — | Comma-separated list of CELUM collection IDs to expose as root folders, e.g. `12,34,56` (see [Finding Root Node IDs](#finding-root-node-ids)) |
 | `locale` | `en` \| `de` | no | `en` | Language used for asset names returned by the API                                                                                             |
 | `defaultLocale` | `en` \| `de` | no | `en` | Fallback language when the primary locale is unavailable                                                                                      |
 | `cacheLifetimeInMinutes` | integer (1–29) | no | `29` | How long API responses are cached in the TYPO3 cache framework                                                                                |
+
+### Configuration Check
+
+Saving a storage that uses the `BrixCelumDriver` runs a check and reports the result as a flash message. The record is always saved, also when the check fails — an API key may well be entered before it is activated on the CELUM side.
+
+The check decodes the `licenseKey` and examines its expiry date locally, then sends one request to CELUM to find out whether the `celumApiKey` is accepted. That request gives up after ten seconds, so saving never hangs on an unreachable service.
+
+An expired license, an unreadable license key or a rejected API key (HTTP `401`/`403`) is reported as an error. A license expiring within 30 days, missing `roots` or an unreachable CELUM instance is reported as a warning — in the last case the configuration may still be correct.
+
+The check runs on save only. A license that expires later is not noticed until the record is saved again.
 
 ### Finding your API Key
 

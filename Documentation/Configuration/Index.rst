@@ -21,6 +21,15 @@ FlexForm fields described below.
     of the CELUM REST API, so the instance the driver talks to is pinned by the
     license.
 
+..  confval:: celumApiKey
+    :name: celumApiKey
+    :type: string
+    :required: true
+
+    API key of the authentication profile the driver uses. It is sent verbatim
+    in the ``X-API-KEY`` header.
+    See :ref:`api-key` for instructions on how to obtain it.
+
 ..  confval:: roots
     :name: roots
     :type: string
@@ -50,3 +59,63 @@ FlexForm fields described below.
     :default: 29
 
     How long API responses are cached in the TYPO3 cache framework.
+
+..  _configuration-check:
+
+Configuration check
+===================
+
+Saving a file storage that uses the :guilabel:`BrixCelumDriver` runs a check
+and reports the result as a flash message. The record is always saved, also
+when the check fails - an API key may well be entered before it is activated
+on the CELUM side.
+
+The check does two things:
+
+#.  It decodes :confval:`licenseKey` and examines its expiry date. This happens
+    locally, without contacting CELUM.
+#.  It sends one request to CELUM to find out whether :confval:`celumApiKey` is
+    accepted. The request gives up after ten seconds so that saving a record
+    never hangs on an unreachable service.
+
+..  list-table::
+    :header-rows: 1
+
+    *   -   Message
+        -   Type
+        -   Meaning
+    *   -   Connection to … succeeded
+        -   Ok
+        -   License and API key work, the storage is ready to use.
+    *   -   No license key configured
+        -   Error
+        -   :confval:`licenseKey` is empty.
+    *   -   The license key cannot be read
+        -   Error
+        -   The key is not valid base64, usually a typo or a truncated value.
+    *   -   The license key does not contain a CELUM host and an expiry date
+        -   Error
+        -   The key decodes, but carries a different payload - it may belong to
+            another product.
+    *   -   The license key expired on …
+        -   Error
+        -   Request a new key from CELUM. The storage stays empty until then.
+    *   -   The license key expires on …
+        -   Warning
+        -   The key runs out within the next 30 days.
+    *   -   No root collections configured
+        -   Warning
+        -   :confval:`roots` is empty, so the storage has nothing to show.
+    *   -   CELUM rejected the API key
+        -   Error
+        -   CELUM answered ``401`` or ``403``. Check :confval:`celumApiKey`
+            against the authentication profile in the CMA.
+    *   -   CELUM could not be reached
+        -   Warning
+        -   The request failed or timed out, so the API key could not be
+            verified. The configuration may still be correct.
+
+..  note::
+
+    The check runs when the storage record is saved. A license that expires
+    later is not noticed until the record is saved again.

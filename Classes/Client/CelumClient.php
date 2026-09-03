@@ -39,8 +39,6 @@ class CelumClient
     protected string $locale;
     protected string $defaultLocale;
     protected string $apiKey;
-
-    protected int $storage;
     protected Cache $cache;
 
     private Format $imageFormat;
@@ -58,12 +56,10 @@ class CelumClient
 
     private bool $available = false;
 
-    public function __construct(array $config, int $storage)
+    public function __construct(array $config, protected int $storage)
     {
-        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $this->log->debug('__construct(' . json_encode($config) . ')');
-
-        $this->storage = $storage;
         $this->cache = GeneralUtility::makeInstance(Cache::class);
 
         try {
@@ -121,7 +117,7 @@ class CelumClient
 
         $this->roots = array_map(
             static fn (string $value): string => '/' . trim($value, '/') . '/',
-            array_filter(array_map('trim', explode(',', $roots)), static fn (string $value): bool => $value !== '')
+            array_filter(array_map(trim(...), explode(',', $roots)), static fn (string $value): bool => $value !== '')
         );
     }
 
@@ -137,7 +133,7 @@ class CelumClient
     private function hasNoPath(string $host): bool
     {
         $hostForParsing = $host;
-        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $host) !== 1 && strpos($host, '//') !== 0 && strpos($host, '/') !== 0) {
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $host) !== 1 && !str_starts_with($host, '//') && !str_starts_with($host, '/')) {
             $hostForParsing = '//' . $host;
         }
 
@@ -148,9 +144,7 @@ class CelumClient
 
     public function getClient(): ClientInterface
     {
-        if ($this->client === null) {
-            $this->client = new Client();
-        }
+        $this->client ??= new Client();
         return $this->client;
     }
 
@@ -400,7 +394,7 @@ class CelumClient
 
     public function getUrl(string $identifier, string $type = 'publicUrl'): mixed
     {
-        if (substr($identifier, 0, 5) === 'thumb') {
+        if (str_starts_with($identifier, 'thumb')) {
             $type = 'thumbnail';
             $identifier = substr($identifier, 5);
         }

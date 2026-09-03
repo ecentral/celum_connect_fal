@@ -13,6 +13,7 @@ namespace Brix\CelumFal\Command;
 
 use Brix\CelumFal\Index\Extractor;
 use Brix\CelumFal\Utility\DriverUtility;
+use Exception;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -28,11 +29,8 @@ class RefreshMetaCommand extends Command
 {
     protected static $defaultName = 'celumfal:refreshmeta';
 
-    private Extractor $metadataExtractor;
-
-    public function __construct(Extractor $extractor)
+    public function __construct(private readonly Extractor $metadataExtractor)
     {
-        $this->metadataExtractor = $extractor;
         parent::__construct(self::$defaultName);
     }
 
@@ -120,7 +118,7 @@ EOF
                         $processedFile->delete(true);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $output->writeln('File ' . $fileIdentifier . ' failed: ' . $e->getMessage());
                 continue;
             }

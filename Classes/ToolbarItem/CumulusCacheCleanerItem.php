@@ -21,7 +21,9 @@ use TYPO3\CMS\Backend\Toolbar\ToolbarItemInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Fluid\View\StandaloneView;
 
 /**
  * Render cache clearing toolbar item.
@@ -89,14 +91,14 @@ class CumulusCacheCleanerItem implements ToolbarItemInterface, RequestAwareToolb
     public function getItem(): string
     {
         if ((new Typo3Version())->getMajorVersion() < 13) {
-            /** @var \TYPO3\CMS\Fluid\View\StandaloneView $view */
-            $view = GeneralUtility::makeInstance(\TYPO3\CMS\Fluid\View\StandaloneView::class);
+            /** @var StandaloneView $view */
+            $view = GeneralUtility::makeInstance(StandaloneView::class);
             $view->setTemplateRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Templates/')]);
             $view->setPartialRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Partials/')]);
             $view->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:celum_connect_fal/Resources/Private/Layouts/')]);
             $view->setTemplate('ToolbarItems/ClearCumulusCacheToolbarItemSingle.html');
         } else {
-            $viewFactoryData = new \TYPO3\CMS\Core\View\ViewFactoryData(
+            $viewFactoryData = new ViewFactoryData(
                 templateRootPaths: ['EXT:celum_connect_fal/Resources/Private/Templates/'],
                 partialRootPaths: ['EXT:celum_connect_fal/Resources/Private/Partials/'],
                 layoutRootPaths: ['EXT:celum_connect_fal/Resources/Private/Layouts/'],

@@ -31,15 +31,15 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
     protected $instance;
     protected Capabilities $capabilities;
     protected array $configuration;
-    protected ?int $storageUid;
+    protected ?int $storageUid = null;
 
     public function __construct(array $configuration = [])
     {
         parent::__construct($configuration);
 
         $this->configuration = $configuration;
-        $this->instance = rand();
-        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+        $this->instance = random_int(0, mt_getrandmax());
+        $this->log = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $this->log->debug("$this->instance: __construct(" . json_encode($configuration) . ')');
         $this->capabilities = GeneralUtility::makeInstance(
             Capabilities::class,
@@ -149,7 +149,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
      */
     public function fileExists(string $fileIdentifier): bool
     {
-        $ret = ((substr($fileIdentifier, -1, 1) != '/') and ($this->getFileInfoByIdentifier($fileIdentifier) !== null));
+        $ret = ((!str_ends_with($fileIdentifier, '/')) and ($this->getFileInfoByIdentifier($fileIdentifier) !== []));
         $this->log->debug("$this->instance: fileExists($fileIdentifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }
@@ -389,7 +389,7 @@ class CelumDriver extends AbstractHierarchicalFilesystemDriver
     {
         $folderIdentifier = rtrim($folderIdentifier, '/\\') . '/';
         $id = rtrim($identifier, '/\\') . '/';
-        $ret = ($identifier and (strpos($id, $folderIdentifier) === 0));
+        $ret = ($identifier and (str_starts_with($id, $folderIdentifier)));
         $this->log->debug("$this->instance: isWithin($folderIdentifier, $identifier): " . ($ret ? 'true' : 'false'));
         return $ret;
     }

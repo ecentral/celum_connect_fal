@@ -9,7 +9,7 @@ declare(strict_types=1);
  * LICENSE file that was distributed with this source code.
  */
 
-$_EXTKEY = $_EXTKEY ?? 'celum_connect_fal';
+$_EXTKEY ??= 'celum_connect_fal';
 
 $EM_CONF[$_EXTKEY] = [
     'title' => 'celum:connect (FAL)',

@@ -1,5 +1,6 @@
 stages:
   - test
+  - release
   - prepare-demo-deploy
   - deploy-demo
 
@@ -75,6 +76,25 @@ phpstan:
     key: composer-cache
     paths:
       - .composer/cache
+
+publish-ter:
+  stage: release
+  image: registry.gitlab.com/codemonkey1988/docker-composer-image:2-php8.4
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+  variables:
+    # Keeps tailor out of the extension's own dependency graph. It is a
+    # release-only tool and would otherwise constrain the TYPO3 12/13 matrix.
+    COMPOSER_HOME: /tmp/tailor
+  before_script:
+    - composer global require --no-interaction typo3/tailor:^2.0
+  script:
+    # Make sure no build artefacts end up in the uploaded package.
+    - git reset --hard HEAD && git clean -fdx
+    - TAG_MESSAGE="$(git tag -n99 -l "$CI_COMMIT_TAG" | sed 's/^[^ ]*[ ]*//')"
+    # TER only accepts [int].[int].[int], our tags carry a "v" prefix.
+    # The extension key is read from composer.json (extra.typo3/cms).
+    - /tmp/tailor/vendor/bin/tailor ter:publish --comment "${TAG_MESSAGE:-$CI_COMMIT_TAG}" "${CI_COMMIT_TAG#v}"
 
 generate-demo-deploy:
   extends: .deploy-demo

@@ -11,6 +11,9 @@ $config = new PhpCsFixer\Config();
 $config->setRiskyAllowed(true);
 $config->getFinder()->in(__DIR__);
 $config->getFinder()->exclude(['vendor', 'var']);
+// ext_emconf.php must not declare strict_types, otherwise the TER upload
+// fails. Excluded here so declare_strict_types does not re-add it.
+$config->getFinder()->notName('ext_emconf.php');
 $config->setRules([
     '@PSR12' => true,
     'array_syntax' => ['syntax' => 'short'],

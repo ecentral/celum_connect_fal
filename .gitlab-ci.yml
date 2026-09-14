@@ -7,8 +7,17 @@ stages:
 include:
   # Shared TER release component, pinned to a tag. It contributes the
   # "release-to-ter" job (stage "release", image composer:2, only: tags).
-  # Requires TYPO3_API_TOKEN as a masked/protected CI/CD variable - without
-  # it the job passes without publishing anything.
+  #
+  # Requires TYPO3_API_TOKEN and TYPO3_EXTENSION_KEY as masked/protected
+  # CI/CD variables. The component's script is guarded on both, so while
+  # they are unset the job runs as a green no-op and publishes nothing.
+  # Neither exists yet: the extension key was abandoned in the TER, which
+  # revokes access, so no token can be issued for it until it is reclaimed.
+  #
+  # Release tags MUST be unprefixed "X.Y.Z", not "vX.Y.Z". The component
+  # passes $CI_COMMIT_TAG verbatim as tailor's version argument, and
+  # ter:publish does not validate it - it goes straight into the TER
+  # request path, where anything but [int].[int].[int] is rejected.
   - component: ${CI_SERVER_HOST}/ec/gitlab-ci-cd-components/release-ter/release@1.0.0
     inputs:
       typo3-api-token: ${TYPO3_API_TOKEN}
@@ -86,34 +95,6 @@ phpstan:
     key: composer-cache
     paths:
       - .composer/cache
-
-# Overrides of the "release-to-ter" job the component above contributes.
-#
-# Manual until the TER extension key is available again: it was abandoned,
-# which revokes all access to it, so ter:publish cannot succeed right now.
-# The component brings "only: tags"; a job-level "when" is legacy syntax that
-# combines with it, whereas adding "rules" here would be rejected with
-# "may not be used with rules: only". allow_failure keeps a blocking manual
-# job out of every tag pipeline.
-#
-# The script is overridden because the component passes $CI_COMMIT_TAG
-# verbatim to tailor, while our tags carry a "v" prefix that the TER API
-# rejects. tailor itself does not validate the version - only "set-version"
-# does - so an unstripped tag fails server-side. Drop this override once the
-# component accepts the version as an input.
-release-to-ter:
-  when: manual
-  allow_failure: true
-  script:
-    - >
-      if [ -n "$CI_COMMIT_TAG" ] && [ -n "$TYPO3_API_TOKEN" ]; then
-        echo "Preparing upload of release ${CI_COMMIT_TAG} to TER"
-        # Make sure no build artefacts end up in the uploaded package.
-        git reset --hard HEAD && git clean -fdx
-        TAG_MESSAGE="$(git tag -n99 -l "$CI_COMMIT_TAG" | sed 's/^[^ ]*[ ]*//')"
-        # The extension key is read from composer.json (extra.typo3/cms).
-        /tmp/vendor/bin/tailor ter:publish --comment "${TAG_MESSAGE:-$CI_COMMIT_TAG}" "${CI_COMMIT_TAG#v}"
-      fi;
 
 generate-demo-deploy:
   extends: .deploy-demo
